@@ -7,7 +7,17 @@
 -}
 
 module Picrochole.Containers.World (
+  module Picrochole.Containers.Graph,
   World(..)
   ) where
 
+import Picrochole.Containers.Graph
+import Picrochole.Containers.Post
+import Picrochole.Misc.Time
+
 data World = World
+  {
+    currentTime :: UTCTime,
+    graph :: Graph,
+    post :: Post
+  }
