@@ -13,12 +13,8 @@ module Picrochole.Actions.Action (
 
 import Data.Sequence ( Seq )
 
+import Picrochole.Actions.ActionID
 import Picrochole.Containers.World
 
 -- | @Action@ is a wrapper for functions that update world (e.g. the game state).
 data Action = Action { apply :: World -> (Seq Action, World) }
-
--- | An @ActionID@ is a key making the link between an @Action@ and the
--- associated object in the world.
-newtype ActionID = ActionID String
-  deriving (Eq, Ord, Show)
