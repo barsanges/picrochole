@@ -32,6 +32,7 @@ module Picrochole.Containers.Graph (
   isGoingBackward,
   rout,
   rally,
+  createTrain
   ) where
 
 import Picrochole.Actions.ActionID
@@ -107,3 +108,6 @@ rout = undefined -- FIXME
 
 rally :: ActionID -> Graph -> Graph
 rally = undefined -- FIXME
+
+createTrain :: ActionID -> ActionID -> Double -> Graph -> Graph
+createTrain = undefined -- FIXME
