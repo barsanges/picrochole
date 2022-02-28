@@ -16,10 +16,12 @@ module Picrochole.Data.Stats
 import Data.Time ( UTCTime )
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M -- FIXME : IntMap ?
+import Picrochole.Data.Action
 import Picrochole.Data.Keys
 
 -- | Caractéristiques d'une unité.
 data Stats = Stats { uLocation :: NE.NonEmpty LocationKey
+                   , uAction :: Action
                    , uLastUpdate :: UTCTime
                    }
   deriving Show

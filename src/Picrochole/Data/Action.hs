@@ -12,3 +12,4 @@ module Picrochole.Data.Action
 
 -- | Action entreprise par une unité.
 data Action = Still
+  deriving (Show, Eq)
