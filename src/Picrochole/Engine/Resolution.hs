@@ -14,12 +14,18 @@ import Data.Time ( UTCTime, NominalDiffTime )
 import qualified Data.Time as T
 import Data.Sequence ( Seq(..), (|>) )
 import Picrochole.Data.Keys
+import Picrochole.Data.Stats
 
 -- | Résout le tour de l'unité courante.
 runResolution :: NominalDiffTime
-              -> (UTCTime, Seq UnitKey)
-              -> (UTCTime, Seq UnitKey)
-runResolution _ (t, Empty) = (t, Empty)
-runResolution dt (t, k :<| ks) = (t', ks |> k)
-  where
-    t' = T.addUTCTime dt t
+              -> (UTCTime, Seq UnitKey, CStats)
+              -> (UTCTime, Seq UnitKey, CStats)
+runResolution _ (t, Empty, cs) = (t, Empty, cs)
+runResolution dt (t, k :<| ks, cs) =
+  case lookupCStats k cs of
+    Nothing -> (t, ks, cs)
+    Just s -> (t', ks |> k, cs')
+      where
+        t' = T.addUTCTime dt t
+        s' = s { uLastUpdate = t' }
+        cs' = insertCStats k s' cs
