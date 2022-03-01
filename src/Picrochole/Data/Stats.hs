@@ -8,7 +8,7 @@ Structures pour l'état des unités.
 
 module Picrochole.Data.Stats
   ( Stats(..)
-  , CStats
+  , CStats(..)
   , lookupCStats
   , insertCStats
   ) where
