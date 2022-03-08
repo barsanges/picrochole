@@ -10,6 +10,9 @@ module Picrochole.Data.Action
   ( Action(..)
   ) where
 
+import Picrochole.Data.Keys
+
 -- | Action entreprise par une unité.
 data Action = Still
-  deriving (Show, Eq)
+            | Moving Double [LocationKey]
+  deriving (Show, Eq, Ord)
