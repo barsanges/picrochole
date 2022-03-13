@@ -21,6 +21,7 @@ import Picrochole.Data.Keys
 -- | Caractéristiques d'une unité.
 data Stats = Stats { uLocation :: NE.NonEmpty LocationKey
                    , uLastUpdate :: UTCTime
+                   , uFaction :: FactionKey
                    }
   deriving Show
 
