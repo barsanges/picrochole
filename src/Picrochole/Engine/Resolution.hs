@@ -13,19 +13,19 @@ module Picrochole.Engine.Resolution
 import Data.Time ( UTCTime, NominalDiffTime )
 import qualified Data.Time as T
 import Data.Sequence ( Seq(..), (|>) )
+import Picrochole.Data.Action
 import Picrochole.Data.Keys
 import Picrochole.Data.Stats
+import Picrochole.Engine.Decision
+import Picrochole.Engine.Update
 
 -- | Résout le tour de l'unité courante.
 runResolution :: NominalDiffTime
-              -> (UTCTime, Seq UnitKey, CStats)
-              -> (UTCTime, Seq UnitKey, CStats)
-runResolution _ (t, Empty, cs) = (t, Empty, cs)
-runResolution dt (t, k :<| ks, cs) =
-  case lookupCStats k cs of
-    Nothing -> (t, ks, cs)
-    Just s -> (t', ks |> k, cs')
+              -> (UTCTime, Seq UnitKey, CStats, CActions)
+              -> (UTCTime, Seq UnitKey, CStats, CActions)
+runResolution _ (t, Empty, cs, ca) = (t, Empty, cs, ca)
+runResolution dt (t, k :<| ks, cs, ca) = (t', ks |> k, cs', ca')
       where
         t' = T.addUTCTime dt t
-        s' = s { uLastUpdate = t' }
-        cs' = insertCStats k s' cs
+        cs' = runUpdate t k cs
+        ca' = runDecision k ca

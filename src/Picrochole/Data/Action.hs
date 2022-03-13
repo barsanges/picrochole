@@ -9,6 +9,7 @@ Actions entreprises par les unités.
 module Picrochole.Data.Action
   ( Action(..)
   , CActions
+  , insertCActions
   ) where
 
 import qualified Data.Map as M -- FIXME : IntMap ?
@@ -20,3 +21,8 @@ data Action = Still
 
 -- | L'action associée à chaque unité.
 newtype CActions = CA (M.Map UnitKey Action)
+
+-- | Met à jour le conteneur des actions.
+insertCActions :: UnitKey -> Action -> CActions -> CActions
+insertCActions k a (CA m) = CA (M.insert k a m)
+-- FIXME : uniformiser l'interface avec des typeclasses à la MTL ?
