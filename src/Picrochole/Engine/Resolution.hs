@@ -16,16 +16,40 @@ import Data.Sequence ( Seq(..), (|>) )
 import Picrochole.Data.Action
 import Picrochole.Data.Keys
 import Picrochole.Data.Stats
+import Picrochole.Data.Store
 import Picrochole.Engine.Decision
+import Picrochole.Engine.Logistics
 import Picrochole.Engine.Update
+
+-- | Ordre de résolution.
+type Order = Seq (Either StoreKey UnitKey)
+
+-- | Etat du jeu.
+data State = State { now :: UTCTime
+                   , order :: Order
+                   , cActions :: CActions
+                   , cStats :: CStats
+                   , cStores :: CStores
+                   }
+  deriving Show
 
 -- | Résout le tour de l'unité courante.
 runResolution :: NominalDiffTime
-              -> (UTCTime, Seq UnitKey, CStats, CActions)
-              -> (UTCTime, Seq UnitKey, CStats, CActions)
-runResolution _ (t, Empty, cs, ca) = (t, Empty, cs, ca)
-runResolution dt (t, k :<| ks, cs, ca) = (t', ks |> k, cs', ca')
-      where
-        t' = T.addUTCTime dt t
-        cs' = runUpdate t k cs
-        ca' = runDecision k ca
+              -> State
+              -> State
+runResolution dt s = case order s of
+  Empty -> s
+  (Left k) :<| ks -> s { now = t'
+                       , order = ks |> (Left k)
+                       , cStores = runLogistics k ct
+                       }
+  (Right k) :<| ks -> s { now = t'
+                        , order = ks |> (Right k)
+                        , cActions = runDecision k ca
+                        , cStats = runUpdate t' k cs
+                        }
+  where
+     t' = T.addUTCTime dt (now s)
+     ca = cActions s
+     cs = cStats s
+     ct = cStores s
