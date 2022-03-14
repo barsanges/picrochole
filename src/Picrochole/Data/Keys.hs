@@ -10,6 +10,7 @@ module Picrochole.Data.Keys
   ( LocationKey(..)
   , UnitKey(..)
   , FactionKey(..)
+  , StoreKey(..)
   ) where
 
 -- | Clef associée à un emplacement sur la carte.
@@ -22,4 +23,8 @@ newtype UnitKey = UK Int
 
 -- | Clef associée à une faction.
 newtype FactionKey = FK Int
+  deriving (Show, Eq, Ord)
+
+-- | Clef associée à un dépôt.
+newtype StoreKey = SK Int
   deriving (Show, Eq, Ord)
