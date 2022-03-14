@@ -27,6 +27,7 @@ data Stats = Stats { uLocation :: NE.NonEmpty LocationKey
 
 -- | L'ensemble des unités de la partie.
 newtype CStats = CS (M.Map UnitKey Stats)
+  deriving Show
 
 -- | Recherche une unité dans le conteneur des unités.
 lookupCStats :: UnitKey -> CStats -> Maybe Stats

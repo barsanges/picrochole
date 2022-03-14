@@ -21,6 +21,7 @@ data Action = Still
 
 -- | L'action associée à chaque unité.
 newtype CActions = CA (M.Map UnitKey Action)
+  deriving Show
 
 -- | Met à jour le conteneur des actions.
 insertCActions :: UnitKey -> Action -> CActions -> CActions
