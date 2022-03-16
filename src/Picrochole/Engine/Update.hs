@@ -13,14 +13,15 @@ module Picrochole.Engine.Update
 import Data.Time ( UTCTime )
 import Picrochole.Data.Keys
 import Picrochole.Data.Stats
+import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Met à jour les statistiques de l'unité courante.
 runUpdate :: UTCTime
           -> UnitKey
           -> CStats
           -> CStats
-runUpdate t' k cs = case lookupCStats k cs of
+runUpdate t' k cs = case Xs.lookupKey k cs of
     Nothing -> cs
-    Just s -> insertCStats k s' cs
+    Just s -> Xs.insertKey k s' cs
       where
         s' = s { uLastUpdate = t' }
