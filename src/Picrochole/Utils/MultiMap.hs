@@ -9,7 +9,6 @@ unique, soit par un lieu.
 
 module Picrochole.Utils.MultiMap
   ( MultiMap
-  , HasLocation(..)
   , empty
   , fromList
   , lookupLocation
@@ -28,10 +27,6 @@ data MultiMap k a = MMap { content :: M.Map k a
                          , locs :: M.Map LocationKey (S.Set k)
                          }
   deriving Show
-
--- | Classe pour les types contenant une clef de lieu.
-class HasLocation a where
-  getLocation :: a -> LocationKey
 
 -- | Un dictionnaire vide.
 empty :: MultiMap k a

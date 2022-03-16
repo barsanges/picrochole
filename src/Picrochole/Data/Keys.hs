@@ -11,6 +11,7 @@ module Picrochole.Data.Keys
   , UnitKey(..)
   , FactionKey(..)
   , StoreKey(..)
+  , HasLocation(..)
   ) where
 
 -- | Clef associée à un emplacement sur la carte.
@@ -28,3 +29,7 @@ newtype FactionKey = FK Int
 -- | Clef associée à un dépôt.
 newtype StoreKey = SK Int
   deriving (Show, Eq, Ord)
+
+-- | Classe pour les types contenant une clef de lieu.
+class HasLocation a where
+  getLocation :: a -> LocationKey
