@@ -43,13 +43,16 @@ lookupKey k ms = M.lookup k (content ms)
 
 -- | Insère un élément dans le dictionnaire.
 insertKey :: (HasLocation a, Ord k) => k -> a -> MultiMap k a -> MultiMap k a
-insertKey k x ms = ms { content = c'
-                      , locs = ls'
-                      }
+insertKey k x' ms = ms { content = c'
+                       , locs = ls''
+                       }
   where
-    c' = M.insert k x (content ms)
-    here = getLocation x
+    c' = M.insert k x' (content ms)
+    here = getLocation x'
     ls = locs ms
-    ls' = case M.lookup here ls of
-      Nothing -> M.insert here (S.singleton k) ls
-      Just keys -> M.insert here (S.insert k keys) ls
+    ls' = case M.lookup k (content ms) of
+      Nothing -> ls
+      Just x -> M.adjust (\ s -> S.delete k s) (getLocation x) ls
+    ls'' = case M.lookup here ls' of
+      Nothing -> M.insert here (S.singleton k) ls'
+      Just keys -> M.insert here (S.insert k keys) ls'
