@@ -66,7 +66,13 @@ insertKey k x' ms = ms { content = c'
     ls = locs ms
     ls' = case M.lookup k (content ms) of
       Nothing -> ls
-      Just x -> M.adjust (\ s -> S.delete k s) (getLocation x) ls
+      Just x -> case M.lookup (getLocation x) ls of
+        Nothing -> error "trying to use a malformed MultiMap"
+        Just s -> if null s'
+                  then M.delete (getLocation x) ls
+                  else M.insert (getLocation x) s' ls
+          where
+            s' = S.delete k s
     ls'' = case M.lookup here ls' of
       Nothing -> M.insert here (S.singleton k) ls'
       Just keys -> M.insert here (S.insert k keys) ls'
