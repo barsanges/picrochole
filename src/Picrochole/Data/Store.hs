@@ -11,8 +11,8 @@ module Picrochole.Data.Store
   , CStores
   ) where
 
-import qualified Data.Map as M -- FIXME
 import Picrochole.Data.Keys
+import Picrochole.Utils.XMap
 
 -- | Caractéristiques d'un dépôt de ravitaillement.
 data Store = Store { sLocation :: LocationKey
@@ -20,6 +20,8 @@ data Store = Store { sLocation :: LocationKey
                    }
   deriving Show
 
+instance HasLocation Store where
+  getLocation = sLocation
+
 -- | L'ensemble des dépôts de ravitaillement de la partie.
-newtype CStores = CS (M.Map StoreKey Store)
-  deriving Show
+type CStores = XMap StoreKey Store
