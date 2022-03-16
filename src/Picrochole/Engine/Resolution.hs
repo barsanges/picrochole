@@ -18,7 +18,6 @@ import Picrochole.Data.Keys
 import Picrochole.Data.Stats
 import Picrochole.Data.Store
 import Picrochole.Engine.Decision
-import Picrochole.Engine.Logistics
 import Picrochole.Engine.Update
 
 -- | Ordre de résolution.
@@ -41,7 +40,6 @@ runResolution dt s = case order s of
   Empty -> s
   (Left k) :<| ks -> s { now = t'
                        , order = ks |> (Left k)
-                       , cStores = runLogistics k ct
                        }
   (Right k) :<| ks -> s { now = t'
                         , order = ks |> (Right k)
@@ -52,4 +50,3 @@ runResolution dt s = case order s of
      t' = T.addUTCTime dt (now s)
      ca = cActions s
      cs = cStats s
-     ct = cStores s
