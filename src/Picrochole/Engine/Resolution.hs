@@ -13,19 +13,15 @@ module Picrochole.Engine.Resolution
 import Data.Time ( UTCTime, NominalDiffTime )
 import qualified Data.Time as T
 import Data.Sequence ( Seq(..), (|>) )
-import Picrochole.Data.Action
 import Picrochole.Data.Keys
-import Picrochole.Data.Stats
-import Picrochole.Data.Store
+import Picrochole.Data.World
 import Picrochole.Engine.Decision
 import Picrochole.Engine.Update
 
 -- | Etat du jeu.
 data State = State { now :: UTCTime
                    , order :: Seq UnitKey
-                   , cActions :: CActions
-                   , cStats :: CStats
-                   , cStores :: CStores
+                   , world :: World
                    }
   deriving Show
 
@@ -37,10 +33,13 @@ runResolution dt s = case order s of
   Empty -> s
   k :<| ks -> s { now = t'
                 , order = ks |> k
-                , cActions = runDecision k ca
-                , cStats = runUpdate t' k cs
+                , world = w'
                 }
-  where
-     t' = T.addUTCTime dt (now s)
-     ca = cActions s
-     cs = cStats s
+    where
+      t' = T.addUTCTime dt (now s)
+      w = world s
+      ca = cActions w
+      cs = cStats w
+      w' = w { cActions = runDecision k ca
+             , cStats = runUpdate t' k cs
+             }
