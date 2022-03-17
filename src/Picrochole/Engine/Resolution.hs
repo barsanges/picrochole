@@ -20,12 +20,9 @@ import Picrochole.Data.Store
 import Picrochole.Engine.Decision
 import Picrochole.Engine.Update
 
--- | Ordre de résolution.
-type Order = Seq (Either StoreKey UnitKey)
-
 -- | Etat du jeu.
 data State = State { now :: UTCTime
-                   , order :: Order
+                   , order :: Seq UnitKey
                    , cActions :: CActions
                    , cStats :: CStats
                    , cStores :: CStores
@@ -38,14 +35,11 @@ runResolution :: NominalDiffTime
               -> State
 runResolution dt s = case order s of
   Empty -> s
-  (Left k) :<| ks -> s { now = t'
-                       , order = ks |> (Left k)
-                       }
-  (Right k) :<| ks -> s { now = t'
-                        , order = ks |> (Right k)
-                        , cActions = runDecision k ca
-                        , cStats = runUpdate t' k cs
-                        }
+  k :<| ks -> s { now = t'
+                , order = ks |> k
+                , cActions = runDecision k ca
+                , cStats = runUpdate t' k cs
+                }
   where
      t' = T.addUTCTime dt (now s)
      ca = cActions s
