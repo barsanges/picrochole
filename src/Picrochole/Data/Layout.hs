@@ -22,11 +22,14 @@ data Ground = Plain
             | City
             | River
             | Bridge
+  deriving (Show, Eq)
 
 -- | Une case de la carte.
 data Location = Loc { ground :: Ground
                     , height :: Int
                     }
+  deriving Show
 
 -- | La carte, i.e. l'ensemble des cases de la carte.
 newtype CLocations = CL (V.Vector Location)
+  deriving Show
