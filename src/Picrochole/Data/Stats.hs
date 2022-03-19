@@ -19,8 +19,15 @@ import Picrochole.Utils.XsMap
 data Stats = Stats { uLocation :: LocationKey
                    , uLastUpdate :: UTCTime
                    , uFaction :: FactionKey
+                   , uMorale :: Double
+                   , uSupply :: Double
+                   , uSupplyConsumption :: Double
+                   , uSupplyImpactOnMorale :: Double
                    }
   deriving Show
+-- FIXME : distinguer les paramètres variables et ceux qui ne le sont pas
+-- (par exemple en intégrant ces derniers dans un type pour lequel on ne
+-- donne que des getters) ?
 
 instance HasLocation Stats where
   getLocation = uLocation
