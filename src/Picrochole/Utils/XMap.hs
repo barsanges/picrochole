@@ -26,6 +26,9 @@ data XMap k a = XMap { content :: M.Map k a
                      }
   deriving Show
 
+instance Foldable (XMap k) where
+  foldr f y xs = foldr f y (content xs)
+
 -- | Un dictionnaire vide.
 empty :: XMap k a
 empty = XMap { content = M.empty
