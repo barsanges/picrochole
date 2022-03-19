@@ -28,6 +28,8 @@ data Stats = Stats { uLocation :: LocationKey
 -- FIXME : distinguer les paramètres variables et ceux qui ne le sont pas
 -- (par exemple en intégrant ces derniers dans un type pour lequel on ne
 -- donne que des getters) ?
+-- FIXME : créer un type spécifique pour les variables comprises entre
+-- 0 et 1 ?
 
 instance HasLocation Stats where
   getLocation = uLocation
