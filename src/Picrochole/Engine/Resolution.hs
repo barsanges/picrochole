@@ -40,6 +40,7 @@ runResolution dt s = case order s of
       w = world s
       ca = cActions w
       cs = cStats w
+      ct = cStores w
       w' = w { cActions = runDecision k ca
-             , cStats = runUpdate t' k cs
+             , cStats = runUpdate t' k cs ct
              }
