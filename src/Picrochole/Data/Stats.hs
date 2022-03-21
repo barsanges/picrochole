@@ -20,6 +20,8 @@ data Stats = Stats { uLocation :: LocationKey
                    , uLastUpdate :: UTCTime
                    , uFaction :: FactionKey
                    , uMorale :: Double
+                   , uRequisition :: Bool
+                   , uRequisitionRadius :: Int
                    , uSupply :: Double
                    , uSupplyConsumption :: Double
                    , uSupplyImpactOnMorale :: Double

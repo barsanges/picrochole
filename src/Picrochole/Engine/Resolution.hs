@@ -39,8 +39,5 @@ runResolution dt s = case order s of
       t' = T.addUTCTime dt (now s)
       w = world s
       ca = cActions w
-      cs = cStats w
-      ct = cStores w
-      w' = w { cActions = runDecision k ca
-             , cStats = runUpdate t' k cs ct
-             }
+      w0 = runUpdate t' k w
+      w' = w0 { cActions = runDecision k ca }
