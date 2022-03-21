@@ -62,12 +62,12 @@ fromList cols ls = if (cols * rows) == (V.length vec)
 -- | Convertit la clef en un indice entier permettant de requêter le vecteur des
 -- cases.
 toIntCoord :: CLocations -> LocationKey -> Int
-toIntCoord cl (LK (x, y)) = x * (ncols cl) + y
+toIntCoord cl (LK x y) = x * (ncols cl) + y
 
 -- | Convertit l'index en un triplet de coordonnées pour une grille hexagonale.
 -- Les hexagones sont orientés pointe en haut.
 toHexCoord :: LocationKey -> (Int, Int, Int)
-toHexCoord (LK (x, y)) = (q, r, -q-r)
+toHexCoord (LK x y) = (q, r, -q-r)
   where
     q = y - truncate (0.5 * fromIntegral (x - (x `mod` 2)) :: Double)
     r = x
@@ -76,7 +76,7 @@ toHexCoord (LK (x, y)) = (q, r, -q-r)
 -- | Convertit le triplet de coordonnées en une clef de lieu. Les hexagones sont
 -- orientés pointe en haut.
 fromHexCoord :: (Int, Int, Int) -> LocationKey
-fromHexCoord (q, r, _) = LK (x, y)
+fromHexCoord (q, r, _) = LK x y
   where
     y = q + truncate (0.5 * fromIntegral (r - (r `mod` 2)) :: Double)
     x = r

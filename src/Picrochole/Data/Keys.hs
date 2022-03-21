@@ -15,7 +15,7 @@ module Picrochole.Data.Keys
   ) where
 
 -- | Clef associée à un emplacement sur la carte.
-newtype LocationKey = LK (Int, Int)
+data LocationKey = LK Int Int
   deriving (Show, Eq, Ord)
 
 -- | Clef associée à une unité.
