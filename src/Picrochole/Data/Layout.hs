@@ -10,6 +10,7 @@ module Picrochole.Data.Layout
   ( Ground(..)
   , Location(..)
   , CLocations
+  , fromList
   , dist
   , lLookup
   , lLookupSeveral
@@ -44,6 +45,19 @@ data CLocations = CL { lVec :: V.Vector Location
                      , nrows :: Int
                      }
   deriving Show
+
+-- | Construit la carte à partir d'une liste de cases et d'un nombre de
+-- colonnes.
+fromList :: Int -> [Location] -> Maybe CLocations
+fromList cols ls = if (cols * rows) == (V.length vec)
+                    then Just (CL { lVec = vec
+                                  , ncols = cols
+                                  , nrows = rows
+                                  })
+                    else Nothing
+  where
+    vec = V.fromList ls
+    rows = (V.length vec) `div` cols
 
 -- | Convertit la clef en un indice entier permettant de requêter le vecteur des
 -- cases.
