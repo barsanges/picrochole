@@ -18,7 +18,7 @@ module Picrochole.Data.Layout
   , neighbors
   ) where
 
-import Data.Maybe ( catMaybes )
+import Data.Maybe ( isJust, catMaybes )
 import Data.Vector ( (!?), (//) )
 import qualified Data.Vector as V
 import Picrochole.Data.Keys
@@ -61,16 +61,18 @@ fromList cols ls = if (cols * rows) == (V.length vec)
 
 -- | Convertit la clef en un indice entier permettant de requêter le vecteur des
 -- cases.
-toIntCoord :: CLocations -> LocationKey -> Int
-toIntCoord cl (LK x y) = x * (ncols cl) + y
+toIntCoord :: CLocations -> LocationKey -> Maybe Int
+toIntCoord cl (LK x y) = if 0 <= x && x < (ncols cl) && 0 <= y && y < (nrows cl)
+                         then Just (y * (ncols cl) + x)
+                         else Nothing
 
 -- | Convertit l'index en un triplet de coordonnées pour une grille hexagonale.
 -- Les hexagones sont orientés pointe en haut.
 toHexCoord :: LocationKey -> (Int, Int, Int)
 toHexCoord (LK x y) = (q, r, -q-r)
   where
-    q = y - truncate (0.5 * fromIntegral (x - (x `mod` 2)) :: Double)
-    r = x
+    q = x - truncate (0.5 * fromIntegral (y - (y `mod` 2)) :: Double)
+    r = y
 -- FIXME : à terme, supprimer cette étape ?
 
 -- | Convertit le triplet de coordonnées en une clef de lieu. Les hexagones sont
@@ -78,8 +80,8 @@ toHexCoord (LK x y) = (q, r, -q-r)
 fromHexCoord :: (Int, Int, Int) -> LocationKey
 fromHexCoord (q, r, _) = LK x y
   where
-    y = q + truncate (0.5 * fromIntegral (r - (r `mod` 2)) :: Double)
-    x = r
+    x = q + truncate (0.5 * fromIntegral (r - (r `mod` 2)) :: Double)
+    y = r
 
 -- | Calcule la distance en nombre de cases entre deux emplacements,
 -- cf. [ici](https://www.redblobgames.com/grids/hexagons).
@@ -92,7 +94,7 @@ dist x y = truncate (0.5 * fromIntegral (diff) :: Double)
 
 -- | Renvoie la case correspondant à la clef fournie.
 lLookup :: CLocations -> LocationKey -> Maybe Location
-lLookup cl lk = (lVec cl) !? (toIntCoord cl lk)
+lLookup cl lk = (toIntCoord cl lk) >>= ((!?) (lVec cl))
 
 -- | Renvoie les cases correspondant aux clefs fournies.
 lLookupSeveral :: CLocations -> [LocationKey] -> [Location]
@@ -103,7 +105,11 @@ bulkUpdate :: CLocations -> [(LocationKey, Location)] -> CLocations
 bulkUpdate cl xs = cl { lVec = v' }
   where
     v = lVec cl
-    v' = v // (fmap (\ (k, l) -> (toIntCoord cl k, l))) xs
+    v' = v // (fmap go xs)
+    go :: (LocationKey, Location) -> (Int, Location)
+    go (k, l) = case toIntCoord cl k of
+      Just i -> (i, l)
+      Nothing -> error "wrong key in function 'bulk'"
 
 -- | Renvoie l'ensemble des cases situées dans le rayon `radius` autour d'une
 -- case initiale. La case initiale est incluse dans le résultat.
@@ -117,8 +123,5 @@ neighbors cl lk radius = if radius >= 0
            | dq <- [-radius..radius]
            , dr <- [(max (-radius - dq) (-radius))..(min (radius - dq) radius)]
            , let ds = -(dq + dr) ]
-    len = V.length (lVec cl)
     filtering :: LocationKey -> Bool
-    filtering x = (0 <= i) && (i < len)
-      where
-        i = toIntCoord cl x
+    filtering x = isJust (toIntCoord cl x)
