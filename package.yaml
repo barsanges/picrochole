@@ -20,3 +20,12 @@ dependencies:
 
 library:
   source-dirs: src
+
+tests:
+  picrochole-test:
+    main:                Spec.hs
+    source-dirs:         test
+    dependencies:
+    - picrochole
+    - hspec
+    - QuickCheck
