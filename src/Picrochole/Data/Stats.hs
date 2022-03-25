@@ -9,6 +9,7 @@ Structures pour l'état des unités.
 module Picrochole.Data.Stats
   ( Stats(..)
   , CStats
+  , hasEnnemies
   ) where
 
 import Data.Time ( UTCTime )
@@ -22,9 +23,11 @@ data Stats = Stats { uLocation :: LocationKey
                    , uMorale :: Double
                    , uRequisition :: Bool
                    , uRequisitionRadius :: Int
+                   , uSpeed :: Double
                    , uSupply :: Double
                    , uSupplyConsumption :: Double
                    , uSupplyImpactOnMorale :: Double
+                   , uVigor :: Double
                    }
   deriving Show
 -- FIXME : distinguer les paramètres variables et ceux qui ne le sont pas
@@ -38,3 +41,8 @@ instance HasLocation Stats where
 
 -- | L'ensemble des unités de la partie.
 type CStats = XsMap UnitKey Stats
+
+-- | Indique si un lieu contient des unités n'appartenant pas à la faction
+-- donnée.
+hasEnnemies :: LocationKey -> FactionKey -> CStats -> Bool
+hasEnnemies lk f xs = any (\ s -> f /= uFaction s) (lookupLocation lk xs)
