@@ -61,7 +61,7 @@ consumeSupply :: NominalDiffTime -> Stats -> Stats
 consumeSupply dt s = s { uSupply = supply' }
   where
     decr = (uSupplyConsumption s) * (toSeconds dt)
-    supply' = (uSupply s) - decr
+    supply' = max ((uSupply s) - decr) 0
 
 -- | Ravitaille l'unité à partir d'un dépôt.
 restockOnStore :: CStores -> Stats -> Stats
@@ -94,4 +94,7 @@ restockOnCivilians cl s = if uRequisition s
 supplyImpactOnMorale :: Stats -> Stats
 supplyImpactOnMorale s = s { uMorale = m' }
   where
-    m' = (uMorale s) - ((uSupply s) * (uSupplyImpactOnMorale s))
+    dm = if (uSupply s) <= 0
+         then -(uSupplyImpactOnMorale s)
+         else 0
+    m' = (uMorale s) + dm
