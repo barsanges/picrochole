@@ -16,6 +16,7 @@ import Picrochole.Data.Action
 import Picrochole.Data.Keys
 import Picrochole.Data.Stats
 import Picrochole.Data.World
+import Picrochole.Utils.Time
 import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Met à jour la position de l'unité courante.
@@ -60,5 +61,5 @@ move cs speed f dt x current path =
                    else move cs speed f dt' 0 p ps
   else (current, Moving x' current path)
   where
-    x' = x + (realToFrac dt) * speed
-    dt' = dt - (realToFrac ((1 - x) / speed))
+    x' = x + (toSeconds dt) * speed
+    dt' = dt - (fromSeconds ((1 - x) / speed))
