@@ -36,7 +36,10 @@ runMovement t' k w = case Xs.lookupKey k cs of
           dt = T.diffUTCTime t' (uLastUpdate s)
           (lk', a') = move cs (uSpeed s) (uFaction s) dt x current path
           ca' = insertCActions k a' ca
-          s' = s { uLocation = lk' }
+          vig' = (uVigor s) - (uMovementImpactOnVigor s) * (toSeconds dt)
+          s' = s { uLocation = lk'
+                 , uVigor = vig'
+                 }
           cs' = Xs.insertKey k s' cs
       _ -> w
   where
