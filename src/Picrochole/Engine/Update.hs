@@ -17,6 +17,7 @@ import Picrochole.Data.Layout
 import Picrochole.Data.Stats
 import Picrochole.Data.Store
 import Picrochole.Data.World
+import Picrochole.Utils.Time
 import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Met à jour les statistiques de l'unité courante.
@@ -94,8 +95,3 @@ supplyImpactOnMorale :: Stats -> Stats
 supplyImpactOnMorale s = s { uMorale = m' }
   where
     m' = (uMorale s) - ((uSupply s) * (uSupplyImpactOnMorale s))
-
--- | Exprime un 'NominalDiffTime' comme un nombre de secondes.
-toSeconds :: NominalDiffTime -> Double
-toSeconds dt = realToFrac (T.nominalDiffTimeToSeconds dt)
--- FIXME : mettre ça dans 'Utils' ?
