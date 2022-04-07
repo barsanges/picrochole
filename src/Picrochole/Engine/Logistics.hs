@@ -32,7 +32,7 @@ runLogistics t' k w = case Xs.lookupKey k cs of
                 }
       where
         dt = T.diffUTCTime t' (uLastUpdate s)
-        (s', cl') = upSupply dt ct (upLastUpdate t' s) cl
+        (s', cl') = upSupply dt ct s cl
         cs' = Xs.insertKey k s' cs
     where
       cl = cLocations w
@@ -40,10 +40,6 @@ runLogistics t' k w = case Xs.lookupKey k cs of
       ct = cStores w
 -- FIXME : passer par une structure de type patch pour combiner et appliquer
 -- les modifications ?
-
--- | Actualise la date de mise à jour de l'unité.
-upLastUpdate :: UTCTime -> Stats -> Stats
-upLastUpdate t' s = s { uLastUpdate = t' }
 
 -- | Actualise le ravitaillement de l'unité.
 upSupply :: NominalDiffTime
