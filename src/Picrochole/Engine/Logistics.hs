@@ -1,13 +1,13 @@
 {- |
-   Module      : Picrochole.Engine.Update
+   Module      : Picrochole.Engine.Logistics
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
-Met à jour les statistiques de l'unité courante.
+Met à jour le ravitaillement de l'unité courante.
 -}
 
-module Picrochole.Engine.Update
-  ( runUpdate
+module Picrochole.Engine.Logistics
+  ( runLogistics
   ) where
 
 import Data.Time ( UTCTime, NominalDiffTime )
@@ -20,12 +20,12 @@ import Picrochole.Data.World
 import Picrochole.Utils.Time
 import qualified Picrochole.Utils.XsMap as Xs
 
--- | Met à jour les statistiques de l'unité courante.
-runUpdate :: UTCTime
-          -> UnitKey
-          -> World
-          -> World
-runUpdate t' k w = case Xs.lookupKey k cs of
+-- | Met à jour le ravitaillement de l'unité courante.
+runLogistics :: UTCTime
+             -> UnitKey
+             -> World
+             -> World
+runLogistics t' k w = case Xs.lookupKey k cs of
     Nothing -> w
     Just s -> w { cLocations = cl'
                 , cStats = cs'

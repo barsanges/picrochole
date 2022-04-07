@@ -16,8 +16,8 @@ import Data.Sequence ( Seq(..), (|>) )
 import Picrochole.Data.Keys
 import Picrochole.Data.World
 import Picrochole.Engine.Decision
+import Picrochole.Engine.Logistics
 import Picrochole.Engine.Movement
-import Picrochole.Engine.Update
 
 -- | Etat du jeu.
 data State = State { now :: UTCTime
@@ -40,6 +40,6 @@ runResolution dt s = case order s of
       t' = T.addUTCTime dt (now s)
       w = world s
       ca = cActions w
-      w0 = runUpdate t' k (runMovement t' k w)
+      w0 = runLogistics t' k (runMovement t' k w)
       w' = w0 { cActions = runDecision k ca }
 -- FIXME : gérer la situation où l'unité n'existe plus.
