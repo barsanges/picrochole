@@ -33,7 +33,6 @@ runMovement t' k w = case Xs.lookupKey k cs of
                                  , cStats = cs'
                                  }
         where
-          dt = T.diffUTCTime t' (uLastUpdate s)
           (lk', a') = move cs (uSpeed s) (uFaction s) dt x current path
           ca' = insertCActions k a' ca
           vig' = (uVigor s) - (uMovementImpactOnVigor s) * (toSeconds dt)
@@ -41,7 +40,13 @@ runMovement t' k w = case Xs.lookupKey k cs of
                  , uVigor = vig'
                  }
           cs' = Xs.insertKey k s' cs
-      _ -> w
+      Still -> w { cStats = cs' }
+        where
+          vig' = (uVigor s) + (uStillImpactOnVigor s) * (toSeconds dt)
+          s' = s { uVigor = vig' }
+          cs' = Xs.insertKey k s' cs
+      where
+        dt = T.diffUTCTime t' (uLastUpdate s)
   where
     ca = cActions w
     cs = cStats w

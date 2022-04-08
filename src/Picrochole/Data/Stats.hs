@@ -25,6 +25,7 @@ data Stats = Stats { uLocation :: LocationKey
                    , uRequisition :: Bool
                    , uRequisitionRadius :: Int
                    , uSpeed :: Double
+                   , uStillImpactOnVigor :: Double
                    , uSupply :: Double
                    , uSupplyConsumption :: Double
                    , uSupplyImpactOnMorale :: Double
