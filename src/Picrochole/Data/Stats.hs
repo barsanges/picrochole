@@ -10,6 +10,7 @@ module Picrochole.Data.Stats
   ( Stats(..)
   , CStats
   , hasEnnemies
+  , getEnnemies
   ) where
 
 import Data.Time ( UTCTime )
@@ -47,4 +48,9 @@ type CStats = XsMap UnitKey Stats
 -- | Indique si un lieu contient des unités n'appartenant pas à la faction
 -- donnée.
 hasEnnemies :: LocationKey -> FactionKey -> CStats -> Bool
-hasEnnemies lk f xs = any (\ s -> f /= uFaction s) (lookupLocation lk xs)
+hasEnnemies lk f xs = null (getEnnemies lk f xs)
+
+-- | Renvoie toutes les unités situées en un lieu donné et n'appartenant
+-- *pas* à la faction donnée.
+getEnnemies :: LocationKey -> FactionKey -> CStats -> [Stats]
+getEnnemies lk f xs = filter (\ s -> f /= uFaction s) (lookupLocation lk xs)
