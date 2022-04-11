@@ -39,7 +39,9 @@ runMovement t' k w = case lookupUnit k cs of
                  , uVigor = vig'
                  }
           cs' = insertUnit s' cs
-      Still -> w { cStats = cs' }
+      Still -> if hasEnnemies (uLocation s) (uFaction s) cs
+               then w
+               else w { cStats = cs' }
         where
           vig' = (uVigor s) + (uStillImpactOnVigor s) * (toSeconds dt)
           s' = s { uVigor = vig' }
