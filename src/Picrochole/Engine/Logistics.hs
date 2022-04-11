@@ -18,14 +18,13 @@ import Picrochole.Data.Stats
 import Picrochole.Data.Store
 import Picrochole.Data.World
 import Picrochole.Utils.Time
-import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Met à jour le ravitaillement de l'unité courante.
 runLogistics :: UTCTime
              -> UnitKey
              -> World
              -> World
-runLogistics t' k w = case Xs.lookupKey k cs of
+runLogistics t' k w = case lookupUnit k cs of
     Nothing -> w
     Just s -> w { cLocations = cl'
                 , cStats = cs'
@@ -33,7 +32,7 @@ runLogistics t' k w = case Xs.lookupKey k cs of
       where
         dt = T.diffUTCTime t' (uLastUpdate s)
         (s', cl') = upSupply dt ct s cl
-        cs' = Xs.insertKey k s' cs
+        cs' = insertUnit s' cs
     where
       cl = cLocations w
       cs = cStats w

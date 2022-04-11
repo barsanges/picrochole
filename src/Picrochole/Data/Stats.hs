@@ -9,6 +9,8 @@ Structures pour l'état des unités.
 module Picrochole.Data.Stats
   ( Stats(..)
   , CStats
+  , lookupUnit
+  , insertUnit
   , hasEnnemies
   , getEnnemies
   ) where
@@ -30,6 +32,7 @@ data Stats = Stats { uLocation :: LocationKey
                    , uSupply :: Double
                    , uSupplyConsumption :: Double
                    , uSupplyImpactOnMorale :: Double
+                   , uUnitKey :: UnitKey
                    , uVigor :: Double
                    }
   deriving Show
@@ -43,14 +46,23 @@ instance HasLocation Stats where
   getLocation = uLocation
 
 -- | L'ensemble des unités de la partie.
-type CStats = XsMap UnitKey Stats
+newtype CStats = CS (XsMap UnitKey Stats)
+  deriving Show
+
+-- | Renvoie l'unité associée à la clef donnée.
+lookupUnit :: UnitKey -> CStats -> Maybe Stats
+lookupUnit k (CS xs) = lookupKey k xs
+
+-- | Insère l'unité dans le conteneur.
+insertUnit :: Stats -> CStats -> CStats
+insertUnit x (CS xs) = CS (insertKey (uUnitKey x) x xs)
 
 -- | Indique si un lieu contient des unités n'appartenant pas à la faction
 -- donnée.
 hasEnnemies :: LocationKey -> FactionKey -> CStats -> Bool
-hasEnnemies lk f xs = null (getEnnemies lk f xs)
+hasEnnemies lk f cs = null (getEnnemies lk f cs)
 
 -- | Renvoie toutes les unités situées en un lieu donné et n'appartenant
 -- *pas* à la faction donnée.
 getEnnemies :: LocationKey -> FactionKey -> CStats -> [Stats]
-getEnnemies lk f xs = filter (\ s -> f /= uFaction s) (lookupLocation lk xs)
+getEnnemies lk f (CS xs) = filter (\ s -> f /= uFaction s) (lookupLocation lk xs)

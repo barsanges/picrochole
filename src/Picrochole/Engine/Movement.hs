@@ -17,14 +17,13 @@ import Picrochole.Data.Keys
 import Picrochole.Data.Stats
 import Picrochole.Data.World
 import Picrochole.Utils.Time
-import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Met à jour la position de l'unité courante.
 runMovement :: UTCTime
             -> UnitKey
             -> World
             -> World
-runMovement t' k w = case Xs.lookupKey k cs of
+runMovement t' k w = case lookupUnit k cs of
   Nothing -> w
   Just s -> case lookupCActions k ca of
     Nothing -> error ("no action associated to the unit " ++ show k)
@@ -39,12 +38,12 @@ runMovement t' k w = case Xs.lookupKey k cs of
           s' = s { uLocation = lk'
                  , uVigor = vig'
                  }
-          cs' = Xs.insertKey k s' cs
+          cs' = insertUnit s' cs
       Still -> w { cStats = cs' }
         where
           vig' = (uVigor s) + (uStillImpactOnVigor s) * (toSeconds dt)
           s' = s { uVigor = vig' }
-          cs' = Xs.insertKey k s' cs
+          cs' = insertUnit s' cs
       where
         dt = T.diffUTCTime t' (uLastUpdate s)
   where

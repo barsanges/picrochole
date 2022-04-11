@@ -14,18 +14,17 @@ import Data.Time ( UTCTime )
 import Picrochole.Data.Keys
 import Picrochole.Data.Stats
 import Picrochole.Data.World
-import qualified Picrochole.Utils.XsMap as Xs
 
 -- | Actualise la date de mise à jour de l'unité.
 runUpdate :: UTCTime
           -> UnitKey
           -> World
           -> World
-runUpdate t' k w = case Xs.lookupKey k cs of
+runUpdate t' k w = case lookupUnit k cs of
     Nothing -> w
     Just s -> w { cStats = cs' }
       where
         s' = s { uLastUpdate = t' }
-        cs' = Xs.insertKey k s' cs
+        cs' = insertUnit s' cs
     where
       cs = cStats w
