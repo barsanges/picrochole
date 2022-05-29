@@ -191,10 +191,6 @@ decrStrength uk ds board = case lookupKey uk (bXsMap board) of
       u' = (unit_ bu) { strength = s' }
       bu' = bu { unit_ = u' }
 
--- TODO : si une case devient libre parce que la dernière unité dessus a
--- été détruite, cela ne nécessite aucune action regardant les marqueurs
--- (le contenu de la case est bien `Right ([], [])`).
-
 -- | Renvoie la position d'une unité sur le plateau de jeu.
 getPosition :: Board -> UnitKey -> Position
 getPosition board ukey = case lookupKey ukey (bXsMap board) of
