@@ -7,16 +7,11 @@ Le plateau de jeu et les unités des deux camps.
 -}
 
 module Picrochole.Board
-  ( Faction(..)
-  , opponent
-  , UnitKey
-  , UnitKind(..)
-  , Unit(..)
+  ( Unit(..)
   , Position(..)
   , unitKey
   , faction
   , kind
-  , Tile(..)
   , CellKey
   , Cell
   , cellKey
@@ -57,27 +52,8 @@ import Data.Set ( Set )
 import qualified Data.Set as S
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
+import Picrochole.Data.Base
 import Picrochole.Utils.XsMap
-
--- | Faction à laquelle appartient une unité.
-data Faction = Blue
-             | Red
-  deriving (Eq, Show)
-
--- | Renvoie la faction adverse.
-opponent :: Faction -> Faction
-opponent Blue = Red
-opponent Red = Blue
-
--- | Identifiant unique d'une unité.
-newtype UnitKey = UK Int
-  deriving (Eq, Ord, Show)
-
--- | Arme d'une unité.
-data UnitKind = Infantery
-              | Cavalery
-              | Artillery
-  deriving (Eq, Show)
 
 -- | Paramètres immuables d'une unité.
 data UnitParams = UP { unitKey_ :: UnitKey
@@ -109,12 +85,6 @@ faction u = faction_ (unitParams u)
 -- | Renvoie l'arme de l'unité.
 kind :: Unit -> UnitKind
 kind u = kind_ (unitParams u)
-
--- | Nature du terrain sur une case.
-data Tile = Road
-          | Land
-          | Water
-  deriving (Eq, Show)
 
 -- | Identifiant unique d'une case.
 data CellKey = CK Int Int
@@ -289,7 +259,7 @@ getUnit board ukey = case lookupKey ukey (bXsMap board) of
 removeUnit :: UnitKey -> Board -> Board
 removeUnit uk board = board { bXsMap = xs'
                             , bInitiative = init'
-                            } 
+                            }
   where
     xs' = deleteKey uk (bXsMap board)
     init' = filter (\ k -> k /= uk) (bInitiative board) -- Inefficace
@@ -344,7 +314,7 @@ getLocations board f = foldXsMap go S.empty (bXsMap board)
     go :: BUnit CellKey -> Set CellKey -> Set CellKey
     go bu s = if faction (unit_ bu) == f
               then S.insert (currentCell_ bu) s
-              else s 
+              else s
 
 -- | Renvoie une case du plateau de jeu.
 getCell :: Board -> CellKey -> Cell
@@ -396,7 +366,7 @@ removeFaction :: Faction -> CellKey -> Board -> Board
 removeFaction f ck board = foldr go board bunits
   where
     bunits = lookupLocation ck (bXsMap board)
-    
+
     go :: BUnit CellKey -> Board -> Board
     go bu b = if faction (unit_ bu) == f
               then removeUnit (unitKey (unit_ bu)) b
