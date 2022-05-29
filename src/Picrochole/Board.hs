@@ -22,8 +22,6 @@ module Picrochole.Board
   , getFaction
   , getOpponents
   , getStrongest
-  , setBlues
-  , setReds
   , Board
   , touch
   , initiative
@@ -145,30 +143,6 @@ getStrongest f cell = if null units
   where
     units = getFaction f cell
     comp x y = compare (strength x) (strength y)
-
--- | Remplace les unités bleues de la case par la liste d'unités
--- fournies. La faction de ces unités n'est pas vérifiée.
-setBlues :: [Unit] -> Cell -> Cell
-setBlues xs c = c { cellContent = new }
-  where
-    new = case cellContent c of
-      Left f -> if null xs
-                then Left f
-                else Right (xs, [])
-      Right (_, ys) -> Right (xs, ys)
-
--- | Remplace les unités rouges de la case par la liste d'unités
--- fournies. La faction de ces unités n'est pas vérifiée.
-setReds :: [Unit] -> Cell -> Cell
-setReds ys c = c { cellContent = new }
-  where
-    new = case cellContent c of
-      Left f -> if null ys
-                then Left f
-                else Right ([], ys)
-      Right (xs, _) -> Right (xs, ys)
--- FIXME : faire le ménage dans ces fonctions, toutes ne semblent pas
--- utilisées.
 
 -- | Une unité stockée dans une structure de type `Board`.
 data BUnit = BU { unit_ :: Unit
