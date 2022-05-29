@@ -104,7 +104,12 @@ retirée du jeu.
 Une fois que la phase de combat est résolue pour toutes les unités du
 plateau, bleues et rouges, on passe au tour suivant.
 
-## Champ de vision
+## Informations
+
+L'information dont dispose chaque unité est la somme de ce qu'elle
+voit ou a vu, et des informations transmises par d'autres unités.
+
+### Champ de vision
 
 Le champ de vision des unités est limité :
 
@@ -115,3 +120,25 @@ Le champ de vision des unités est limité :
 
 * une unité engagée en combat a un champ de vision d'une case de
   rayon, quel que soit son type.
+
+### Communications
+
+Les communications entre unités se font via des estafettes, non
+représentées sur le plateau. En pratique, lorsqu'une unité A envoie un
+message à une unité B, le message est remis à l'unité B au bout de *n*
+/ 3 tours (arrondi à l'inférieur), où *n* est le nombre de cases dans
+le plus court chemin entre A et B (à vol d'oiseau, sans tenir compte
+ni du terrain ni de la présence d'unités amies ou ennemies sur le
+plateau).
+
+Les unités envoient des estafettes de manière régulière à leur
+état-major afin de partager avec lui les informations qu'elles
+collectent. Une unité envoie une estafette si elle se situe à une
+distance inférieure ou égale à *3 n*, où *n* est le nombre de tours
+écoulés depuis la dernière fois qu'elle a envoyé une estafette.
+
+## Programmation des unités
+
+Chaque camp dispose d'un unique QG, qui règle la marche et les
+objectifs de toutes les unités de sa faction en leur adressant des
+ordres par estafette.
