@@ -45,8 +45,6 @@ module Picrochole.Board
   ) where
 
 import Data.List ( maximumBy, partition )
-import Data.Map ( Map )
-import qualified Data.Map as M
 import Data.Set ( Set )
 import qualified Data.Set as S
 import Picrochole.Data.Base
@@ -156,8 +154,7 @@ instance HasLocation BUnit where
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
 data Board = Board { bCellParams :: HexGrid CellParams
-                   , bXsMap :: XsMap UnitKey BUnit
-                   , bMarkers :: Map CellKey Faction
+                   , bXsMap :: XsMap UnitKey Faction BUnit
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
@@ -241,13 +238,12 @@ getCell board ck = Cell { cellParams = params
                         }
   where
     params = getHex (bCellParams board) ck
-    bunits = lookupLocation ck (bXsMap board)
-    units = fmap unit_ bunits
-    (blues, reds) = partition (\ x -> faction x == Blue) units
-    mmarker = M.lookup ck (bMarkers board)
-    content = case (mmarker, bunits) of
-      (Just f, []) -> Left f
-      _ -> Right (blues, reds)
+    content = case lookupLocation ck (bXsMap board) of
+      Left f -> Left f
+      Right bunits -> Right (blues, reds)
+        where
+          units = fmap unit_ bunits
+          (blues, reds) = partition (\ x -> faction x == Blue) units
 
 -- | Renvoie les identifiants d'un disque de cases du plateau de jeu, dont le
 -- centre est la case indiquée.
@@ -274,7 +270,7 @@ getContested board = fmap (getCell board) contested
 removeFaction :: Faction -> CellKey -> Board -> Board
 removeFaction f ck board = foldr go board bunits
   where
-    bunits = lookupLocation ck (bXsMap board)
+    bunits = lookupLocationContent ck (bXsMap board)
 
     go :: BUnit -> Board -> Board
     go bu b = if faction (unit_ bu) == f
@@ -286,7 +282,7 @@ capacityLeft :: Board -> Faction -> CellKey -> Double
 capacityLeft board f ck = foldr go maxCapacity bunits
   where
     maxCapacity = capacity_ (getHex (bCellParams board) ck)
-    bunits = lookupLocation ck (bXsMap board)
+    bunits = lookupLocationContent ck (bXsMap board)
 
     go :: BUnit -> Double -> Double
     go bu c = if faction (unit_ bu) == f
@@ -299,19 +295,17 @@ tile' board ck = tile_ (getHex (bCellParams board) ck)
 
 -- | Renvoie le marqueur sur la case donnée.
 getMarker :: Board -> CellKey -> Maybe Faction
-getMarker board ck = if null (lookupLocation ck (bXsMap board))
-                     then M.lookup ck (bMarkers board)
-                     else Nothing
+getMarker board ck = lookupLocationToken ck (bXsMap board)
 
 -- | Met à jour le marqueur sur la case donnée.
 setMarker :: Faction -> CellKey -> Board -> Board
-setMarker f ck board = board { bMarkers = markers' }
+setMarker f ck board = board { bXsMap = b' }
   where
-    markers' = M.insert ck f (bMarkers board)
+    b' = insertToken ck f (bXsMap board)
 
 -- | Indique si la case donnée contient une unité du camp indiqué.
 hasUnit :: Board -> Faction -> CellKey -> Bool
-hasUnit board f x = any go (lookupLocation x (bXsMap board))
+hasUnit board f x = any go (lookupLocationContent x (bXsMap board))
   where
     go :: BUnit -> Bool
     go bu = (faction $ unit_ bu) == f
