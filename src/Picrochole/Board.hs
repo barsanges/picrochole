@@ -160,20 +160,18 @@ setReds ys c = c { cellContent = new }
 -- utilisées.
 
 -- | Une unité stockée dans une structure de type `Board`.
-data BUnit k = BU { unit_ :: Unit
-                  , currentCell_ :: k
-                  , progress_ :: Maybe Double
-                  }
+data BUnit = BU { unit_ :: Unit
+                , currentCell_ :: CellKey
+                , progress_ :: Maybe Double
+                }
   deriving Show
--- FIXME : devoir faire intervenir `k` de cette manière n'est vraiment pas
--- naturel !
 
 instance HasLocation BUnit where
   location = currentCell_
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
 data Board = Board { bCellParams :: HexGrid CellParams
-                   , bXsMap :: XsMap CellKey UnitKey BUnit
+                   , bXsMap :: XsMap UnitKey BUnit
                    , bMarkers :: Map CellKey Faction
                    , bInitiative :: [UnitKey]
                    }
@@ -244,9 +242,9 @@ getLocation board ukey = case lookupKey ukey (bXsMap board) of
 
 -- | Renvoie l'emplacement de toutes les unités d'un camp.
 getLocations :: Board -> Faction -> Set CellKey
-getLocations board f = foldXsMap go S.empty (bXsMap board)
+getLocations board f = foldr go S.empty (bXsMap board)
   where
-    go :: BUnit CellKey -> Set CellKey -> Set CellKey
+    go :: BUnit -> Set CellKey -> Set CellKey
     go bu s = if faction (unit_ bu) == f
               then S.insert (currentCell_ bu) s
               else s
@@ -293,7 +291,7 @@ removeFaction f ck board = foldr go board bunits
   where
     bunits = lookupLocation ck (bXsMap board)
 
-    go :: BUnit CellKey -> Board -> Board
+    go :: BUnit -> Board -> Board
     go bu b = if faction (unit_ bu) == f
               then removeUnit (unitKey (unit_ bu)) b
               else b
@@ -305,7 +303,7 @@ capacityLeft board f ck = foldr go maxCapacity bunits
     maxCapacity = capacity_ (getHex (bCellParams board) ck)
     bunits = lookupLocation ck (bXsMap board)
 
-    go :: BUnit CellKey -> Double -> Double
+    go :: BUnit -> Double -> Double
     go bu c = if faction (unit_ bu) == f
               then c - (strength (unit_ bu))
               else c
@@ -330,7 +328,7 @@ setMarker f ck board = board { bMarkers = markers' }
 hasUnit :: Board -> Faction -> CellKey -> Bool
 hasUnit board f x = any go (lookupLocation x (bXsMap board))
   where
-    go :: BUnit CellKey -> Bool
+    go :: BUnit -> Bool
     go bu = (faction $ unit_ bu) == f
 
 -- | Indique si la case donnée contient des unités des deux camps.

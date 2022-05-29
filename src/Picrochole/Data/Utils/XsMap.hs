@@ -17,63 +17,56 @@ module Picrochole.Data.Utils.XsMap
   , lookupKey
   , insertKey
   , deleteKey
-  , foldXsMap
   ) where
 
 import Data.Maybe ( catMaybes )
 import qualified Data.Map as M -- FIXME : IntMap ?
 import qualified Data.Set as S
+import Picrochole.Data.Utils.HexGrid ( CellKey )
 
 -- | Classe pour les types contenant une clef de lieu.
 class HasLocation a where
-  location :: a k1 -> k1
--- FIXME : supprimer cette classe et faire intervenir directement `CellKey`.
+  location :: a -> CellKey
 
--- | Dictionnaire pouvant être requêté soit par un lieu (clef k1), soit
--- par une clef unique (clef k2). Plusieurs valeurs peuvent être
+-- | Dictionnaire pouvant être requêté soit par un lieu (clef de type
+-- `CellKey`), soit par une clef unique. Plusieurs valeurs peuvent être
 -- associées à un même lieu.
-data XsMap k1 k2 a = XsMap { content :: M.Map k2 (a k1)
-                           , locs :: M.Map k1 (S.Set k2)
-                           }
+data XsMap k a = XsMap { content :: M.Map k a
+                       , locs :: M.Map CellKey (S.Set k)
+                       }
   deriving Show
 
--- | Effectue un fold sur les éléments de la structure.
-foldXsMap :: (a k1 -> b -> b) -> b -> XsMap k1 k2 a -> b
-foldXsMap f z xs = foldr f z (content xs)
-
-{- FIXME : pourra être remplacé par quelque chose du genre :
 instance Foldable (XsMap k) where
   foldr f z xs = foldr f z (content xs)
--}
 
 -- | Un dictionnaire vide.
-empty :: XsMap k1 k2 a
+empty :: XsMap k a
 empty = XsMap { content = M.empty
               , locs = M.empty
               }
 
 -- | Construit un dictionnaire à partir d'une liste de paires clef / valeur.
-fromList :: (HasLocation a, Ord k1, Ord k2) => [(k2, a k1)] -> XsMap k1 k2 a
+fromList :: (HasLocation a, Ord k) => [(k, a)] -> XsMap k a
 fromList xs = foldr go empty xs
   where
     go (k, x) ms = insertKey k x ms
 
 -- | Renvoie tous les éléments associés au lieu donné.
-lookupLocation :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a -> [a k1]
+lookupLocation :: Ord k => CellKey -> XsMap k a -> [a]
 lookupLocation here ms = case M.lookup here (locs ms) of
   Nothing -> []
   Just ls -> catMaybes (fmap (\ k -> lookupKey k ms) (S.toList ls))
 
 -- | Renvoie l'élément associé à la clef donnée.
-lookupKey :: Ord k2 => k2 -> XsMap k1 k2 a -> Maybe (a k1)
+lookupKey :: Ord k => k -> XsMap k a -> Maybe a
 lookupKey k ms = M.lookup k (content ms)
 
 -- | Insère un élément dans le dictionnaire.
-insertKey :: (HasLocation a, Ord k1, Ord k2)
-          => k2
-          -> a k1
-          -> XsMap k1 k2 a
-          -> XsMap k1 k2 a
+insertKey :: (HasLocation a, Ord k)
+          => k
+          -> a
+          -> XsMap k a
+          -> XsMap k a
 insertKey k x' ms = ms { content = c'
                        , locs = ls''
                        }
@@ -95,10 +88,10 @@ insertKey k x' ms = ms { content = c'
       Just keys -> M.insert here (S.insert k keys) ls'
 
 -- | Supprime un élément dans le dictionnaire.
-deleteKey :: (HasLocation a, Ord k1, Ord k2)
-          => k2
-          -> XsMap k1 k2 a
-          -> XsMap k1 k2 a
+deleteKey :: (HasLocation a, Ord k)
+          => k
+          -> XsMap k a
+          -> XsMap k a
 deleteKey k ms = ms { content = c'
                     , locs = ls'
                     }
