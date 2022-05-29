@@ -1,5 +1,5 @@
 {- |
-   Module      : Picrochole.Utils.XsMap
+   Module      : Picrochole.Data.Utils.XsMap
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
@@ -8,7 +8,7 @@ unique, soit par un lieu. Plusieurs valeurs peuvent être associées à un même
 lieu.
 -}
 
-module Picrochole.Utils.XsMap
+module Picrochole.Data.Utils.XsMap
   ( XsMap
   , HasLocation(..)
   , empty
