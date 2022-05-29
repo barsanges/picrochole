@@ -197,10 +197,6 @@ getStrongestOpponent f cs = maximumBy (\ x y -> compare (go x) (go y)) cs
 
 -- | Répartit des dommages entre les unités de la faction indiquée.
 wound :: Double -> Faction -> Cell -> Board -> Board
-wound damage f cell board = foldr go board targets -- FIXME : cela ne respecte pas la spéc !
-  where
-    targets = getFaction f cell
-    total = totalStrength targets
-
-    go :: Unit -> Board -> Board
-    go u b = decrStrength (unitKey u) (damage / total) b
+wound damage f cell board = case getStrongest f cell of
+  Just u -> decrStrength (unitKey u) damage board
+  Nothing -> board

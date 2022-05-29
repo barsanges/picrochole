@@ -21,6 +21,7 @@ module Picrochole.Board
   , getReds
   , getFaction
   , getOpponents
+  , getStrongest
   , setBlues
   , setReds
   , Board
@@ -45,7 +46,7 @@ module Picrochole.Board
   , hasUnit
   ) where
 
-import Data.List ( partition )
+import Data.List ( maximumBy, partition )
 import Data.Map ( Map )
 import qualified Data.Map as M
 import Data.Set ( Set )
@@ -134,6 +135,16 @@ getFaction Red cell = getReds cell
 getOpponents :: Faction -> Cell -> [Unit]
 getOpponents Blue cell = getReds cell
 getOpponents Red cell = getBlues cell
+
+-- | Renvoie l'unité de la faction avec l'effectif le plus important sur la
+-- case indiquée.
+getStrongest :: Faction -> Cell -> Maybe Unit
+getStrongest f cell = if null units
+                      then Nothing
+                      else Just (maximumBy comp units)
+  where
+    units = getFaction f cell
+    comp x y = compare (strength x) (strength y)
 
 -- | Remplace les unités bleues de la case par la liste d'unités
 -- fournies. La faction de ces unités n'est pas vérifiée.
