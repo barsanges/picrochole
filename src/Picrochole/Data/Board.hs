@@ -1,12 +1,12 @@
 {- |
-   Module      : Picrochole.Board
+   Module      : Picrochole.Data.Board
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
 Le plateau de jeu et les unités des deux camps.
 -}
 
-module Picrochole.Board
+module Picrochole.Data.Board
   ( Unit(..)
   , Position(..)
   , unitKey

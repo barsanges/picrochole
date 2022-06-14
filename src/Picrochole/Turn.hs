@@ -16,8 +16,8 @@ import qualified Data.Map as M
 import Data.Maybe ( isNothing )
 import Data.Set ( Set )
 import qualified Data.Set as S
-import Picrochole.Board
 import Picrochole.Data.Base
+import Picrochole.Data.Board
 
 -- | Résout un tour de jeu.
 turn :: Map UnitKey [CellKey] -> Board -> Board
