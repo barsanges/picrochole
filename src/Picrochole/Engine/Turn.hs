@@ -1,12 +1,12 @@
 {- |
-   Module      : Picrochole.Turn
+   Module      : Picrochole.Engine.Turn
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
 Résout un tour de jeu.
 -}
 
-module Picrochole.Turn
+module Picrochole.Engine.Turn
   ( turn
   ) where
 
