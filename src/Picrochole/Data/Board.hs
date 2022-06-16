@@ -26,6 +26,7 @@ module Picrochole.Data.Board
   , touch
   , initiative
   , getUnit
+  , getDist
   , decrStrength
   , getPosition
   , setPosition
@@ -169,6 +170,17 @@ getUnit :: Board -> UnitKey -> Unit
 getUnit board ukey = case lookupKey ukey (bXsMap board) of
   Just bu -> unit_ bu
   Nothing -> error "malformed board" -- HACK
+
+-- | Renvoie la distance à vol d'oiseau entre deux unités.
+getDist :: Board -> UnitKey -> UnitKey -> Int
+getDist board x y = dist x' y'
+  where
+    x' = case lookupKey x (bXsMap board) of
+      Just bu -> currentCell_ bu
+      Nothing -> error "malformed board" -- HACK
+    y' = case lookupKey y (bXsMap board) of
+      Just bu -> currentCell_ bu
+      Nothing -> error "malformed board" -- HACK
 
 -- | Supprime une unité du plateau de jeu.
 removeUnit :: UnitKey -> Board -> Board
