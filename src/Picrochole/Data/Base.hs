@@ -7,12 +7,16 @@ Types de base pour décrire le jeu.
 -}
 
 module Picrochole.Data.Base
-  ( Faction(..)
+  ( TurnCount
+  , Faction(..)
   , opponent
   , UnitKey
   , UnitKind(..)
   , Tile(..)
   ) where
+
+-- | Numéro du tour en cours.
+type TurnCount = Int
 
 -- | Faction à laquelle appartient une unité.
 data Faction = Blue
