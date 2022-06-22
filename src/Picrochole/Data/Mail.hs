@@ -10,6 +10,10 @@ module Picrochole.Data.Mail
   ( Post
   , Header
   , Report
+  , from
+  , to
+  , sent
+  , received
   , mkHeader
   , sendReport
   , dateLastReportSent
@@ -36,22 +40,38 @@ data Post = Post { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
   deriving Show
 
 -- | En-tête d'un message.
-data Header = Header { from :: UnitKey
-                     , to :: UnitKey
-                     , sent :: TurnCount
-                     , received :: TurnCount
+data Header = Header { from_ :: UnitKey
+                     , to_ :: UnitKey
+                     , sent_ :: TurnCount
+                     , received_ :: TurnCount
                      }
   deriving Show
 
 -- | Rapport d'une unité à son état-major.
 type Report = [Cell]
 
+-- | Indique l'expéditeur du message.
+from :: Header -> UnitKey
+from = from_
+
+-- | Indique le destinataire du message.
+to :: Header -> UnitKey
+to = to_
+
+-- | Indique la date d'envoi du message.
+sent :: Header -> TurnCount
+sent = sent_
+
+-- | Indique la date de réception du message.
+received :: Header -> TurnCount
+received = received_
+
 -- | Construit un en-tête de message.
 mkHeader :: TurnCount -> UnitKey -> UnitKey -> Int -> Header
-mkHeader tCount sender receiver d = Header { from = sender
-                                           , to = receiver
-                                           , sent = tCount
-                                           , received = eta tCount d
+mkHeader tCount sender receiver d = Header { from_ = sender
+                                           , to_ = receiver
+                                           , sent_ = tCount
+                                           , received_ = eta tCount d
                                            }
 
 -- | Calcule la date de réception d'un message.
