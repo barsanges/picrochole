@@ -17,12 +17,14 @@ module Picrochole.Data.Mail
   , mkHeader
   , sendReport
   , dateLastReportSent
+  , getLastReports
   ) where
 
 import Data.IntMap ( IntMap )
 import qualified Data.IntMap as IM
 import Data.Map ( Map )
 import qualified Data.Map as M
+import Data.Maybe ( catMaybes )
 import Data.Sequence ( Seq(..), (|>) )
 import qualified Data.Sequence as S
 import Picrochole.Data.Base
@@ -123,3 +125,16 @@ dateLastReportSent post ukey hq = do
 takeR :: Seq a -> Maybe a
 takeR Empty = Nothing
 takeR (_ :|> x) = Just x
+
+-- | Renvoie le dernier rapport envoyé par chaque subordonné.
+getLastReports :: UnitKey -> Post -> [(Header, Report)]
+getLastReports ukey post = case M.lookup ukey (receivers post) of
+  Nothing -> []
+  Just xss -> catMaybes (fmap go (M.elems xss))
+ 
+  where
+    
+    go :: Seq MsgId -> Maybe (Header, Report)
+    go msgIds = do
+      idx <- takeR msgIds
+      IM.lookup idx (messages post)
