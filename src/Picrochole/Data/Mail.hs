@@ -33,6 +33,7 @@ data Post = Post { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
                  , messages :: IntMap (Header, Report)
                  , last_ :: Int
                  }
+  deriving Show
 
 -- | En-tête d'un message.
 data Header = Header { from :: UnitKey
@@ -40,6 +41,7 @@ data Header = Header { from :: UnitKey
                      , sent :: TurnCount
                      , received :: TurnCount
                      }
+  deriving Show
 
 -- | Rapport d'une unité à son état-major.
 type Report = [Cell]
