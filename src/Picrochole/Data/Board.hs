@@ -23,6 +23,7 @@ module Picrochole.Data.Board
   , getOpponents
   , getStrongest
   , Board
+  , boardSize
   , touch
   , initiative
   , getUnit
@@ -159,6 +160,10 @@ data Board = Board { bCellParams :: HexGrid CellParams
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
+
+-- | Renvoie les dimensions du plateau de jeu.
+boardSize :: Board -> GridSize
+boardSize b = gridSize (bCellParams b)
 
 -- | Renvoie les identifiants des unités par ordre d'initiative (i.e. : la
 -- première unité qui doit jouer est la première unité de la liste).
