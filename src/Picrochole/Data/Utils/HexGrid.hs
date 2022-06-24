@@ -8,7 +8,9 @@ Une grille hexagonale, dont les hexagones sont orientés pointe en haut.
 
 module Picrochole.Data.Utils.HexGrid
   ( HexGrid
+  , GridSize(..)
   , CellKey
+  , gridSize
   , getHex
   , dist
   , touch
@@ -18,10 +20,15 @@ module Picrochole.Data.Utils.HexGrid
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
+-- | Dimensions de la grille.
+data GridSize = GridSize { ncols :: Int
+                         , nrows :: Int
+                         }
+  deriving (Eq, Show)
+
 -- | Une grille hexagonale, dont les hexagones sont orientés pointe en haut.
 data HexGrid a = HexGrid { cells :: Vector a
-                         , ncols :: Int
-                         , nrows :: Int
+                         , gridSize_ :: GridSize
                          }
   deriving Show
 
@@ -29,17 +36,21 @@ data HexGrid a = HexGrid { cells :: Vector a
 data CellKey = CK Int Int
   deriving (Eq, Ord, Show)
 
+-- | Renvoie les dimensions de la grille.
+gridSize :: HexGrid a -> GridSize
+gridSize = gridSize_
+
 -- | Renvoie le contenu d'une cellule.
 getHex :: HexGrid a -> CellKey -> a
-getHex grid ckey = case toIntCoord grid ckey of
+getHex grid ckey = case toIntCoord (gridSize grid) ckey of
                      Just idx -> ((cells grid) V.! idx)
                      Nothing -> error ("unknown cell " ++ show ckey)
 
 -- | Convertit la clef en un indice entier permettant de requêter le vecteur des
 -- cases.
-toIntCoord :: HexGrid a -> CellKey -> Maybe Int
-toIntCoord grid (CK x y) = if withinGrid grid (CK x y)
-                           then Just (y * (ncols grid) + x)
+toIntCoord :: GridSize -> CellKey -> Maybe Int
+toIntCoord gsize (CK x y) = if withinGrid gsize (CK x y)
+                           then Just (y * (ncols gsize) + x)
                            else Nothing
 
 -- | Convertit l'index en un triplet de coordonnées pour une grille hexagonale.
@@ -69,8 +80,8 @@ dist x y = truncate (0.5 * fromIntegral (diff) :: Double)
     diff = abs (xq - yq) + abs (xr - yr) + abs (xs - ys)
 
 -- | Indique si la case se situe dans la grille.
-withinGrid :: HexGrid a -> CellKey -> Bool
-withinGrid g (CK x y) = 0 <= x && x < (ncols g) && 0 <= y && y < (nrows g)
+withinGrid :: GridSize -> CellKey -> Bool
+withinGrid gsize (CK x y) = 0 <= x && x < (ncols gsize) && 0 <= y && y < (nrows gsize)
 
 -- | Indique si les cases `x` et `y` sont adjacentes.
 touch :: CellKey -> CellKey -> Bool
@@ -78,8 +89,8 @@ touch x y = (dist x y) == 1
 
 -- | Renvoie les identifiants d'un disque de cases de la grille, dont le centre
 -- est la case indiquée.
-diskKeys :: HexGrid a -> CellKey -> Int -> [CellKey]
-diskKeys grid ck radius = filter (withinGrid grid) allKeys
+diskKeys :: GridSize -> CellKey -> Int -> [CellKey]
+diskKeys gsize ck radius = filter (withinGrid gsize) allKeys
   where
     (q, r, s) = toHexCoord ck
     allKeys = [fromHexCoord (q + dq, r + dr, s - (dq + dr))

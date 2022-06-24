@@ -256,7 +256,7 @@ getCell board ck = Cell { cellParams = params
 -- | Renvoie les identifiants d'un disque de cases du plateau de jeu, dont le
 -- centre est la case indiquée.
 getDiskKeys :: Board -> CellKey -> Int -> [CellKey]
-getDiskKeys board ck radius = diskKeys (bCellParams board) ck radius
+getDiskKeys board ck radius = diskKeys (gridSize (bCellParams board)) ck radius
 
 -- | Renvoie un disque de cases du plateau de jeu, dont le centre est la case
 -- indiquée.
