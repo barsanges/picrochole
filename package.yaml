@@ -16,6 +16,7 @@ description:         Please see the README
 dependencies:
 - base
 - containers
+- search-algorithms
 - vector
 
 library:

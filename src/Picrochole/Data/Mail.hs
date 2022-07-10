@@ -19,6 +19,7 @@ module Picrochole.Data.Mail
   , sendOrder
   , dateLastReportSent
   , getLastReports
+  , getLastOrder
   ) where
 
 import Data.IntMap ( IntMap )
@@ -160,3 +161,11 @@ getLastReports ukey post = case M.lookup ukey (receivers (reports_ post)) of
     go msgIds = do
       idx <- takeR msgIds
       IM.lookup idx (messages (reports_ post))
+
+-- | Renvoie le dernier ordre envoyé par le QG.
+getLastOrder :: UnitKey -> UnitKey -> Post -> Maybe (Header, Order)
+getLastOrder ukey hq post = do
+  got <- M.lookup ukey (receivers (orders_ post))
+  msgIds <- M.lookup hq got
+  idx <- takeR msgIds
+  IM.lookup idx (messages (orders_ post))
