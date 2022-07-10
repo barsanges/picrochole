@@ -13,6 +13,7 @@ module Picrochole.Data.Base
   , UnitKey
   , UnitKind(..)
   , Tile(..)
+  , speed
   ) where
 
 -- | Numéro du tour en cours.
@@ -43,3 +44,14 @@ data Tile = Road
           | Land
           | Water
   deriving (Eq, Show)
+
+-- | Renvoie la vitesse à laquelle un type d'unité progresse sur un type de
+-- case.
+speed :: UnitKind -> Tile -> Double
+speed Cavalery Road = 2
+speed Infantery Road = 1
+speed Artillery Road = 1
+speed Cavalery Land = 1
+speed Infantery Land = 0.5
+speed Artillery Land = 0.25
+speed _ Water = 0

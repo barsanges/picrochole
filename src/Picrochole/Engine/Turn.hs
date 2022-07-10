@@ -59,14 +59,7 @@ fwd t unit (ds, pos) = case progress pos of
   Nothing -> (ds, pos)
   Just dx -> (ds', pos')
     where
-      v = case (t, kind unit) of
-        (Road, Cavalery) -> 2
-        (Road, Infantery) -> 1
-        (Road, Artillery) -> 1
-        (Land, Cavalery) -> 1
-        (Land, Infantery) -> 0.5
-        (Land, Artillery) -> 0.25
-        (Water, _) -> 0
+      v = speed (kind unit) t
       ds' = max 0 (ds - ((1 - dx) / v))
       pos' = if (dx + ds * v) < 1
              then pos { progress = Just (dx + ds * v) }
