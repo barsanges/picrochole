@@ -7,7 +7,7 @@ Détermine le chemin suivi par les unités.
 -}
 
 module Picrochole.Engine.IA.PathFinding
-  ( plan
+  ( route
   ) where
 
 import Algorithm.Search ( dijkstra )
@@ -18,8 +18,8 @@ import Picrochole.Data.Board
 import Picrochole.Data.Mail
 
 -- | Détermine le chemin suivi par les unités.
-plan :: Board -> Post -> (Faction -> UnitKey) -> Map UnitKey [CellKey]
-plan board post getHQ = foldr go M.empty (initiative board)
+route :: Board -> Post -> (Faction -> UnitKey) -> Map UnitKey [CellKey]
+route board post getHQ = foldr go M.empty (initiative board)
   where
     go ukey m = M.insert ukey (findPath board post getHQ ukey) m
 
