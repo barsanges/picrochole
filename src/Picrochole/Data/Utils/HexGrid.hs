@@ -17,6 +17,7 @@ module Picrochole.Data.Utils.HexGrid
   , diskKeys
   ) where
 
+import Data.Aeson
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
@@ -97,3 +98,21 @@ diskKeys gsize ck radius = filter (withinGrid gsize) allKeys
                | dq <- [-radius..radius]
                , dr <- [(max (-radius) (-dq - radius))..(max radius (dq + radius))]
               ]
+
+-- | Sérialisation.
+
+instance ToJSON CellKey where
+  -- toJSON :: CellKey -> Value
+  toJSON (CK x y) = Array (V.fromList [toJSON x, toJSON y])
+
+instance FromJSON CellKey where
+  -- parseJSON :: Value -> Parser CellKey
+  parseJSON = withArray "CellKey" go
+    where
+      go xs =
+        if V.length xs == 2
+        then do
+          x <- parseJSON (xs V.! 0)
+          y <- parseJSON (xs V.! 1)
+          return (CK x y)
+        else fail ("expected an array of length 2, got " ++ show (V.length xs) ++ " instead")

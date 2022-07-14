@@ -14,8 +14,10 @@ synopsis:            Game inspired by Le Vol de l'Aigle
 description:         Please see the README
 
 dependencies:
+- aeson
 - base
 - containers
+- scientific
 - search-algorithms
 - vector
 
