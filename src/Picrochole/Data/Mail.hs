@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Picrochole.Data.Mail
    Copyright   : Copyright (C) 2022 barsanges
@@ -22,6 +23,7 @@ module Picrochole.Data.Mail
   , getLastOrder
   ) where
 
+import Data.Aeson
 import Data.IntMap ( IntMap )
 import qualified Data.IntMap as IM
 import Data.Map ( Map )
@@ -29,6 +31,8 @@ import qualified Data.Map as M
 import Data.Maybe ( catMaybes )
 import Data.Sequence ( Seq(..), (|>) )
 import qualified Data.Sequence as S
+import Data.Vector ( Vector )
+import qualified Data.Vector as V
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 
@@ -120,6 +124,18 @@ sendOrder header order post = post { orders_ = orders' }
   where
     orders' = send header order (orders_ post)
 
+-- | Organise une série de messages en un registre.
+organize :: Vector (Header, a) -> Register a
+organize xs = foldr go zero xs
+  where
+    zero = Register { senders = M.empty
+                    , receivers = M.empty
+                    , messages = IM.empty
+                    , last_ = 0
+                    }
+    go :: (Header, a) -> Register a -> Register a
+    go (header, x) register = send header x register
+
 -- | Insère une valeur dans un dictionnaire de dictionnaire.
 nestedInsert :: Ord k
              => k
@@ -169,3 +185,70 @@ getLastOrder ukey hq post = do
   msgIds <- M.lookup hq got
   idx <- takeR msgIds
   IM.lookup idx (messages (orders_ post))
+
+-- | Sérialisation.
+
+instance ToJSON Header where
+  toJSON header = object [ "from" .= from_ header
+                         , "to" .= to_ header
+                         , "sent" .= sent_ header
+                         , "received" .= received_ header
+                         ]
+
+instance FromJSON Header where
+  parseJSON = withObject "Header" go
+    where
+      -- go :: Object -> Parser Header
+      go v = do
+        f <- v .: "from"
+        t <- v .: "to"
+        s <- v .: "sent"
+        r <- v .: "received"
+        return Header { from_ = f
+                      , to_ = t
+                      , sent_ = s
+                      , received_ = r
+                      }
+
+instance ToJSON a => ToJSON (Register a) where
+  -- toJSON :: Register a -> Value
+  toJSON reg = Array (V.fromList (fmap go (IM.toList (messages reg))))
+    where
+      -- go :: (Header, a) -> Value
+      go (header, x) = object [ "header" .= header
+                              , "content" .= x
+                              ]
+
+instance FromJSON a => FromJSON (Register a) where
+  -- parseJSON :: Value -> Parser Register
+  parseJSON = withArray "Register" f
+    where
+      -- f :: Array -> Parser (Register a)
+      f arr = fmap organize (g arr)
+
+      -- g :: Array -> Parser (Vector (Header, a))
+      g = mapM (withObject "Message" h)
+
+      -- h :: Object -> Parser (Header, a)
+      h v = do
+        header <- v .: "header"
+        x <- v .: "content"
+        return (header, x)
+
+instance ToJSON Post where
+  -- toJSON :: Post -> Value
+  toJSON post = object [ "reports" .= reports_ post
+                       , "orders" .= orders_ post
+                       ]
+
+instance FromJSON Post where
+  -- parseJSON :: Value -> Parser Post
+  parseJSON = withObject "Plan" go
+    where
+      -- go :: Object -> Parser Post
+      go v = do
+        r <- v .: "reports"
+        o <- v .: "orders"
+        return Post { reports_ = r
+                    , orders_ = o
+                    }

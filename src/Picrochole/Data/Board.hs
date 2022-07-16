@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Picrochole.Data.Board
    Copyright   : Copyright (C) 2022 barsanges
@@ -46,6 +47,7 @@ module Picrochole.Data.Board
   , hasUnit
   ) where
 
+import Data.Aeson
 import Data.List ( maximumBy, partition )
 import Data.Set ( Set )
 import qualified Data.Set as S
@@ -326,3 +328,72 @@ hasUnit board f x = any go (lookupLocationContent x (bXsMap board))
 -- | Indique si la case donnée contient des unités des deux camps.
 isContested :: Board -> CellKey -> Bool
 isContested board x = (hasUnit board Blue x) && (hasUnit board Red x)
+
+-- | Sérialisation.
+
+instance ToJSON Unit where
+  -- toJSON :: Unit -> Value
+  toJSON unit = object [ "key" .= unitKey unit
+                       , "faction" .= faction unit
+                       , "kind" .= kind unit
+                       , "strength" .= strength unit
+                       ]
+
+instance FromJSON Unit where
+  -- parseJSON :: Object -> Parser Unit
+  parseJSON = withObject "Unit" go
+    where
+      -- go :: Object -> Parser Unit
+      go v = do
+        ke <- v .: "key"
+        f <- v .: "faction"
+        ki <- v .: "kind"
+        s <- v .: "strength"
+        return Unit { unitParams = UP { unitKey_ = ke
+                                      , faction_ = f
+                                      , kind_ = ki
+                                      }
+                    , strength = s
+                    }
+
+instance ToJSON Cell where
+  -- toJSON :: Cell -> Value
+  toJSON cell = object (params ++ content)
+    where
+      params = [ "key" .= cellKey cell
+               , "tile" .= tile cell
+               , "capacity" .= capacity cell
+               ]
+      content = case cellContent cell of
+        Left f -> [ "marker" .= f ]
+        Right (r, b) -> [ "reds" .= r
+                        , "blues" .= b
+                        ]
+
+instance FromJSON Cell where
+  -- parseJSON :: Object -> Parser Cell
+  parseJSON = withObject "Cell" go
+    where
+      -- go :: Object -> Parser Cell
+      go v = do
+        k <- v .: "key"
+        t <- v .: "tile"
+        c <- v .: "capacity"
+        mf <- v .:? "marker"
+        mb <- v .:? "blues"
+        mr <- v .:? "reds"
+        let cp = CP { cellKey_ = k
+                    , tile_ = t
+                    , capacity_ = c
+                    }
+        case (mf, mb, mr) of
+          (Just f, Nothing, Nothing) -> return Cell { cellParams = cp
+                                                    , cellContent = Left f
+                                                    }
+          (Just _, _, _) -> fail "must have either a marker ('marker'), or two lists of units ('blues' and 'reds'), but not both"
+          (Nothing, Just b, Just r) -> return Cell { cellParams = cp
+                                                   , cellContent = Right (b, r)
+                                                   }
+          (Nothing, Just _, Nothing) -> fail "'reds' field missing"
+          (Nothing, Nothing, Just _) -> fail "'blues' field missing"
+          (Nothing, Nothing, Nothing) -> fail "must have either a marker ('marker'), or two lists of units ('blues' and 'reds')"
