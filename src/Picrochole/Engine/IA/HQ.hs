@@ -48,8 +48,8 @@ schedule tcount board ukey f limit plan post = post'
   where
     gsize = boardSize board
     info = mkInfo tcount ukey limit post
-    orders = assign gsize f plan info
-    post' = send tcount board ukey orders post
+    new = assign gsize f plan info
+    post' = send tcount board ukey new post
 
 -- | Construit une image du conflit avec les dernières informations disponibles.
 mkInfo :: TurnCount -> UnitKey -> Int -> Post -> Info
@@ -57,8 +57,8 @@ mkInfo tcount ukey limit post = foldr add M.empty infoCells
 
   where
 
-    reports = getLastReports ukey post
-    infoCells = concat (fmap toInfoCell reports)
+    lastReports = getLastReports ukey post
+    infoCells = concat (fmap toInfoCell lastReports)
 
     toInfoCell :: (Header, Report) -> [InfoCell]
     toInfoCell (header, report) = if (sent header) >= (tcount - limit)
@@ -114,7 +114,7 @@ assess gsize f info obj = if any go surroundings
 
 -- | Indique à chaque subordonné son objectif.
 send :: TurnCount -> Board -> UnitKey -> Set BaseOrder -> Post -> Post
-send tcount board hq orders post = foldr go post orders
+send tcount board hq newOrders post = foldr go post newOrders
   where
     go :: BaseOrder -> Post -> Post
     go (BaseOrder ukey obj) p = sendOrder header obj p

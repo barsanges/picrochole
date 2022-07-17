@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Picrochole.Data.Mail
    Copyright   : Copyright (C) 2022 barsanges
@@ -8,13 +7,12 @@ Les messages que les unités s'échangent.
 -}
 
 module Picrochole.Data.Mail
-  ( Post
-  , Header
+  ( Post(..)
+  , Header(..)
+  , Register
   , Report
-  , from
-  , to
-  , sent
-  , received
+  , organize
+  , toVector
   , mkHeader
   , sendReport
   , sendOrder
@@ -23,7 +21,6 @@ module Picrochole.Data.Mail
   , getLastOrder
   ) where
 
-import Data.Aeson
 import Data.IntMap ( IntMap )
 import qualified Data.IntMap as IM
 import Data.Map ( Map )
@@ -48,16 +45,16 @@ data Register a = Register { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
   deriving Show
 
 -- | Les messages que les unités s'échangent.
-data Post = Post { reports_ :: Register Report
-                 , orders_ :: Register Order
+data Post = Post { reports :: Register Report
+                 , orders :: Register Order
                  }
   deriving Show
 
 -- | En-tête d'un message.
-data Header = Header { from_ :: UnitKey
-                     , to_ :: UnitKey
-                     , sent_ :: TurnCount
-                     , received_ :: TurnCount
+data Header = Header { from :: UnitKey
+                     , to :: UnitKey
+                     , sent :: TurnCount
+                     , received :: TurnCount
                      }
   deriving Show
 
@@ -67,28 +64,29 @@ type Report = [Cell]
 -- | Ordre de l'état-major à un subordonné.
 type Order = CellKey
 
--- | Indique l'expéditeur du message.
-from :: Header -> UnitKey
-from = from_
+-- | Organise un vecteur de messages en un registre.
+organize :: Vector (Header, a) -> Register a
+organize xs = foldr go zero xs
+  where
+    zero = Register { senders = M.empty
+                    , receivers = M.empty
+                    , messages = IM.empty
+                    , last_ = 0
+                    }
+    go :: (Header, a) -> Register a -> Register a
+    go (header, x) register = send header x register
 
--- | Indique le destinataire du message.
-to :: Header -> UnitKey
-to = to_
+-- | Transforme un registre en un vecteur de messages.
+toVector :: Register a -> Vector (Header, a)
+toVector reg = V.fromList (fmap snd (IM.toList (messages reg)))
 
--- | Indique la date d'envoi du message.
-sent :: Header -> TurnCount
-sent = sent_
-
--- | Indique la date de réception du message.
-received :: Header -> TurnCount
-received = received_
-
--- | Construit un en-tête de message.
+-- | Construit un en-tête de message. Cette fonction doit être préférée à la
+-- construction "à la main" d'un en-tête.
 mkHeader :: TurnCount -> UnitKey -> UnitKey -> Int -> Header
-mkHeader tCount sender receiver d = Header { from_ = sender
-                                           , to_ = receiver
-                                           , sent_ = tCount
-                                           , received_ = eta tCount d
+mkHeader tCount sender receiver d = Header { from = sender
+                                           , to = receiver
+                                           , sent = tCount
+                                           , received = eta tCount d
                                            }
 
 -- | Calcule la date de réception d'un message.
@@ -114,27 +112,15 @@ send header x register = Register { senders = senders'
 
 -- | Envoie un rapport.
 sendReport :: Header -> Report -> Post -> Post
-sendReport header report post = post { reports_ = reports' }
+sendReport header report post = post { reports = reports' }
   where
-    reports' = send header report (reports_ post)
+    reports' = send header report (reports post)
 
 -- | Envoie un ordre.
 sendOrder :: Header -> Order -> Post -> Post
-sendOrder header order post = post { orders_ = orders' }
+sendOrder header order post = post { orders = orders' }
   where
-    orders' = send header order (orders_ post)
-
--- | Organise une série de messages en un registre.
-organize :: Vector (Header, a) -> Register a
-organize xs = foldr go zero xs
-  where
-    zero = Register { senders = M.empty
-                    , receivers = M.empty
-                    , messages = IM.empty
-                    , last_ = 0
-                    }
-    go :: (Header, a) -> Register a -> Register a
-    go (header, x) register = send header x register
+    orders' = send header order (orders post)
 
 -- | Insère une valeur dans un dictionnaire de dictionnaire.
 nestedInsert :: Ord k
@@ -154,10 +140,10 @@ nestedInsert k1 k2 x' xsss = M.insert k1 xs' xsss
 -- | Indique à quelle date l'unité a envoyé son dernier rapport.
 dateLastReportSent :: Post -> UnitKey -> UnitKey -> Maybe TurnCount
 dateLastReportSent post ukey hq = do
-  addressee <- M.lookup ukey (senders (reports_ post))
+  addressee <- M.lookup ukey (senders (reports post))
   msgIds <- M.lookup hq addressee
   idx <- takeR msgIds
-  (header, _) <- IM.lookup idx (messages (reports_ post))
+  (header, _) <- IM.lookup idx (messages (reports post))
   return (sent header)
 
 -- | Renvoie le dernier élément d'une séquence.
@@ -167,7 +153,7 @@ takeR (_ :|> x) = Just x
 
 -- | Renvoie le dernier rapport envoyé par chaque subordonné.
 getLastReports :: UnitKey -> Post -> [(Header, Report)]
-getLastReports ukey post = case M.lookup ukey (receivers (reports_ post)) of
+getLastReports ukey post = case M.lookup ukey (receivers (reports post)) of
   Nothing -> []
   Just xss -> catMaybes (fmap go (M.elems xss))
 
@@ -176,79 +162,12 @@ getLastReports ukey post = case M.lookup ukey (receivers (reports_ post)) of
     go :: Seq MsgId -> Maybe (Header, Report)
     go msgIds = do
       idx <- takeR msgIds
-      IM.lookup idx (messages (reports_ post))
+      IM.lookup idx (messages (reports post))
 
 -- | Renvoie le dernier ordre envoyé par le QG.
 getLastOrder :: UnitKey -> UnitKey -> Post -> Maybe (Header, Order)
 getLastOrder ukey hq post = do
-  got <- M.lookup ukey (receivers (orders_ post))
+  got <- M.lookup ukey (receivers (orders post))
   msgIds <- M.lookup hq got
   idx <- takeR msgIds
-  IM.lookup idx (messages (orders_ post))
-
--- | Sérialisation.
-
-instance ToJSON Header where
-  toJSON header = object [ "from" .= from_ header
-                         , "to" .= to_ header
-                         , "sent" .= sent_ header
-                         , "received" .= received_ header
-                         ]
-
-instance FromJSON Header where
-  parseJSON = withObject "Header" go
-    where
-      -- go :: Object -> Parser Header
-      go v = do
-        f <- v .: "from"
-        t <- v .: "to"
-        s <- v .: "sent"
-        r <- v .: "received"
-        return Header { from_ = f
-                      , to_ = t
-                      , sent_ = s
-                      , received_ = r
-                      }
-
-instance ToJSON a => ToJSON (Register a) where
-  -- toJSON :: Register a -> Value
-  toJSON reg = Array (V.fromList (fmap go (IM.toList (messages reg))))
-    where
-      -- go :: (Header, a) -> Value
-      go (header, x) = object [ "header" .= header
-                              , "content" .= x
-                              ]
-
-instance FromJSON a => FromJSON (Register a) where
-  -- parseJSON :: Value -> Parser Register
-  parseJSON = withArray "Register" f
-    where
-      -- f :: Array -> Parser (Register a)
-      f arr = fmap organize (g arr)
-
-      -- g :: Array -> Parser (Vector (Header, a))
-      g = mapM (withObject "Message" h)
-
-      -- h :: Object -> Parser (Header, a)
-      h v = do
-        header <- v .: "header"
-        x <- v .: "content"
-        return (header, x)
-
-instance ToJSON Post where
-  -- toJSON :: Post -> Value
-  toJSON post = object [ "reports" .= reports_ post
-                       , "orders" .= orders_ post
-                       ]
-
-instance FromJSON Post where
-  -- parseJSON :: Value -> Parser Post
-  parseJSON = withObject "Plan" go
-    where
-      -- go :: Object -> Parser Post
-      go v = do
-        r <- v .: "reports"
-        o <- v .: "orders"
-        return Post { reports_ = r
-                    , orders_ = o
-                    }
+  IM.lookup idx (messages (orders post))
