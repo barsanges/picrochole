@@ -14,6 +14,7 @@ module Picrochole.Data.Board
   , kind
   , mkUnit
   , CellKey
+  , CellContent(..)
   , Cell
   , cellKey
   , tile
@@ -24,6 +25,7 @@ module Picrochole.Data.Board
   , getReds
   , getFaction
   , getOpponents
+  , getOpponents'
   , getStrongest
   , Board
   , boardSize
@@ -104,7 +106,9 @@ data CellParams = CP { cellKey_ :: CellKey
   deriving Show
 
 -- | Contenu d'une cellule.
-type CellContent = Either Faction ([Unit], [Unit])
+data CellContent = Marker Faction
+                 | Units [Unit] [Unit]
+  deriving Show
 
 -- | Une case du plateau de jeu.
 data Cell = Cell { cellParams :: CellParams
@@ -140,14 +144,14 @@ mkCell ckey t c cContent = Cell { cellParams = CP { cellKey_ = ckey
 -- | Renvoie les unités bleues sur la case.
 getBlues :: Cell -> [Unit]
 getBlues c = case cellContent c of
-  Left _ -> []
-  Right (xs, _) -> xs
+  Marker _ -> []
+  Units xs _ -> xs
 
 -- | Renvoie les unités rouges sur la case.
 getReds :: Cell -> [Unit]
 getReds c = case cellContent c of
-  Left _ -> []
-  Right (_, ys) -> ys
+  Marker _ -> []
+  Units _ ys -> ys
 
 -- | Renvoie toutes les unités de la faction sur la case.
 getFaction :: Faction -> Cell -> [Unit]
@@ -158,6 +162,12 @@ getFaction Red cell = getReds cell
 getOpponents :: Faction -> Cell -> [Unit]
 getOpponents Blue cell = getReds cell
 getOpponents Red cell = getBlues cell
+
+-- | Renvoie toutes les unités adverses sur la case.
+getOpponents' :: Faction -> CellContent -> [Unit]
+getOpponents' _ (Marker _) = []
+getOpponents' Blue (Units _ ys) = ys
+getOpponents' Red (Units xs _) = xs
 
 -- | Renvoie l'unité de la faction avec l'effectif le plus important sur la
 -- case indiquée.
@@ -277,8 +287,8 @@ getCell board ck = Cell { cellParams = params
   where
     params = getHex (bCellParams board) ck
     cContent = case lookupLocation ck (bXsMap board) of
-      Left f -> Left f
-      Right bunits -> Right (blues, reds)
+      Left f -> Marker f
+      Right bunits -> Units blues reds
         where
           units = fmap unit_ bunits
           (blues, reds) = partition (\ x -> faction x == Blue) units

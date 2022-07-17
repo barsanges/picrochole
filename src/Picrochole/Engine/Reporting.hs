@@ -33,7 +33,7 @@ reporting tCount getHQ board post = foldr go post (initiative board)
 
 -- | Construit le rapport d'une unité à son état-major.
 mkReport :: Board -> UnitKey -> Report
-mkReport board ukey = cells
+mkReport board ukey = cellsContent
   where
     ckey = getLocation board ukey
     radius = if isContested board ckey
@@ -43,3 +43,7 @@ mkReport board ukey = cells
                     Infantery -> 2
                     Artillery -> 2
     cells = getDisk board ckey radius
+    cellsContent = fmap go cells
+
+    go :: Cell -> (CellKey, CellContent)
+    go c = (cellKey c, content c)

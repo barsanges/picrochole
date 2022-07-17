@@ -59,7 +59,7 @@ data Header = Header { from :: UnitKey
   deriving Show
 
 -- | Rapport d'une unité à son état-major.
-type Report = [Cell]
+type Report = [(CellKey, CellContent)]
 
 -- | Ordre de l'état-major à un subordonné.
 type Order = CellKey

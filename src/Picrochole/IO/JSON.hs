@@ -15,14 +15,30 @@ module Picrochole.IO.JSON
 import Data.Aeson
 import Data.Scientific ( toBoundedInteger )
 import qualified Data.Set as S
+import qualified Data.Vector as V
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
 import Picrochole.Data.Plan
+import Picrochole.Data.Utils.HexGrid
 
 -- Pour mémoire :
 --   toJSON :: a -> Value
 --   parseJSON :: Value -> Parser a
+
+instance ToJSON CellKey where
+  toJSON (CK x y) = Array (V.fromList [toJSON x, toJSON y])
+
+instance FromJSON CellKey where
+  parseJSON = withArray "CellKey" go
+    where
+      go xs =
+        if V.length xs == 2
+        then do
+          x <- parseJSON (xs V.! 0)
+          y <- parseJSON (xs V.! 1)
+          return (CK x y)
+        else fail ("expected an array of length 2, got " ++ show (V.length xs) ++ " instead")
 
 instance ToJSON Faction
 instance FromJSON Faction
@@ -60,33 +76,24 @@ instance FromJSON Unit where
         s <- v .: "strength"
         return (mkUnit ke f ki s)
 
-instance ToJSON Cell where
-  toJSON cell = object (params ++ cContent)
-    where
-      params = [ "key" .= cellKey cell
-               , "tile" .= tile cell
-               , "capacity" .= capacity cell
-               ]
-      cContent = case content cell of
-        Left f -> [ "marker" .= f ]
-        Right (r, b) -> [ "reds" .= r
-                        , "blues" .= b
+instance ToJSON CellContent where
+  toJSON cContent = case cContent of
+    Marker f -> object [ "marker" .= f ]
+    Units b r -> object [ "blues" .= b
+                        , "reds" .= r
                         ]
 
-instance FromJSON Cell where
-  parseJSON = withObject "Cell" go
+instance FromJSON CellContent where
+  parseJSON = withObject "CellContent" go
     where
       go v = do
-        k <- v .: "key"
-        t <- v .: "tile"
-        c <- v .: "capacity"
         mf <- v .:? "marker"
         mb <- v .:? "blues"
         mr <- v .:? "reds"
         case (mf, mb, mr) of
-          (Just f, Nothing, Nothing) -> return (mkCell k t c (Left f))
+          (Just f, Nothing, Nothing) -> return (Marker f)
           (Just _, _, _) -> fail "must have either a marker ('marker'), or two lists of units ('blues' and 'reds'), but not both"
-          (Nothing, Just b, Just r) -> return (mkCell k t c (Right (b, r)))
+          (Nothing, Just b, Just r) -> return (Units b r)
           (Nothing, Just _, Nothing) -> fail "'reds' field missing"
           (Nothing, Nothing, Just _) -> fail "'blues' field missing"
           (Nothing, Nothing, Nothing) -> fail "must have either a marker ('marker'), or two lists of units ('blues' and 'reds')"
@@ -177,7 +184,7 @@ instance ToJSON Post where
                        ]
 
 instance FromJSON Post where
-  parseJSON = withObject "Plan" go
+  parseJSON = withObject "Post" go
     where
       go v = do
         r <- v .: "reports"
