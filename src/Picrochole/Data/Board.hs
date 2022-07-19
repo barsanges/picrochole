@@ -13,10 +13,12 @@ module Picrochole.Data.Board
   , faction
   , kind
   , CellKey
+  , CellContent
   , Cell
   , cellKey
   , tile
   , capacity
+  , cellContent
   , getBlues
   , getReds
   , getFaction
@@ -97,7 +99,7 @@ type CellContent = Either Faction ([Unit], [Unit])
 
 -- | Une case du plateau de jeu.
 data Cell = Cell { cellParams :: CellParams
-                 , cellContent :: CellContent
+                 , cellContent_ :: CellContent
                  }
   deriving Show
 
@@ -112,6 +114,10 @@ tile c = tile_ (cellParams c)
 -- | Renvoie la capacité maximale (par camp) de la case.
 capacity :: Cell -> Double
 capacity c = capacity_ (cellParams c)
+
+-- | Renvoie le contenu de la cellule.
+cellContent :: Cell -> CellContent
+cellContent c = cellContent_ c
 
 -- | Renvoie les unités bleues sur la case.
 getBlues :: Cell -> [Unit]
@@ -247,7 +253,7 @@ getLocations board f = foldr go S.empty (bXsMap board)
 -- | Renvoie une case du plateau de jeu.
 getCell :: Board -> CellKey -> Cell
 getCell board ck = Cell { cellParams = params
-                        , cellContent = content
+                        , cellContent_ = content
                         }
   where
     params = getHex (bCellParams board) ck
