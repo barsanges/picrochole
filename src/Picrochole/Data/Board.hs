@@ -63,6 +63,7 @@ data UnitParams = UP { unitKey_ :: UnitKey
 -- | Une unité du plateau de jeu.
 data Unit = Unit { unitParams :: UnitParams
                  , strength :: Double
+                 , unitProgress :: Maybe Double
                  }
   deriving Show
 
@@ -147,7 +148,6 @@ getStrongest f cell = if null units
 -- | Une unité stockée dans une structure de type `Board`.
 data BUnit = BU { unit_ :: Unit
                 , currentCell_ :: CellKey
-                , progress_ :: Maybe Double
                 }
   deriving Show
 
@@ -212,7 +212,7 @@ decrStrength uk ds board = case lookupKey uk (bXsMap board) of
 getPosition :: Board -> UnitKey -> Position
 getPosition board ukey = case lookupKey ukey (bXsMap board) of
   Just bu -> Position { currentCell = currentCell_ bu
-                      , progress = progress_ bu
+                      , progress = unitProgress (unit_ bu)
                       }
   Nothing -> error "malformed board" -- HACK
 
@@ -225,7 +225,7 @@ setPosition ukey pos board = board { bXsMap = xs' }
       Just bu_ -> bu_
       Nothing -> error "malformed board" -- HACK
     bu' = bu { currentCell_ = currentCell pos
-             , progress_ = progress pos
+             , unit_ = (unit_ bu) { unitProgress = progress pos }
              }
     xs' = insertKey ukey bu' xs
 
