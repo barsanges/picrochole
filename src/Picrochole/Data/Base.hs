@@ -16,6 +16,8 @@ module Picrochole.Data.Base
   , speed
   ) where
 
+import qualified Data.Text as T
+
 -- | Numéro du tour en cours.
 type TurnCount = Int
 
@@ -30,7 +32,7 @@ opponent Blue = Red
 opponent Red = Blue
 
 -- | Identifiant unique d'une unité.
-newtype UnitKey = UK Int
+newtype UnitKey = UK T.Text
   deriving (Eq, Ord, Show)
 
 -- | Arme d'une unité.
