@@ -17,6 +17,7 @@ dependencies:
 - base
 - containers
 - search-algorithms
+- text
 - vector
 
 library:
