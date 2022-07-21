@@ -23,6 +23,7 @@ module Picrochole.Data.Board
   , getReds
   , getFaction
   , getOpponents
+  , getOpponents'
   , getStrongest
   , Board
   , boardSize
@@ -140,6 +141,12 @@ getFaction Red cell = getReds cell
 getOpponents :: Faction -> Cell -> [Unit]
 getOpponents Blue cell = getReds cell
 getOpponents Red cell = getBlues cell
+
+-- | Renvoie toutes les unités adverses sur la case.
+getOpponents' :: Faction -> CellContent -> [Unit]
+getOpponents' _ (Left _) = []
+getOpponents' Blue (Right (_, ys)) = ys
+getOpponents' Red (Right (xs, _)) = xs
 
 -- | Renvoie l'unité de la faction avec l'effectif le plus important sur la
 -- case indiquée.
