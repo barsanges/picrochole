@@ -10,6 +10,7 @@ module Picrochole.Engine.Reporting
   ( reporting
   ) where
 
+import qualified Data.Map as M
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
@@ -33,7 +34,7 @@ reporting tCount getHQ board post = foldr go post (initiative board)
 
 -- | Construit le rapport d'une unité à son état-major.
 mkReport :: Board -> UnitKey -> Report
-mkReport board ukey = cells
+mkReport board ukey = report
   where
     ckey = getLocation board ukey
     radius = if isContested board ckey
@@ -43,3 +44,7 @@ mkReport board ukey = cells
                     Infantery -> 2
                     Artillery -> 2
     cells = getDisk board ckey radius
+    report = foldr go M.empty cells
+
+    go :: Cell -> Report -> Report
+    go c r = M.insert (cellKey c) (cellContent c) r

@@ -21,7 +21,7 @@ import Picrochole.Data.Plan
 import Picrochole.Data.Utils.HexGrid
 
 -- | Information associée à une case du plateau.
-data InfoCell = InfoCell { cell_ :: Cell
+data InfoCell = InfoCell { cellContent_ :: CellContent
                          , date_ :: TurnCount
                          }
   deriving Show
@@ -53,28 +53,26 @@ schedule tcount board ukey f limit plan post = post'
 
 -- | Construit une image du conflit avec les dernières informations disponibles.
 mkInfo :: TurnCount -> UnitKey -> Int -> Post -> Info
-mkInfo tcount ukey limit post = foldr add M.empty infoCells
+mkInfo tcount ukey limit post = foldr f M.empty reports
 
   where
 
     reports = getLastReports ukey post
-    infoCells = concat (fmap toInfoCell reports)
 
-    toInfoCell :: (Header, Report) -> [InfoCell]
-    toInfoCell (header, report) = if (sent header) >= (tcount - limit)
-                                  then fmap go report
-                                  else []
-      where
-        go :: Cell -> InfoCell
-        go c = InfoCell { cell_ = c, date_ = sent header }
-
-    add :: InfoCell -> Info -> Info
-    add ic info = M.insertWith go (cellKey (cell_ ic)) ic info
-      where
-        go :: InfoCell -> InfoCell -> InfoCell
-        go a b = if (date_ a) < (date_ b)
+    select :: InfoCell -> InfoCell -> InfoCell
+    select a b = if (date_ a) < (date_ b)
                  then b
                  else a
+
+    f :: (Header, Report) -> Info -> Info
+    f (header, report) i0 = if (sent header) >= (tcount - limit)
+                            then M.foldrWithKey g i0 report
+                            else i0
+      where
+        g :: CellKey -> CellContent -> Info -> Info
+        g ckey content info = M.insertWith select ckey icell info
+          where
+            icell = InfoCell { cellContent_ = content, date_ = sent header }
 
 -- | Affecte un objectif à chaque unité.
 assign :: GridSize -> Faction -> Plan -> Info -> Set BaseOrder
@@ -110,7 +108,7 @@ assess gsize f info obj = if any go surroundings
     go :: CellKey -> Bool
     go ckey = case M.lookup ckey info of
       Nothing -> False
-      Just c -> null (getOpponents f (cell_ c))
+      Just c -> null (getOpponents' f (cellContent_ c))
 
 -- | Indique à chaque subordonné son objectif.
 send :: TurnCount -> Board -> UnitKey -> Set BaseOrder -> Post -> Post
