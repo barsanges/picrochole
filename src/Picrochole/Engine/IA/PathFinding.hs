@@ -18,14 +18,21 @@ import Picrochole.Data.Board
 import Picrochole.Data.Mail
 
 -- | Détermine le chemin suivi par les unités.
-route :: Board -> Post -> (Faction -> UnitKey) -> Map UnitKey [CellKey]
-route board post getHQ = foldr go M.empty (initiative board)
+route :: Board
+      -> Register Order
+      -> (Faction -> UnitKey)
+      -> Map UnitKey [CellKey]
+route board orders getHQ = foldr go M.empty (initiative board)
   where
-    go ukey m = M.insert ukey (findPath board post getHQ ukey) m
+    go ukey m = M.insert ukey (findPath board orders getHQ ukey) m
 
 -- | Calcule le chemin que doit suivre l'unité.
-findPath :: Board -> Post -> (Faction -> UnitKey) -> UnitKey -> [CellKey]
-findPath board post getHQ ukey = case getLastOrder ukey hq post of
+findPath :: Board
+         -> Register Order
+         -> (Faction -> UnitKey)
+         -> UnitKey
+         -> [CellKey]
+findPath board orders getHQ ukey = case getLastOrder ukey hq orders of
   Just (_, dest) -> shortest board k size start dest
   Nothing -> []
   where

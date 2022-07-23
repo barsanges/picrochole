@@ -7,16 +7,16 @@ Les messages que les unités s'échangent.
 -}
 
 module Picrochole.Data.Mail
-  ( Post
+  ( Register
   , Header
   , Report
+  , Order
   , from
   , to
   , sent
   , received
   , mkHeader
-  , sendReport
-  , sendOrder
+  , send
   , dateLastReportSent
   , getLastReports
   , getLastOrder
@@ -41,12 +41,6 @@ data Register a = Register { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
                            , messages :: IntMap (Header, a)
                            , last_ :: Int
                            }
-  deriving Show
-
--- | Les messages que les unités s'échangent.
-data Post = Post { reports_ :: Register Report
-                 , orders_ :: Register Order
-                 }
   deriving Show
 
 -- | En-tête d'un message.
@@ -108,18 +102,6 @@ send header x register = Register { senders = senders'
     receivers' = nestedInsert (to header) (from header) idx (receivers register)
     messages' = IM.insert idx (header, x) (messages register)
 
--- | Envoie un rapport.
-sendReport :: Header -> Report -> Post -> Post
-sendReport header report post = post { reports_ = reports' }
-  where
-    reports' = send header report (reports_ post)
-
--- | Envoie un ordre.
-sendOrder :: Header -> Order -> Post -> Post
-sendOrder header order post = post { orders_ = orders' }
-  where
-    orders' = send header order (orders_ post)
-
 -- | Insère une valeur dans un dictionnaire de dictionnaire.
 nestedInsert :: Ord k
              => k
@@ -136,12 +118,12 @@ nestedInsert k1 k2 x' xsss = M.insert k1 xs' xsss
       Nothing -> M.singleton k2 (S.singleton x')
 
 -- | Indique à quelle date l'unité a envoyé son dernier rapport.
-dateLastReportSent :: Post -> UnitKey -> UnitKey -> Maybe TurnCount
-dateLastReportSent post ukey hq = do
-  addressee <- M.lookup ukey (senders (reports_ post))
+dateLastReportSent :: Register Report -> UnitKey -> UnitKey -> Maybe TurnCount
+dateLastReportSent reports ukey hq = do
+  addressee <- M.lookup ukey (senders reports)
   msgIds <- M.lookup hq addressee
   idx <- takeR msgIds
-  (header, _) <- IM.lookup idx (messages (reports_ post))
+  (header, _) <- IM.lookup idx (messages reports)
   return (sent header)
 
 -- | Renvoie le dernier élément d'une séquence.
@@ -150,8 +132,8 @@ takeR Empty = Nothing
 takeR (_ :|> x) = Just x
 
 -- | Renvoie le dernier rapport envoyé par chaque subordonné.
-getLastReports :: UnitKey -> Post -> [(Header, Report)]
-getLastReports ukey post = case M.lookup ukey (receivers (reports_ post)) of
+getLastReports :: UnitKey -> Register Report -> [(Header, Report)]
+getLastReports ukey reports = case M.lookup ukey (receivers reports) of
   Nothing -> []
   Just xss -> catMaybes (fmap go (M.elems xss))
 
@@ -160,12 +142,12 @@ getLastReports ukey post = case M.lookup ukey (receivers (reports_ post)) of
     go :: Seq MsgId -> Maybe (Header, Report)
     go msgIds = do
       idx <- takeR msgIds
-      IM.lookup idx (messages (reports_ post))
+      IM.lookup idx (messages reports)
 
 -- | Renvoie le dernier ordre envoyé par le QG.
-getLastOrder :: UnitKey -> UnitKey -> Post -> Maybe (Header, Order)
-getLastOrder ukey hq post = do
-  got <- M.lookup ukey (receivers (orders_ post))
+getLastOrder :: UnitKey -> UnitKey -> Register Order -> Maybe (Header, Order)
+getLastOrder ukey hq orders = do
+  got <- M.lookup ukey (receivers orders)
   msgIds <- M.lookup hq got
   idx <- takeR msgIds
-  IM.lookup idx (messages (orders_ post))
+  IM.lookup idx (messages orders)

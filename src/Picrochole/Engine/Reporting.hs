@@ -16,17 +16,21 @@ import Picrochole.Data.Board
 import Picrochole.Data.Mail
 
 -- | Effectue la remontée d'informations entre les unités et leurs état-majors.
-reporting :: TurnCount -> (Faction -> UnitKey) -> Board -> Post -> Post
-reporting tCount getHQ board post = foldr go post (initiative board)
+reporting :: TurnCount
+          -> (Faction -> UnitKey)
+          -> Board
+          -> Register Report
+          -> Register Report
+reporting tCount getHQ board reports = foldr go reports (initiative board)
   where
-    go :: UnitKey -> Post -> Post
-    go ukey p = if d <= 3 * (tCount - prev) || prev == 0
-                then sendReport header report p
-                else p
+    go :: UnitKey -> Register Report -> Register Report
+    go ukey r = if d <= 3 * (tCount - prev) || prev == 0
+                then send header report r
+                else r
       where
         hq = getHQ (faction $ getUnit board ukey)
         d = getDist board ukey hq
-        prev = case (dateLastReportSent p ukey hq) of
+        prev = case (dateLastReportSent r ukey hq) of
           Just t -> t
           Nothing -> 0
         header = mkHeader tCount ukey hq d

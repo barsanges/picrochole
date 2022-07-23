@@ -43,21 +43,29 @@ instance Ord BaseOrder where
   compare (BaseOrder x _) (BaseOrder y _) = compare x y
 
 -- | Envoie des ordres aux subordonnés.
-schedule :: TurnCount -> Board -> UnitKey -> Faction -> Int -> Plan -> Post -> Post
-schedule tcount board ukey f limit plan post = post'
+schedule :: TurnCount
+         -> Board
+         -> UnitKey
+         -> Faction
+         -> Int
+         -> Plan
+         -> Register Report
+         -> Register Order
+         -> Register Order
+schedule tcount board ukey f limit plan rreg oreg = oreg'
   where
     gsize = boardSize board
-    info = mkInfo tcount ukey limit post
+    info = mkInfo tcount ukey limit rreg
     orders = assign gsize f plan info
-    post' = send tcount board ukey orders post
+    oreg' = command tcount board ukey orders oreg
 
 -- | Construit une image du conflit avec les dernières informations disponibles.
-mkInfo :: TurnCount -> UnitKey -> Int -> Post -> Info
-mkInfo tcount ukey limit post = foldr f M.empty reports
+mkInfo :: TurnCount -> UnitKey -> Int -> Register Report -> Info
+mkInfo tcount ukey limit reg = foldr f M.empty reports
 
   where
 
-    reports = getLastReports ukey post
+    reports = getLastReports ukey reg
 
     select :: InfoCell -> InfoCell -> InfoCell
     select a b = if (date_ a) < (date_ b)
@@ -111,11 +119,16 @@ assess gsize f info obj = if any go surroundings
       Just c -> null (getOpponents' f (cellContent_ c))
 
 -- | Indique à chaque subordonné son objectif.
-send :: TurnCount -> Board -> UnitKey -> Set BaseOrder -> Post -> Post
-send tcount board hq orders post = foldr go post orders
+command :: TurnCount
+        -> Board
+        -> UnitKey
+        -> Set BaseOrder
+        -> Register Order
+        -> Register Order
+command tcount board hq orders reg = foldr go reg orders
   where
-    go :: BaseOrder -> Post -> Post
-    go (BaseOrder ukey obj) p = sendOrder header obj p
+    go :: BaseOrder -> Register Order -> Register Order
+    go (BaseOrder ukey obj) r = send header obj r
       where
         d = getDist board ukey hq
         header = mkHeader tcount hq ukey d
