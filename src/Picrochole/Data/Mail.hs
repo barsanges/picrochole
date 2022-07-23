@@ -122,18 +122,27 @@ dateLastReportSent :: Register Report -> UnitKey -> UnitKey -> Maybe TurnCount
 dateLastReportSent reports ukey hq = do
   addressee <- M.lookup ukey (senders reports)
   msgIds <- M.lookup hq addressee
-  idx <- takeR msgIds
+  idx <- takeFirstR (const True) msgIds
   (header, _) <- IM.lookup idx (messages reports)
   return (sent header)
 
--- | Renvoie le dernier élément d'une séquence.
-takeR :: Seq a -> Maybe a
-takeR Empty = Nothing
-takeR (_ :|> x) = Just x
+-- | Indique si le message identifié par `idx` a déjà été reçu au tour `tcount`.
+hasBeenReceived :: TurnCount -> Register a -> MsgId -> Bool
+hasBeenReceived tcount reg idx = case IM.lookup idx (messages reg) of
+  Nothing -> False
+  Just (h, _) -> received h <= tcount
+
+-- | Renvoie le premier élément (en partant de la droite) qui satisfait un
+-- prédicat.
+takeFirstR :: (a -> Bool) -> Seq a -> Maybe a
+takeFirstR _ Empty = Nothing
+takeFirstR f (xs :|> x) = if f x
+                          then Just x
+                          else takeFirstR f xs
 
 -- | Renvoie le dernier rapport envoyé par chaque subordonné.
-getLastReports :: UnitKey -> Register Report -> [(Header, Report)]
-getLastReports ukey reports = case M.lookup ukey (receivers reports) of
+getLastReports :: TurnCount -> UnitKey -> Register Report -> [(Header, Report)]
+getLastReports tcount ukey reports = case M.lookup ukey (receivers reports) of
   Nothing -> []
   Just xss -> catMaybes (fmap go (M.elems xss))
 
@@ -141,13 +150,17 @@ getLastReports ukey reports = case M.lookup ukey (receivers reports) of
 
     go :: Seq MsgId -> Maybe (Header, Report)
     go msgIds = do
-      idx <- takeR msgIds
+      idx <- takeFirstR (hasBeenReceived tcount reports) msgIds
       IM.lookup idx (messages reports)
 
 -- | Renvoie le dernier ordre envoyé par le QG.
-getLastOrder :: UnitKey -> UnitKey -> Register Order -> Maybe (Header, Order)
-getLastOrder ukey hq orders = do
+getLastOrder :: TurnCount
+             -> UnitKey
+             -> UnitKey
+             -> Register Order
+             -> Maybe (Header, Order)
+getLastOrder tcount ukey hq orders = do
   got <- M.lookup ukey (receivers orders)
   msgIds <- M.lookup hq got
-  idx <- takeR msgIds
+  idx <- takeFirstR (hasBeenReceived tcount orders) msgIds
   IM.lookup idx (messages orders)

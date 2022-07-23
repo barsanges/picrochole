@@ -65,7 +65,7 @@ mkInfo tcount ukey limit reg = foldr f M.empty reports
 
   where
 
-    reports = getLastReports ukey reg
+    reports = getLastReports tcount ukey reg
 
     select :: InfoCell -> InfoCell -> InfoCell
     select a b = if (date_ a) < (date_ b)
