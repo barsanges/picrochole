@@ -8,13 +8,9 @@ Les messages que les unités s'échangent.
 
 module Picrochole.Data.Mail
   ( Register
-  , Header
+  , Header(..)
   , Report
   , Order
-  , from
-  , to
-  , sent
-  , received
   , mkHeader
   , send
   , lastSent
