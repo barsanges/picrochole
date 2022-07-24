@@ -30,8 +30,8 @@ reporting tCount getHQ board reports = foldr go reports (initiative board)
       where
         hq = getHQ (faction $ getUnit board ukey)
         d = getDist board ukey hq
-        prev = case (dateLastReportSent r ukey hq) of
-          Just t -> t
+        prev = case (lastReceived tCount r ukey hq) of
+          Just (h, _) -> received h
           Nothing -> 0
         header = mkHeader tCount ukey hq d
         report = mkReport board ukey

@@ -17,16 +17,16 @@ module Picrochole.Data.Mail
   , received
   , mkHeader
   , send
-  , dateLastReportSent
-  , getLastReports
-  , getLastOrder
+  , lastSent
+  , lastSent'
+  , lastReceived
+  , lastReceived'
   ) where
 
 import Data.IntMap ( IntMap )
 import qualified Data.IntMap as IM
 import Data.Map ( Map )
 import qualified Data.Map as M
-import Data.Maybe ( catMaybes )
 import Data.Sequence ( Seq(..), (|>) )
 import qualified Data.Sequence as S
 import Picrochole.Data.Base
@@ -117,14 +117,53 @@ nestedInsert k1 k2 x' xsss = M.insert k1 xs' xsss
         Nothing -> M.insert k2 (S.singleton x') xss
       Nothing -> M.singleton k2 (S.singleton x')
 
--- | Indique à quelle date l'unité a envoyé son dernier rapport.
-dateLastReportSent :: Register Report -> UnitKey -> UnitKey -> Maybe TurnCount
-dateLastReportSent reports ukey hq = do
-  addressee <- M.lookup ukey (senders reports)
-  msgIds <- M.lookup hq addressee
+-- | Renvoie le dernier message envoyé par l'unité `x` à un correspondant `y`.
+lastSent :: Register a -> UnitKey -> UnitKey -> Maybe (Header, a)
+lastSent reg x y = do
+  addressee <- M.lookup x (senders reg)
+  msgIds <- M.lookup y addressee
   idx <- takeFirstR (const True) msgIds
-  (header, _) <- IM.lookup idx (messages reports)
-  return (sent header)
+  res <- IM.lookup idx (messages reg)
+  return res
+
+-- | Renvoie le dernier message envoyé par l'unité `x` à chacun de ses
+-- correspondants.
+lastSent' :: Register a -> UnitKey -> Map UnitKey (Header, a)
+lastSent' reg x = case M.lookup x (senders reg) of
+  Nothing -> M.empty
+  Just ms -> mmapMaybe go ms
+  where
+    go sq = do
+      idx <- takeFirstR (const True) sq
+      res <- IM.lookup idx (messages reg)
+      return res
+
+-- | Renvoie le dernier message reçu par l'unité `x` d'un correspondant `y`.
+lastReceived :: TurnCount
+             -> Register a
+             -> UnitKey
+             -> UnitKey
+             -> Maybe (Header, a)
+lastReceived tcount reg x y = do
+  got <- M.lookup x (receivers reg)
+  msgIds <- M.lookup y got
+  idx <- takeFirstR (hasBeenReceived tcount reg) msgIds
+  IM.lookup idx (messages reg)
+
+-- | Renvoie le dernier message reçu par l'unité `x` de chacun de ses
+-- correspondants.
+lastReceived' :: TurnCount
+              -> Register a
+              -> UnitKey
+              -> Map UnitKey (Header, a)
+lastReceived' tcount reg x = case M.lookup x (receivers reg) of
+  Nothing -> M.empty
+  Just ms -> mmapMaybe go ms
+  where
+    go sq = do
+      idx <- takeFirstR (hasBeenReceived tcount reg) sq
+      res <- IM.lookup idx (messages reg)
+      return res
 
 -- | Indique si le message identifié par `idx` a déjà été reçu au tour `tcount`.
 hasBeenReceived :: TurnCount -> Register a -> MsgId -> Bool
@@ -140,27 +179,10 @@ takeFirstR f (xs :|> x) = if f x
                           then Just x
                           else takeFirstR f xs
 
--- | Renvoie le dernier rapport envoyé par chaque subordonné.
-getLastReports :: TurnCount -> UnitKey -> Register Report -> [(Header, Report)]
-getLastReports tcount ukey reports = case M.lookup ukey (receivers reports) of
-  Nothing -> []
-  Just xss -> catMaybes (fmap go (M.elems xss))
-
+-- | Equivalent de `map` qui permet d'éliminer des éléments.
+mmapMaybe :: Ord k => (a -> Maybe b) -> Map k a -> Map k b
+mmapMaybe f xs = M.foldrWithKey go M.empty xs
   where
-
-    go :: Seq MsgId -> Maybe (Header, Report)
-    go msgIds = do
-      idx <- takeFirstR (hasBeenReceived tcount reports) msgIds
-      IM.lookup idx (messages reports)
-
--- | Renvoie le dernier ordre envoyé par le QG.
-getLastOrder :: TurnCount
-             -> UnitKey
-             -> UnitKey
-             -> Register Order
-             -> Maybe (Header, Order)
-getLastOrder tcount ukey hq orders = do
-  got <- M.lookup ukey (receivers orders)
-  msgIds <- M.lookup hq got
-  idx <- takeFirstR (hasBeenReceived tcount orders) msgIds
-  IM.lookup idx (messages orders)
+    go k x tmp = case f x of
+      Nothing -> tmp
+      Just y -> M.insert k y tmp
