@@ -123,8 +123,7 @@ lastSent reg x y = do
   addressee <- M.lookup x (senders reg)
   msgIds <- M.lookup y addressee
   idx <- takeFirstR (const True) msgIds
-  res <- IM.lookup idx (messages reg)
-  return res
+  IM.lookup idx (messages reg)
 
 -- | Renvoie le dernier message envoyé par l'unité `x` à chacun de ses
 -- correspondants.
@@ -135,8 +134,7 @@ lastSent' reg x = case M.lookup x (senders reg) of
   where
     go sq = do
       idx <- takeFirstR (const True) sq
-      res <- IM.lookup idx (messages reg)
-      return res
+      IM.lookup idx (messages reg)
 
 -- | Renvoie le dernier message reçu par l'unité `x` d'un correspondant `y`.
 lastReceived :: TurnCount
@@ -162,8 +160,7 @@ lastReceived' tcount reg x = case M.lookup x (receivers reg) of
   where
     go sq = do
       idx <- takeFirstR (hasBeenReceived tcount reg) sq
-      res <- IM.lookup idx (messages reg)
-      return res
+      IM.lookup idx (messages reg)
 
 -- | Indique si le message identifié par `idx` a déjà été reçu au tour `tcount`.
 hasBeenReceived :: TurnCount -> Register a -> MsgId -> Bool
