@@ -21,19 +21,19 @@ reporting :: TurnCount
           -> Board
           -> Register Report
           -> Register Report
-reporting tCount getHQ board reports = foldr go reports (initiative board)
+reporting tcount getHQ board reports = foldr go reports (initiative board)
   where
     go :: UnitKey -> Register Report -> Register Report
-    go ukey r = if d <= 3 * (tCount - prev) || prev == 0
+    go ukey r = if d <= 3 * (tcount - prev) || prev == 0
                 then send header report r
                 else r
       where
         hq = getHQ (faction $ getUnit board ukey)
         d = getDist board ukey hq
-        prev = case (lastReceived tCount r ukey hq) of
+        prev = case (lastReceived tcount r ukey hq) of
           Just (h, _) -> received h
           Nothing -> 0
-        header = mkHeader tCount ukey hq d
+        header = mkHeader tcount ukey hq d
         report = mkReport board ukey
 
 -- | Construit le rapport d'une unité à son état-major.
