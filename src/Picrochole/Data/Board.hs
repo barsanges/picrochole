@@ -7,11 +7,12 @@ Le plateau de jeu et les unités des deux camps.
 -}
 
 module Picrochole.Data.Board
-  ( Unit(..)
+  ( Unit
   , Position(..)
   , unitKey
   , faction
   , kind
+  , strength
   , CellKey
   , CellContent
   , Cell
@@ -65,7 +66,7 @@ data UnitParams = UP { unitKey_ :: UnitKey
 
 -- | Une unité du plateau de jeu.
 data Unit = Unit { unitParams :: UnitParams
-                 , strength :: Double
+                 , strength_ :: Double
                  , unitProgress :: Maybe Double
                  }
   deriving Show
@@ -87,6 +88,10 @@ faction u = faction_ (unitParams u)
 -- | Renvoie l'arme de l'unité.
 kind :: Unit -> UnitKind
 kind u = kind_ (unitParams u)
+
+-- | Renvoie la force de l'unité.
+strength :: Unit -> Double
+strength = strength_
 
 -- | Paramètres immuables d'une case du plateau de jeu.
 data CellParams = CP { cellKey_ :: CellKey
@@ -218,7 +223,7 @@ decrStrength uk ds board = case lookupKey uk (bXsMap board) of
              else removeUnit uk board
     where
       s' = (strength (unit_ bu)) - ds
-      u' = (unit_ bu) { strength = s' }
+      u' = (unit_ bu) { strength_ = s' }
       bu' = bu { unit_ = u' }
 
 -- | Renvoie la position d'une unité sur le plateau de jeu.
