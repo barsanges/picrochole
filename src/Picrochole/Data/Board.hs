@@ -67,7 +67,7 @@ data UnitParams = UP { unitKey_ :: UnitKey
 -- | Une unité du plateau de jeu.
 data Unit = Unit { unitParams :: UnitParams
                  , strength_ :: Double
-                 , unitProgress :: Maybe Double
+                 , position_ :: Position
                  }
   deriving Show
 
@@ -76,6 +76,9 @@ data Position = Position { currentCell :: CellKey
                          , progress :: Maybe Double
                          }
   deriving Show
+
+instance HasLocation Unit where
+  location = currentCell . position_
 
 -- | Renvoie l'identifiant de l'unité.
 unitKey :: Unit -> UnitKey
@@ -163,18 +166,9 @@ getStrongest f cell = if null units
     units = getFaction f cell
     comp x y = compare (strength x) (strength y)
 
--- | Une unité stockée dans une structure de type `Board`.
-data BUnit = BU { unit_ :: Unit
-                , currentCell_ :: CellKey
-                }
-  deriving Show
-
-instance HasLocation BUnit where
-  location = currentCell_
-
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
 data Board = Board { bCellParams :: HexGrid CellParams
-                   , bXsMap :: XsMap UnitKey Faction BUnit
+                   , bXsMap :: XsMap UnitKey Faction Unit
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
@@ -191,7 +185,7 @@ initiative board = bInitiative board
 -- | Renvoie une unité du plateau de jeu.
 getUnit :: Board -> UnitKey -> Unit
 getUnit board ukey = case lookupKey ukey (bXsMap board) of
-  Just bu -> unit_ bu
+  Just u -> u
   Nothing -> error "malformed board" -- HACK
 
 -- | Renvoie la distance à vol d'oiseau entre deux unités.
@@ -199,10 +193,10 @@ getDist :: Board -> UnitKey -> UnitKey -> Int
 getDist board x y = dist x' y'
   where
     x' = case lookupKey x (bXsMap board) of
-      Just bu -> currentCell_ bu
+      Just u -> location u
       Nothing -> error "malformed board" -- HACK
     y' = case lookupKey y (bXsMap board) of
-      Just bu -> currentCell_ bu
+      Just u -> location u
       Nothing -> error "malformed board" -- HACK
 
 -- | Supprime une unité du plateau de jeu.
@@ -218,20 +212,17 @@ removeUnit uk board = board { bXsMap = xs'
 decrStrength :: UnitKey -> Double -> Board -> Board
 decrStrength uk ds board = case lookupKey uk (bXsMap board) of
   Nothing -> board
-  Just bu -> if s' > 0
-             then board { bXsMap = insertKey uk bu' (bXsMap board) }
-             else removeUnit uk board
+  Just u -> if s' > 0
+            then board { bXsMap = insertKey uk u' (bXsMap board) }
+            else removeUnit uk board
     where
-      s' = (strength (unit_ bu)) - ds
-      u' = (unit_ bu) { strength_ = s' }
-      bu' = bu { unit_ = u' }
+      s' = (strength u) - ds
+      u' = u { strength_ = s' }
 
 -- | Renvoie la position d'une unité sur le plateau de jeu.
 getPosition :: Board -> UnitKey -> Position
 getPosition board ukey = case lookupKey ukey (bXsMap board) of
-  Just bu -> Position { currentCell = currentCell_ bu
-                      , progress = unitProgress (unit_ bu)
-                      }
+  Just u -> position_ u
   Nothing -> error "malformed board" -- HACK
 
 -- | Change la position d'une unité sur le plateau de jeu.
@@ -239,28 +230,26 @@ setPosition :: UnitKey -> Position -> Board -> Board
 setPosition ukey pos board = board { bXsMap = xs' }
   where
     xs = bXsMap board
-    bu = case lookupKey ukey xs of
-      Just bu_ -> bu_
+    u = case lookupKey ukey xs of
+      Just u_ -> u_
       Nothing -> error "malformed board" -- HACK
-    bu' = bu { currentCell_ = currentCell pos
-             , unit_ = (unit_ bu) { unitProgress = progress pos }
-             }
-    xs' = insertKey ukey bu' xs
+    u' = u { position_ = pos }
+    xs' = insertKey ukey u' xs
 
 -- | Renvoie l'emplacement d'une unité du plateau de jeu.
 getLocation :: Board -> UnitKey -> CellKey
 getLocation board ukey = case lookupKey ukey (bXsMap board) of
-  Just bu -> currentCell_ bu
+  Just u -> location u
   Nothing -> error "malformed board" -- HACK
 
 -- | Renvoie l'emplacement de toutes les unités d'un camp.
 getLocations :: Board -> Faction -> Set CellKey
 getLocations board f = foldr go S.empty (bXsMap board)
   where
-    go :: BUnit -> Set CellKey -> Set CellKey
-    go bu s = if faction (unit_ bu) == f
-              then S.insert (currentCell_ bu) s
-              else s
+    go :: Unit -> Set CellKey -> Set CellKey
+    go u s = if faction u == f
+             then S.insert (location u) s
+             else s
 
 -- | Renvoie une case du plateau de jeu.
 getCell :: Board -> CellKey -> Cell
@@ -271,9 +260,8 @@ getCell board ck = Cell { cellParams = params
     params = getHex (bCellParams board) ck
     content = case lookupLocation ck (bXsMap board) of
       Left f -> Left f
-      Right bunits -> Right (blues, reds)
+      Right units -> Right (blues, reds)
         where
-          units = fmap unit_ bunits
           (blues, reds) = partition (\ x -> faction x == Blue) units
 
 -- | Renvoie les identifiants d'un disque de cases du plateau de jeu, dont le
@@ -303,10 +291,10 @@ removeFaction f ck board = foldr go board bunits
   where
     bunits = lookupLocationContent ck (bXsMap board)
 
-    go :: BUnit -> Board -> Board
-    go bu b = if faction (unit_ bu) == f
-              then removeUnit (unitKey (unit_ bu)) b
-              else b
+    go :: Unit -> Board -> Board
+    go u b = if faction u == f
+             then removeUnit (unitKey u) b
+             else b
 
 -- | Renvoie la capacité d'accueil restante de la case donnée.
 capacityLeft :: Board -> Faction -> CellKey -> Double
@@ -315,10 +303,10 @@ capacityLeft board f ck = foldr go maxCapacity bunits
     maxCapacity = capacity_ (getHex (bCellParams board) ck)
     bunits = lookupLocationContent ck (bXsMap board)
 
-    go :: BUnit -> Double -> Double
-    go bu c = if faction (unit_ bu) == f
-              then c - (strength (unit_ bu))
-              else c
+    go :: Unit -> Double -> Double
+    go u c = if faction u == f
+             then c - (strength u)
+             else c
 
 -- | Renvoie la nature du terrain sur la case donnée.
 tile' :: Board -> CellKey -> Tile
@@ -338,8 +326,8 @@ setMarker f ck board = board { bXsMap = b' }
 hasUnit :: Board -> Faction -> CellKey -> Bool
 hasUnit board f x = any go (lookupLocationContent x (bXsMap board))
   where
-    go :: BUnit -> Bool
-    go bu = (faction $ unit_ bu) == f
+    go :: Unit -> Bool
+    go u = (faction u) == f
 
 -- | Indique si la case donnée contient des unités des deux camps.
 isContested :: Board -> CellKey -> Bool
