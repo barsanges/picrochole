@@ -77,9 +77,6 @@ data Position = Position { currentCell :: CellKey
                          }
   deriving Show
 
-instance HasLocation Unit where
-  location = currentCell . position_
-
 -- | Renvoie l'identifiant de l'unité.
 unitKey :: Unit -> UnitKey
 unitKey u = unitKey_ (unitParams u)
@@ -95,6 +92,10 @@ kind u = kind_ (unitParams u)
 -- | Renvoie la force de l'unité.
 strength :: Unit -> Double
 strength = strength_
+
+-- | Renvoie l'identifiant de la cellule sur laquelle se trouve l'unité.
+location :: Unit -> CellKey
+location = currentCell . position_
 
 -- | Paramètres immuables d'une case du plateau de jeu.
 data CellParams = CP { cellKey_ :: CellKey
@@ -168,7 +169,7 @@ getStrongest f cell = if null units
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
 data Board = Board { bCellParams :: HexGrid CellParams
-                   , bXsMap :: XsMap UnitKey Faction Unit
+                   , bXsMap :: XsMap CellKey UnitKey Faction Unit
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
