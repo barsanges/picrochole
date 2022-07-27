@@ -10,6 +10,8 @@ module Picrochole.Data.Utils.HexGrid
   ( HexGrid
   , GridSize(..)
   , CellKey
+  , fromVector
+  , toVector
   , gridSize
   , getHex
   , dist
@@ -35,6 +37,18 @@ data HexGrid a = HexGrid { cells :: Vector a
 -- | Identifiant unique d'une case.
 data CellKey = CK Int Int
   deriving (Eq, Ord, Show)
+
+-- | Construit une grille à partir d'un vecteur.
+fromVector :: GridSize -> Vector a -> Maybe (HexGrid a)
+fromVector gs xs = if (ncols gs) * (nrows gs) == V.length xs
+                   then Just (HexGrid { cells = xs
+                                      , gridSize_ = gs
+                                      })
+                   else Nothing
+
+-- | Convertit une grille en un vecteur.
+toVector :: HexGrid a -> Vector a
+toVector = cells
 
 -- | Renvoie les dimensions de la grille.
 gridSize :: HexGrid a -> GridSize
