@@ -10,6 +10,8 @@ lieu.
 
 module Picrochole.Data.Utils.XsMap
   ( XsMap
+  , fromMap
+  , toMap
   , lookupLocation
   , lookupLocationToken
   , lookupLocationContent
@@ -20,6 +22,7 @@ module Picrochole.Data.Utils.XsMap
   ) where
 
 import Data.Maybe ( mapMaybe )
+import Data.Either ( rights )
 import qualified Data.Map as M -- FIXME : IntMap ?
 import qualified Data.Set as S
 
@@ -35,6 +38,24 @@ instance (Show k1, Ord k2, Show a, Show b) => Show (XsMap k1 k2 a b) where
 
 instance Foldable (XsMap k1 k2 a) where
   foldr f z xs = foldr f z (content xs)
+
+-- | Construit un dictionnaire à partir d'un dictionnaire simple.
+fromMap :: Ord k2
+        => (b -> k1)
+        -> (b -> k2)
+        -> M.Map k1 (Either a [b])
+        -> XsMap k1 k2 a b
+fromMap f g m = XsMap { content = content'
+                      , locs = locs'
+                      , k1_ = f
+                      }
+  where
+    elems = (concat . rights . M.elems) m
+    content' = M.fromList (fmap (\ x -> (g x, x)) elems)
+    locs' = M.map go m
+
+    go (Left x) = Left x
+    go (Right xs) = Right (S.fromList $ fmap g xs)
 
 -- | Transforme le dictionnaire en un dictionnaire simple.
 toMap :: Ord k2 => XsMap k1 k2 a b -> M.Map k1 (Either a [b])
