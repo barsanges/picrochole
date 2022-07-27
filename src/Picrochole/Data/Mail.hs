@@ -11,6 +11,8 @@ module Picrochole.Data.Mail
   , Header(..)
   , Report
   , Order
+  , fromVector
+  , toVector
   , mkHeader
   , send
   , lastSent
@@ -25,6 +27,8 @@ import Data.Map ( Map )
 import qualified Data.Map as M
 import Data.Sequence ( Seq(..), (|>) )
 import qualified Data.Sequence as S
+import Data.Vector ( Vector )
+import qualified Data.Vector as V
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 
@@ -52,6 +56,22 @@ type Report = Map CellKey CellContent
 
 -- | Ordre de l'état-major à un subordonné.
 type Order = CellKey
+
+-- | Construit un registre à partir d'un vecteur de messages.
+fromVector :: Vector (Header, a) -> Register a
+fromVector xs = foldr go zero xs
+  where
+    zero = Register { senders = M.empty
+                    , receivers = M.empty
+                    , messages = IM.empty
+                    , last_ = 0
+                    }
+    go :: (Header, a) -> Register a -> Register a
+    go (header, x) register = send header x register
+
+-- | Convertit un registre en un vecteur de messages.
+toVector :: Register a -> Vector (Header, a)
+toVector reg = V.fromList (fmap snd (IM.toList (messages reg)))
 
 -- | Construit un en-tête de message. Cette fonction doit être préférée à la
 -- construction "à la main" d'un en-tête.
