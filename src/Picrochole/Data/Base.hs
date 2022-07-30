@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Picrochole.Data.Base
    Copyright   : Copyright (C) 2022 barsanges
@@ -17,6 +18,7 @@ module Picrochole.Data.Base
   ) where
 
 import qualified Data.Text as T
+import GHC.Generics ( Generic )
 
 -- | Numéro du tour en cours.
 type TurnCount = Int
@@ -24,7 +26,7 @@ type TurnCount = Int
 -- | Faction à laquelle appartient une unité.
 data Faction = Blue
              | Red
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Renvoie la faction adverse.
 opponent :: Faction -> Faction
@@ -33,19 +35,19 @@ opponent Red = Blue
 
 -- | Identifiant unique d'une unité.
 newtype UnitKey = UK T.Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Generic, Ord, Show)
 
 -- | Arme d'une unité.
 data UnitKind = Infantery
               | Cavalery
               | Artillery
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Nature du terrain sur une case.
 data Tile = Road
           | Land
           | Water
-  deriving (Eq, Show)
+  deriving (Eq, Generic, Show)
 
 -- | Renvoie la vitesse à laquelle un type d'unité progresse sur un type de
 -- case.
