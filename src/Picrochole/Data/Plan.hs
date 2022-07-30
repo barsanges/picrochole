@@ -9,9 +9,7 @@ Un plan de bataille pour l'IA.
 module Picrochole.Data.Plan
   ( ThreatLevel(..)
   , Objective(..)
-  , Plan
-  , subordinates
-  , objectives
+  , Plan(..)
   ) where
 
 import Data.Set ( Set )
@@ -31,15 +29,7 @@ data Objective = Objective { target :: CellKey
   deriving Show
 
 -- | Un plan de bataille pour l'IA.
-data Plan = Plan { subordinates_ :: Set UnitKey
-                 , objectives_ :: [Objective]
+data Plan = Plan { subordinates :: Set UnitKey
+                 , objectives :: [Objective]
                  }
   deriving Show
-
--- | Renvoie l'ensemble des subordonnés impliqués dans le plan.
-subordinates :: Plan -> Set UnitKey
-subordinates = subordinates_
-
--- | Renvoie l'ensemble des objectifs du plan.
-objectives :: Plan -> [Objective]
-objectives = objectives_
