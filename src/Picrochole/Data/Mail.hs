@@ -9,6 +9,7 @@ Les messages que les unités s'échangent.
 module Picrochole.Data.Mail
   ( Register
   , Header(..)
+  , Msg(..)
   , Report
   , Order
   , fromVector
@@ -38,7 +39,7 @@ type MsgId = Int
 -- | Ensemble des messages de type `a` échangés entre les unités.
 data Register a = Register { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
                            , receivers :: Map UnitKey (Map UnitKey (Seq MsgId))
-                           , messages :: IntMap (Header, a)
+                           , messages :: IntMap (Msg a)
                            , last_ :: Int
                            }
   deriving Show
@@ -51,6 +52,13 @@ data Header = Header { from :: UnitKey
                      }
   deriving Show
 
+-- | Un message.
+data Msg a = Msg { header :: Header
+                 , content :: a
+                 }
+  deriving Show
+
+
 -- | Rapport d'une unité à son état-major.
 type Report = Map CellKey CellContent
 
@@ -58,7 +66,7 @@ type Report = Map CellKey CellContent
 type Order = CellKey
 
 -- | Construit un registre à partir d'un vecteur de messages.
-fromVector :: Vector (Header, a) -> Register a
+fromVector :: Vector (Msg a) -> Register a
 fromVector xs = foldr go zero xs
   where
     zero = Register { senders = M.empty
@@ -66,11 +74,11 @@ fromVector xs = foldr go zero xs
                     , messages = IM.empty
                     , last_ = 0
                     }
-    go :: (Header, a) -> Register a -> Register a
-    go (header, x) register = send header x register
+    go :: (Msg a) -> Register a -> Register a
+    go msg register = send (header msg) (content msg) register
 
 -- | Convertit un registre en un vecteur de messages.
-toVector :: Register a -> Vector (Header, a)
+toVector :: Register a -> Vector (Msg a)
 toVector reg = V.fromList (fmap snd (IM.toList (messages reg)))
 
 -- | Construit un en-tête de message. Cette fonction doit être préférée à la
@@ -92,16 +100,17 @@ eta t dist = if dist < 0
 
 -- | Ajoute un message à un registre.
 send :: Header -> a -> Register a -> Register a
-send header x register = Register { senders = senders'
-                                  , receivers = receivers'
-                                  , messages = messages'
-                                  , last_ = idx
-                                  }
+send h x register = Register { senders = senders'
+                             , receivers = receivers'
+                             , messages = messages'
+                             , last_ = idx
+                             }
   where
+    msg = Msg { header = h, content = x}
     idx = (last_ register) + 1
-    senders' = nestedInsert (from header) (to header) idx (senders register)
-    receivers' = nestedInsert (to header) (from header) idx (receivers register)
-    messages' = IM.insert idx (header, x) (messages register)
+    senders' = nestedInsert (from h) (to h) idx (senders register)
+    receivers' = nestedInsert (to h) (from h) idx (receivers register)
+    messages' = IM.insert idx msg (messages register)
 
 -- | Insère une valeur dans un dictionnaire de dictionnaire.
 nestedInsert :: Ord k
@@ -119,7 +128,7 @@ nestedInsert k1 k2 x' xsss = M.insert k1 xs' xsss
       Nothing -> M.singleton k2 (S.singleton x')
 
 -- | Renvoie le dernier message envoyé par l'unité `x` à un correspondant `y`.
-lastSent :: Register a -> UnitKey -> UnitKey -> Maybe (Header, a)
+lastSent :: Register a -> UnitKey -> UnitKey -> Maybe (Msg a)
 lastSent reg x y = do
   addressee <- M.lookup x (senders reg)
   msgIds <- M.lookup y addressee
@@ -128,7 +137,7 @@ lastSent reg x y = do
 
 -- | Renvoie le dernier message envoyé par l'unité `x` à chacun de ses
 -- correspondants.
-lastSent' :: Register a -> UnitKey -> Map UnitKey (Header, a)
+lastSent' :: Register a -> UnitKey -> Map UnitKey (Msg a)
 lastSent' reg x = case M.lookup x (senders reg) of
   Nothing -> M.empty
   Just ms -> mmapMaybe go ms
@@ -142,7 +151,7 @@ lastReceived :: TurnCount
              -> Register a
              -> UnitKey
              -> UnitKey
-             -> Maybe (Header, a)
+             -> Maybe (Msg a)
 lastReceived tcount reg x y = do
   got <- M.lookup x (receivers reg)
   msgIds <- M.lookup y got
@@ -154,7 +163,7 @@ lastReceived tcount reg x y = do
 lastReceived' :: TurnCount
               -> Register a
               -> UnitKey
-              -> Map UnitKey (Header, a)
+              -> Map UnitKey (Msg a)
 lastReceived' tcount reg x = case M.lookup x (receivers reg) of
   Nothing -> M.empty
   Just ms -> mmapMaybe go ms
@@ -167,7 +176,7 @@ lastReceived' tcount reg x = case M.lookup x (receivers reg) of
 hasBeenReceived :: TurnCount -> Register a -> MsgId -> Bool
 hasBeenReceived tcount reg idx = case IM.lookup idx (messages reg) of
   Nothing -> False
-  Just (h, _) -> received h <= tcount
+  Just msg -> received (header msg) <= tcount
 
 -- | Renvoie le premier élément (en partant de la droite) qui satisfait un
 -- prédicat.

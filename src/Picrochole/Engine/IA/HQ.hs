@@ -72,15 +72,15 @@ mkInfo tcount ukey limit reg = foldr f M.empty reports
                  then b
                  else a
 
-    f :: (Header, Report) -> Info -> Info
-    f (header, report) i0 = if (sent header) >= (tcount - limit)
-                            then M.foldrWithKey g i0 report
-                            else i0
+    f :: Msg Report -> Info -> Info
+    f msg i0 = if (sent (header msg)) >= (tcount - limit)
+               then M.foldrWithKey g i0 (content msg)
+               else i0
       where
         g :: CellKey -> CellContent -> Info -> Info
-        g ckey content info = M.insertWith select ckey icell info
+        g ckey inner info = M.insertWith select ckey icell info
           where
-            icell = InfoCell { cellContent_ = content, date_ = sent header }
+            icell = InfoCell { cellContent_ = inner, date_ = sent (header msg) }
 
 -- | Affecte un objectif à chaque unité.
 assign :: GridSize -> Faction -> Plan -> Info -> Set BaseOrder
@@ -128,7 +128,7 @@ command :: TurnCount
 command tcount board hq orders reg = foldr go reg orders
   where
     go :: BaseOrder -> Register Order -> Register Order
-    go (BaseOrder ukey obj) r = send header obj r
+    go (BaseOrder ukey obj) r = send h obj r
       where
         d = getDist board ukey hq
-        header = mkHeader tcount hq ukey d
+        h = mkHeader tcount hq ukey d

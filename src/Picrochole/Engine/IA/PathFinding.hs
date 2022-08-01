@@ -35,7 +35,7 @@ findPath :: TurnCount
          -> UnitKey
          -> [CellKey]
 findPath tcount board orders getHQ ukey = case lastReceived tcount orders ukey hq of
-  Just (_, dest) -> shortest board k size start dest
+  Just msg -> shortest board k size start (content msg)
   Nothing -> []
   where
     start = currentCell (getPosition board ukey)

@@ -25,15 +25,15 @@ reporting tcount getHQ board reports = foldr go reports (initiative board)
   where
     go :: UnitKey -> Register Report -> Register Report
     go ukey r = if d <= 3 * (tcount - prev) || prev == 0
-                then send header report r
+                then send h report r
                 else r
       where
         hq = getHQ (faction $ getUnit board ukey)
         d = getDist board ukey hq
         prev = case (lastReceived tcount r ukey hq) of
-          Just (h, _) -> received h
+          Just msg -> received (header msg)
           Nothing -> 0
-        header = mkHeader tcount ukey hq d
+        h = mkHeader tcount ukey hq d
         report = mkReport board ukey
 
 -- | Construit le rapport d'une unité à son état-major.
