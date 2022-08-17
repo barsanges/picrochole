@@ -23,19 +23,8 @@ import Picrochole.Data.Utils.HexGrid
 --   toJSON :: a -> Value
 --   parseJSON :: Value -> Parser a
 
-instance ToJSON CellKey where
-  toJSON (CK x y) = Array (V.fromList [toJSON x, toJSON y])
-
-instance FromJSON CellKey where
-  parseJSON = withArray "CellKey" go
-    where
-      go xs =
-        if V.length xs == 2
-        then do
-          x <- parseJSON (xs V.! 0)
-          y <- parseJSON (xs V.! 1)
-          return (CK x y)
-        else fail ("expected an array of length 2, got " ++ show (V.length xs) ++ " instead")
+instance ToJSON CellKey
+instance FromJSON CellKey
 
 instance ToJSON Faction
 instance FromJSON Faction

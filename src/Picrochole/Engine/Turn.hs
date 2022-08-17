@@ -18,6 +18,7 @@ import Data.Set ( Set )
 import qualified Data.Set as S
 import Picrochole.Data.Base
 import Picrochole.Data.Board
+import Picrochole.Data.Utils.HexGrid
 
 -- | Résout un tour de jeu.
 turn :: Map UnitKey [CellKey] -> Board -> Board
@@ -68,7 +69,7 @@ fwd t unit (ds, pos) = case progress pos of
 -- | Indique si l'unité peut quitter la cellule `x` pour la cellule `y`.
 next :: Board -> Unit -> CellKey -> CellKey -> Bool
 next board unit x y = (strength unit <= capacityLeft board (faction unit) y)
-                      && (touch x y)
+                      && (touch (boardSize board) x y)
                       && ((not $ isContested board x)
                           || (getMarker board y == Just f)
                           || (hasUnit board f y))
@@ -80,6 +81,7 @@ encirclement :: Board -> Board
 encirclement board = removeSurrounded Red redsSurrounded
                      (removeSurrounded Blue bluesSurrounded board)
   where
+
     bluesSurrounded = allSurrounded Blue
     redsSurrounded = allSurrounded Red
 
@@ -89,14 +91,14 @@ encirclement board = removeSurrounded Red redsSurrounded
     allSurrounded :: Faction -> Set CellKey
     allSurrounded f = ravel (filter (surrounded board (opponent f)) locs)
       where
-        locs = connex (getLocations board f)
+        locs = connex (boardSize board) (getLocations board f)
 
     removeSurrounded :: Faction -> Set CellKey -> Board -> Board
     removeSurrounded f xs b = foldr (removeFaction f) b xs
 
 -- | Regroupe les cases par ensembles connexes.
-connex :: Set CellKey -> [Set CellKey]
-connex keys = foldr go [] keys
+connex :: GridSize -> Set CellKey -> [Set CellKey]
+connex gsize keys = foldr go [] keys
   where
 
     -- Ajoute la case `k` à un ensemble de cases connexes (ce qui peut
@@ -111,15 +113,15 @@ connex keys = foldr go [] keys
         -- qui ne le sont pas.
         goo :: [Set CellKey] -> (Set CellKey, [Set CellKey])
         goo [] = (S.empty, [])
-        goo (xs:xss) = if touchFold k xs
+        goo (xs:xss) = if touchFold gsize k xs
                        then (S.union xs ins, outs)
                        else (ins, xs:outs)
           where
             (ins, outs) = goo xss
 
 -- | Indique si la case est adjacente à un groupe de cases donné.
-touchFold :: Foldable t => CellKey -> t CellKey -> Bool
-touchFold x ys = any (touch x) ys
+touchFold :: Foldable t => GridSize -> CellKey -> t CellKey -> Bool
+touchFold gsize x ys = any (touch gsize x) ys
 
 -- | Indique si l'ensemble de cases `ks` est encerclé par la faction `f`.
 surrounded :: Board -> Faction -> Set CellKey -> Bool

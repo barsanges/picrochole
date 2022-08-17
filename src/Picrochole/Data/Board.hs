@@ -191,8 +191,9 @@ getUnit board ukey = case lookupKey ukey (bXsMap board) of
 
 -- | Renvoie la distance à vol d'oiseau entre deux unités.
 getDist :: Board -> UnitKey -> UnitKey -> Int
-getDist board x y = dist x' y'
+getDist board x y = dist gsize x' y'
   where
+    gsize = gridSize (bCellParams board)
     x' = case lookupKey x (bXsMap board) of
       Just u -> location u
       Nothing -> error "malformed board" -- HACK
