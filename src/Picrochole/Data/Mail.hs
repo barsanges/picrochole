@@ -58,6 +58,8 @@ data Msg a = Msg { header :: Header
                  }
   deriving Show
 
+instance Functor Msg where
+  fmap f x = x { content = f (content x) }
 
 -- | Rapport d'une unité à son état-major.
 type Report = Map CellKey CellContent
