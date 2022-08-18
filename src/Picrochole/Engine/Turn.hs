@@ -38,14 +38,14 @@ movement actions board = foldr go board (initiative board)
         goo :: Double -> [CellKey] -> Board -> Board
         goo ds keys b = case keys of
           [] -> setPosition ukey pos' b
-          (y:ys) -> if isNothing (progress pos')
+          (y:ys) -> if isNothing (currentProgress pos')
                        && (next b unit x y)
                     then goo ds' ys b'
                     else setPosition ukey pos' b
             where
               f = faction unit
               x = currentCell pos
-              new = Position { currentCell = y, progress = Just 0 }
+              new = Position { currentCell = y, currentProgress = Just 0 }
               b' = setMarker f x (setPosition ukey new b)
 
           where
@@ -56,15 +56,15 @@ movement actions board = foldr go board (initiative board)
 
 -- | Fait avancer l'unité sur sa case.
 fwd :: Tile -> Unit -> (Double, Position) -> (Double, Position)
-fwd t unit (ds, pos) = case progress pos of
+fwd t unit (ds, pos) = case currentProgress pos of
   Nothing -> (ds, pos)
   Just dx -> (ds', pos')
     where
       v = speed (kind unit) t
       ds' = max 0 (ds - ((1 - dx) / v))
       pos' = if (dx + ds * v) < 1
-             then pos { progress = Just (dx + ds * v) }
-             else pos { progress = Nothing }
+             then pos { currentProgress = Just (dx + ds * v) }
+             else pos { currentProgress = Nothing }
 
 -- | Indique si l'unité peut quitter la cellule `x` pour la cellule `y`.
 next :: Board -> Unit -> CellKey -> CellKey -> Bool

@@ -13,6 +13,9 @@ module Picrochole.Data.Board
   , faction
   , kind
   , strength
+  , location
+  , progress
+  , mkUnit
   , CellKey
   , CellContent
   , Cell
@@ -73,7 +76,7 @@ data Unit = Unit { unitParams :: UnitParams
 
 -- | Position d'une unité sur le plateau de jeu.
 data Position = Position { currentCell :: CellKey
-                         , progress :: Maybe Double
+                         , currentProgress :: Maybe Double
                          }
   deriving Show
 
@@ -96,6 +99,28 @@ strength = strength_
 -- | Renvoie l'identifiant de la cellule sur laquelle se trouve l'unité.
 location :: Unit -> CellKey
 location = currentCell . position_
+
+-- | Renvoie l'état d'avancement de l'unité sur sa case.
+progress :: Unit -> Maybe Double
+progress = currentProgress . position_
+
+-- | Renvoie une unité.
+mkUnit :: UnitKey
+       -> Faction
+       -> UnitKind
+       -> Double
+       -> CellKey
+       -> Maybe Double
+       -> Unit
+mkUnit ky f ki s l p = Unit { unitParams = UP { unitKey_ = ky
+                                              , faction_ = f
+                                              , kind_ = ki
+                                              }
+                            , strength_ = s
+                            , position_ = Position { currentCell = l
+                                                   , currentProgress = p
+                                                   }
+                            }
 
 -- | Paramètres immuables d'une case du plateau de jeu.
 data CellParams = CP { cellKey_ :: CellKey
