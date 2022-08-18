@@ -18,13 +18,11 @@ module Picrochole.IO.JSON
 
 import Data.Aeson
 import qualified Data.Set as S
-import qualified Data.Vector as V
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
 import qualified Picrochole.Data.Mail as PM
 import Picrochole.Data.Plan
-import Picrochole.Data.Utils.HexGrid
 
 -- Pour mémoire :
 --   toJSON :: a -> Value
