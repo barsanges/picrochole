@@ -15,6 +15,10 @@ module Picrochole.IO.JSON
   , writeOrders
   , writeReports
   , readAtlas
+  , readInitiative
+  , writeInitiative
+  , readUnits
+  , writeUnits
   ) where
 
 import Data.Aeson
@@ -25,6 +29,7 @@ import Picrochole.Data.Mail
 import qualified Picrochole.Data.Mail as PM
 import Picrochole.Data.Plan
 import Picrochole.Data.Utils.HexGrid
+import Picrochole.Data.Utils.XsMap
 
 -- Pour mémoire :
 --   toJSON :: a -> Value
@@ -170,3 +175,23 @@ instance FromJSON a => FromJSON (HexGrid a) where
 -- | Construit une instance du terrain de jeu à partir d'un fichier JSON.
 readAtlas :: FilePath -> IO (Either String (HexGrid CellParams))
 readAtlas fp = eitherDecodeFileStrict fp
+
+-- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.
+readInitiative :: FilePath -> IO (Either String [UnitKey])
+readInitiative = eitherDecodeFileStrict
+
+-- | Enregistre l'instance de `[UnitKey]` dans le fichier indiqué.
+writeInitiative :: FilePath -> [UnitKey] -> IO ()
+writeInitiative = encodeFile
+
+-- | Construit un conteneur d'unités à partir d'un fichier JSON.
+readUnits :: FilePath -> IO (Either String (XsMap CellKey UnitKey Faction Unit))
+readUnits fp = do
+  mxs <- eitherDecodeFileStrict fp
+  case mxs of
+    Left m -> return (Left m)
+    Right xs -> return (Right (fromMap location unitKey xs))
+
+-- | Enregistre le conteneur d'unités dans le fichier indiqué.
+writeUnits :: FilePath -> XsMap CellKey UnitKey Faction Unit -> IO ()
+writeUnits fp xs = encodeFile fp (toMap xs)
