@@ -18,6 +18,7 @@ module Picrochole.Data.Board
   , mkUnit
   , CellKey
   , CellContent
+  , CellParams(..)
   , Cell
   , cellKey
   , tile
