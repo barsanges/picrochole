@@ -14,6 +14,7 @@ module Picrochole.IO.JSON
   , readReports
   , writeOrders
   , writeReports
+  , readAtlas
   ) where
 
 import Data.Aeson
@@ -23,6 +24,7 @@ import Picrochole.Data.Board
 import Picrochole.Data.Mail
 import qualified Picrochole.Data.Mail as PM
 import Picrochole.Data.Plan
+import Picrochole.Data.Utils.HexGrid
 
 -- Pour mémoire :
 --   toJSON :: a -> Value
@@ -139,3 +141,32 @@ writeOrders fp x = encodeFile fp (PM.toVector x)
 -- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
 writeReports :: FilePath -> Register Report -> IO ()
 writeReports fp x = encodeFile fp (PM.toVector x)
+
+instance FromJSON CellParams where
+  parseJSON = withObject "CellParams" go
+    where
+      go v = do
+        ck <- v .: "key"
+        t <- v .: "tile"
+        ca <- v .: "capacity"
+        return CP { cellKey_ = ck
+                  , tile_ = t
+                  , capacity_ = ca
+                  }
+
+instance FromJSON a => FromJSON (HexGrid a) where
+  parseJSON = withObject "HexGrid" go
+    where
+      go v = do
+        c <- v .: "ncols"
+        r <- v .: "nrows"
+        xs <- v .: "content"
+        return HexGrid { gridSize_ = GridSize { ncols = c
+                                              , nrows = r
+                                              }
+                       , cells = xs
+                       }
+
+-- | Construit une instance du terrain de jeu à partir d'un fichier JSON.
+readAtlas :: FilePath -> IO (Either String (HexGrid CellParams))
+readAtlas fp = eitherDecodeFileStrict fp
