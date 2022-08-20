@@ -31,6 +31,7 @@ module Picrochole.Data.Board
   , getOpponents'
   , getStrongest
   , Board
+  , mkBoard
   , boardSize
   , touch
   , initiative
@@ -199,6 +200,16 @@ data Board = Board { bCellParams :: HexGrid CellParams
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
+
+-- | Renvoie une nouvelle instance de `Board`.
+mkBoard :: HexGrid CellParams
+        -> XsMap CellKey UnitKey Faction Unit
+        -> [UnitKey]
+        -> Board
+mkBoard hex xs is = Board { bCellParams = hex
+                          , bXsMap = xs
+                          , bInitiative = is
+                          }
 
 -- | Renvoie les dimensions du plateau de jeu.
 boardSize :: Board -> GridSize
