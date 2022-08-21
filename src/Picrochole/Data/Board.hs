@@ -128,13 +128,14 @@ type CellContent = Either Faction ([Unit], [Unit])
 
 -- | Une case du plateau de jeu.
 data Cell = Cell { cellParams :: CellParams
+                 , cellKey_ :: CellKey
                  , cellContent_ :: CellContent
                  }
   deriving Show
 
 -- | Renvoie l'identifiant de la case.
 cellKey :: Cell -> CellKey
-cellKey c = cellKey_ (cellParams c)
+cellKey = cellKey_
 
 -- | Renvoie la nature du terrain sur la case.
 tile :: Cell -> Tile
@@ -283,6 +284,7 @@ getLocations board f = foldr go S.empty (bXsMap board)
 getCell :: Atlas -> Board -> CellKey -> Cell
 getCell atlas board ck = Cell { cellParams = params
                               , cellContent_ = content
+                              , cellKey_ = ck
                               }
   where
     params = getHex atlas ck

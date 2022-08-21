@@ -16,10 +16,9 @@ import Picrochole.Data.Base
 import Picrochole.Data.Utils.HexGrid
 
 -- | Paramètres immuables d'une case du plateau de jeu.
-data CellParams = CP { cellKey_ :: CellKey
-                     , tile_ :: Tile
+data CellParams = CP { tile_ :: Tile
                      , capacity_ :: Double
-                     }
+                     } -- FIXME : inscrire dans les types la distinction crossable / uncrossable
   deriving Show
 
 -- | Géographie du jeu.

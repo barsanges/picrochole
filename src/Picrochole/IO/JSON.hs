@@ -151,11 +151,9 @@ instance FromJSON CellParams where
   parseJSON = withObject "CellParams" go
     where
       go v = do
-        ck <- v .: "key"
         t <- v .: "tile"
         ca <- v .: "capacity"
-        return CP { cellKey_ = ck
-                  , tile_ = t
+        return CP { tile_ = t
                   , capacity_ = ca
                   }
 
