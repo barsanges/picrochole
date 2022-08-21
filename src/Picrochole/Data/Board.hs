@@ -35,6 +35,7 @@ module Picrochole.Data.Board
   , boardSize
   , touch
   , initiative
+  , allUnits
   , getUnit
   , getDist
   , decrStrength
@@ -219,6 +220,10 @@ boardSize b = gridSize (bCellParams b)
 -- première unité qui doit jouer est la première unité de la liste).
 initiative :: Board -> [UnitKey]
 initiative board = bInitiative board
+
+-- | Renvoie les unités du plateau de jeu.
+allUnits :: Board -> XsMap CellKey UnitKey Faction Unit
+allUnits b = bXsMap b
 
 -- | Renvoie une unité du plateau de jeu.
 getUnit :: Board -> UnitKey -> Unit
