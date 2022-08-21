@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-} -- FIXME : à supprimer à terme.
 {- |
-   Module      : Picrochole.Data.Utils.HexGrid
+   Module      : Picrochole.Data.Structs.HexGrid
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
 Une grille hexagonale, dont les hexagones sont orientés pointe en haut.
 -}
 
-module Picrochole.Data.Utils.HexGrid
+module Picrochole.Data.Structs.HexGrid
   ( HexGrid
   , GridSize(..)
   , CellKey

@@ -58,7 +58,7 @@ import Data.Set ( Set )
 import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
-import Picrochole.Data.Utils.XsMap
+import Picrochole.Data.Structs.XsMap
 
 -- | Paramètres immuables d'une unité.
 data UnitParams = UP { unitKey_ :: UnitKey

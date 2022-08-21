@@ -13,7 +13,7 @@ module Picrochole.Data.Atlas
   , Topography(..)
   , topography
   , capacity
-  , module Picrochole.Data.Utils.HexGrid
+  , module Picrochole.Data.Structs.HexGrid
   , readAtlas
   , topography'
   ) where
@@ -24,7 +24,7 @@ import qualified Data.Text as T
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
-import Picrochole.Data.Utils.HexGrid
+import Picrochole.Data.Structs.HexGrid
 import qualified Picrochole.JSON.Atlas as J
 
 -- | Paramètres immuables d'une case du plateau de jeu.

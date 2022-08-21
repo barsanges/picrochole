@@ -29,7 +29,7 @@ import Picrochole.Data.Board
 import Picrochole.Data.Mail
 import qualified Picrochole.Data.Mail as PM
 import Picrochole.Data.Plan
-import Picrochole.Data.Utils.XsMap
+import Picrochole.Data.Structs.XsMap
 
 -- Pour mémoire :
 --   toJSON :: a -> Value
