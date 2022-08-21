@@ -23,6 +23,7 @@ module Picrochole.IO.JSON
 
 import Data.Aeson
 import qualified Data.Set as S
+import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
@@ -173,7 +174,7 @@ instance FromJSON a => FromJSON (HexGrid a) where
                        }
 
 -- | Construit une instance du terrain de jeu à partir d'un fichier JSON.
-readAtlas :: FilePath -> IO (Either String (HexGrid CellParams))
+readAtlas :: FilePath -> IO (Either String Atlas)
 readAtlas fp = eitherDecodeFileStrict fp
 
 -- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.

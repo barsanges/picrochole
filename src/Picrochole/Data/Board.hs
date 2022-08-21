@@ -18,7 +18,6 @@ module Picrochole.Data.Board
   , mkUnit
   , CellKey
   , CellContent
-  , CellParams(..)
   , Cell
   , cellKey
   , tile
@@ -59,6 +58,7 @@ module Picrochole.Data.Board
 import Data.List ( maximumBy, partition )
 import Data.Set ( Set )
 import qualified Data.Set as S
+import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Utils.HexGrid
 import Picrochole.Data.Utils.XsMap
@@ -125,13 +125,6 @@ mkUnit ky f ki s l p = Unit { unitParams = UP { unitKey_ = ky
                                                    }
                             }
 
--- | Paramètres immuables d'une case du plateau de jeu.
-data CellParams = CP { cellKey_ :: CellKey
-                     , tile_ :: Tile
-                     , capacity_ :: Double
-                     }
-  deriving Show
-
 -- | Contenu d'une cellule.
 type CellContent = Either Faction ([Unit], [Unit])
 
@@ -196,14 +189,14 @@ getStrongest f cell = if null units
     comp x y = compare (strength x) (strength y)
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
-data Board = Board { bCellParams :: HexGrid CellParams
+data Board = Board { bCellParams :: Atlas
                    , bXsMap :: XsMap CellKey UnitKey Faction Unit
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
 
 -- | Renvoie une nouvelle instance de `Board`.
-mkBoard :: HexGrid CellParams
+mkBoard :: Atlas
         -> XsMap CellKey UnitKey Faction Unit
         -> [UnitKey]
         -> Board
