@@ -11,7 +11,7 @@ module Picrochole.Data.Config
   , readConfig
   ) where
 
-import Data.Aeson
+import Data.Aeson ( eitherDecodeFileStrict )
 
 import Picrochole.Data.Base
 import qualified Picrochole.JSON.Config as J
