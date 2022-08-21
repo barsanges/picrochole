@@ -20,8 +20,8 @@ module Picrochole.Data.Board
   , CellContent
   , Cell
   , cellKey
-  , tile
-  , capacity
+  , cellTopography
+  , cellCapacity
   , cellContent
   , getBlues
   , getReds
@@ -47,7 +47,6 @@ module Picrochole.Data.Board
   , getContested
   , removeFaction
   , capacityLeft
-  , tile'
   , getMarker
   , setMarker
   , isContested
@@ -127,7 +126,7 @@ mkUnit ky f ki s l p = Unit { unitParams = UP { unitKey_ = ky
 type CellContent = Either Faction ([Unit], [Unit])
 
 -- | Une case du plateau de jeu.
-data Cell = Cell { cellParams :: CellParams
+data Cell = Cell { tile_ :: Tile
                  , cellKey_ :: CellKey
                  , cellContent_ :: CellContent
                  }
@@ -138,12 +137,12 @@ cellKey :: Cell -> CellKey
 cellKey = cellKey_
 
 -- | Renvoie la nature du terrain sur la case.
-tile :: Cell -> Tile
-tile c = tile_ (cellParams c)
+cellTopography :: Cell -> Topography
+cellTopography c = topography (tile_ c)
 
 -- | Renvoie la capacité maximale (par camp) de la case.
-capacity :: Cell -> Double
-capacity c = capacity_ (cellParams c)
+cellCapacity :: Cell -> Double
+cellCapacity c = capacity (tile_ c)
 
 -- | Renvoie le contenu de la cellule.
 cellContent :: Cell -> CellContent
@@ -282,12 +281,12 @@ getLocations board f = foldr go S.empty (bXsMap board)
 
 -- | Renvoie une case du plateau de jeu.
 getCell :: Atlas -> Board -> CellKey -> Cell
-getCell atlas board ck = Cell { cellParams = params
+getCell atlas board ck = Cell { tile_ = tile
                               , cellContent_ = content
                               , cellKey_ = ck
                               }
   where
-    params = getHex atlas ck
+    tile = getHex atlas ck
     content = case lookupLocation ck (bXsMap board) of
       Left f -> Left f
       Right units -> Right (blues, reds)
@@ -330,17 +329,13 @@ removeFaction f ck board = foldr go board bunits
 capacityLeft :: Atlas -> Board -> Faction -> CellKey -> Double
 capacityLeft atlas board f ck = foldr go maxCapacity bunits
   where
-    maxCapacity = capacity_ (getHex atlas ck)
+    maxCapacity = capacity (getHex atlas ck)
     bunits = lookupLocationContent ck (bXsMap board)
 
     go :: Unit -> Double -> Double
     go u c = if faction u == f
              then c - (strength u)
              else c
-
--- | Renvoie la nature du terrain sur la case donnée.
-tile' :: Atlas -> CellKey -> Tile
-tile' atlas ck = tile_ (getHex atlas ck)
 
 -- | Renvoie le marqueur sur la case donnée.
 getMarker :: Board -> CellKey -> Maybe Faction

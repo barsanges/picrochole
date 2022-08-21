@@ -9,8 +9,8 @@ Sérialisation en JSON de la géographie du jeu.
 
 module Picrochole.JSON.Atlas
   ( Atlas(..)
-  , CellParams(..)
-  , tile
+  , Tile(..)
+  , topography
   , capacity
   ) where
 
@@ -19,25 +19,25 @@ import qualified Data.Text as T
 import Data.Vector ( Vector )
 
 -- | Paramètres d'une case du plateau de jeu.
-data CellParams = Crossable T.Text Double
-                | Uncrossable T.Text
+data Tile = Crossable T.Text Double
+          | Uncrossable T.Text
   deriving Show
 
 -- | Renvoie la nature du terrain associé à la case.
-tile :: CellParams -> T.Text
-tile (Crossable t _) = (T.toLower . T.strip) t
-tile (Uncrossable t) = (T.toLower . T.strip) t
+topography :: Tile -> T.Text
+topography (Crossable t _) = (T.toLower . T.strip) t
+topography (Uncrossable t) = (T.toLower . T.strip) t
 
 -- | Renvoie la capacité de la case.
-capacity :: CellParams -> Double
+capacity :: Tile -> Double
 capacity (Crossable _ c) = c
 capacity (Uncrossable _) = 0
 
-instance FromJSON CellParams where
-  parseJSON = withObject "CellParams" go
+instance FromJSON Tile where
+  parseJSON = withObject "Tile" go
     where
       go v = do
-        t <- v .: "tile"
+        t <- v .: "topography"
         mc <- v .:? "capacity"
         case mc of
           Just c -> return (Crossable t c)
@@ -46,7 +46,7 @@ instance FromJSON CellParams where
 -- | Géographie du jeu.
 data Atlas = Atlas { ncols :: Int
                    , nrows :: Int
-                   , content :: Vector CellParams
+                   , content :: Vector Tile
                    }
   deriving Show
 

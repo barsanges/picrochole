@@ -67,8 +67,8 @@ shortest atlas board k size start end = case sol of
     ngb x = fmap cellKey (filter sieve (getDisk atlas board x 1))
 
     sieve :: Cell -> Bool
-    sieve c = ((tile c == Road) || (tile c == Land))
-              && (capacity c >= size)
+    sieve c = ((cellTopography c == Road) || (cellTopography c == Land))
+              && (cellCapacity c >= size)
 
     dst :: CellKey -> CellKey -> Double
     dst x y = (weight x) + (weight y)
@@ -76,4 +76,4 @@ shortest atlas board k size start end = case sol of
     -- orienté.
 
     weight :: CellKey -> Double
-    weight ckey = 1 / (speed k (tile' atlas ckey))
+    weight ckey = 1 / (speed k (topography' atlas ckey))

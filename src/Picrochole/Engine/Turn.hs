@@ -54,11 +54,11 @@ movement atlas actions board = foldr go board (initiative board)
           where
             unit = getUnit b ukey
             pos = getPosition b ukey
-            t = tile' atlas (currentCell pos)
+            t = topography' atlas (currentCell pos)
             (ds', pos') = fwd t unit (ds, pos)
 
 -- | Fait avancer l'unité sur sa case.
-fwd :: Tile -> Unit -> (Double, Position) -> (Double, Position)
+fwd :: Topography -> Unit -> (Double, Position) -> (Double, Position)
 fwd t unit (ds, pos) = case currentProgress pos of
   Nothing -> (ds, pos)
   Just dx -> (ds', pos')
@@ -132,7 +132,7 @@ surrounded atlas board f ks = all go edge
   where
     edge = border atlas ks
     go :: CellKey -> Bool
-    go key = (tile cell == Water) || (not (null (getOpponents f cell)))
+    go key = (topography' atlas key == Water) || (not (null (getOpponents f cell)))
       where
         cell = getCell atlas board key
 

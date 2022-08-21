@@ -9,9 +9,13 @@ Géographie du jeu.
 
 module Picrochole.Data.Atlas
   ( Atlas
-  , CellParams(..)
+  , Tile
+  , Topography(..)
+  , topography
+  , capacity
   , module Picrochole.Data.Utils.HexGrid
   , readAtlas
+  , topography'
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
@@ -20,18 +24,35 @@ import qualified Data.Text as T
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
-import Picrochole.Data.Base
 import Picrochole.Data.Utils.HexGrid
 import qualified Picrochole.JSON.Atlas as J
 
 -- | Paramètres immuables d'une case du plateau de jeu.
-data CellParams = CP { tile_ :: Tile
-                     , capacity_ :: Double
-                     } -- FIXME : inscrire dans les types la distinction crossable / uncrossable
+data Tile = TRoad Double
+          | TLand Double
+          | TWater
   deriving Show
 
+-- | Nature du terrain sur une case.
+data Topography = Road
+                | Land
+                | Water
+  deriving (Eq, Show)
+
+-- | Renvoie la topographie associée à une case.
+topography :: Tile -> Topography
+topography (TRoad _) = Road
+topography (TLand _) = Land
+topography TWater = Water
+
+-- | Renvoie la capacité d'une case.
+capacity :: Tile -> Double
+capacity (TRoad x) = x
+capacity (TLand x) = x
+capacity TWater = 0
+
 -- | Géographie du jeu.
-type Atlas = HexGrid CellParams
+type Atlas = HexGrid Tile
 
 -- | Lit un fichier contenant la géographie du jeu.
 readAtlas :: FilePath -> IO (Either String Atlas)
@@ -51,29 +72,27 @@ readAtlas fp = do
 
   where
 
-    go :: Vector J.CellParams -> Either String (Vector CellParams)
+    go :: Vector J.Tile -> Either String (Vector Tile)
     go vec = case lefts of
       [] -> Right (V.fromList rights)
       (m:_) -> Left m
 
       where
 
-        tmp = fmap readCP (V.toList vec)
+        tmp = fmap readTile (V.toList vec)
         (lefts, rights) = partitionEithers tmp
 
--- | Crée une instance de `CellParams` à partir de paramètres lus dans un JSON.
-readCP :: J.CellParams -> Either String CellParams
-readCP cp =
+-- | Crée une instance de `Tile` à partir de paramètres lus dans un JSON.
+readTile :: J.Tile -> Either String Tile
+readTile cp =
   if J.capacity cp >= 0
-  then case J.tile cp of
-         "road" -> Right (CP { tile_ = Road
-                             , capacity_ = J.capacity cp
-                             })
-         "land" -> Right (CP { tile_ = Land
-                             , capacity_ = J.capacity cp
-                             })
-         "water" -> Right (CP { tile_ = Water
-                              , capacity_ = 0
-                              })
-         _ -> Left ("unable to parse " ++ (T.unpack $ J.tile cp) ++ "as a tile")
+  then case J.topography cp of
+         "road" -> Right (TRoad (J.capacity cp))
+         "land" -> Right (TLand (J.capacity cp))
+         "water" -> Right TWater
+         _ -> Left ("unable to parse " ++ (T.unpack $ J.topography cp) ++ "as a tile")
   else Left "a tile should have a positive capacity"
+
+-- | Renvoie la nature du terrain sur la case donnée.
+topography' :: Atlas -> CellKey -> Topography
+topography' atlas ck = topography (getHex atlas ck)

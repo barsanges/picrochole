@@ -49,8 +49,6 @@ instance FromJSON UnitKey
 instance ToJSON UnitKind
 instance FromJSON UnitKind
 
-instance FromJSON Tile
-
 instance FromJSON Objective where
   parseJSON = withObject "Objective" go
     where

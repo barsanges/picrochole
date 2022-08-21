@@ -15,12 +15,13 @@ module Picrochole.Data.Base
   , opponent
   , UnitKey(..)
   , UnitKind(..)
-  , Tile(..)
   , speed
   ) where
 
 import qualified Data.Text as T
 import GHC.Generics ( Generic )
+
+import Picrochole.Data.Atlas
 
 -- | Numéro du tour en cours.
 type TurnCount = Int
@@ -52,15 +53,9 @@ data UnitKind = Infantery
               | Artillery
   deriving (Eq, Generic, Show)
 
--- | Nature du terrain sur une case.
-data Tile = Road
-          | Land
-          | Water
-  deriving (Eq, Generic, Show)
-
 -- | Renvoie la vitesse à laquelle un type d'unité progresse sur un type de
 -- case.
-speed :: UnitKind -> Tile -> Double
+speed :: UnitKind -> Topography -> Double
 speed Cavalery Road = 2
 speed Infantery Road = 1
 speed Artillery Road = 1
