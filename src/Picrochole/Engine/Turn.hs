@@ -16,17 +16,20 @@ import qualified Data.Map as M
 import Data.Maybe ( isNothing )
 import Data.Set ( Set )
 import qualified Data.Set as S
+import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Utils.HexGrid
 
 -- | Résout un tour de jeu.
-turn :: Map UnitKey [CellKey] -> Board -> Board
-turn actions board = fight (bombing (encirclement (movement actions board)))
+turn :: Atlas -> Map UnitKey [CellKey] -> Board -> Board
+turn atlas actions board = fight atlas
+                           $ bombing atlas
+                           $ encirclement atlas
+                           $ movement atlas actions board
 
 -- | Résout la phase de mouvement.
-movement :: Map UnitKey [CellKey] -> Board -> Board
-movement actions board = foldr go board (initiative board)
+movement :: Atlas -> Map UnitKey [CellKey] -> Board -> Board
+movement atlas actions board = foldr go board (initiative board)
   where
 
     go :: UnitKey -> Board -> Board
@@ -39,7 +42,7 @@ movement actions board = foldr go board (initiative board)
         goo ds keys b = case keys of
           [] -> setPosition ukey pos' b
           (y:ys) -> if isNothing (currentProgress pos')
-                       && (next b unit x y)
+                       && (next atlas b unit x y)
                     then goo ds' ys b'
                     else setPosition ukey pos' b
             where
@@ -51,7 +54,7 @@ movement actions board = foldr go board (initiative board)
           where
             unit = getUnit b ukey
             pos = getPosition b ukey
-            t = tile' b (currentCell pos)
+            t = tile' atlas (currentCell pos)
             (ds', pos') = fwd t unit (ds, pos)
 
 -- | Fait avancer l'unité sur sa case.
@@ -67,19 +70,19 @@ fwd t unit (ds, pos) = case currentProgress pos of
              else pos { currentProgress = Nothing }
 
 -- | Indique si l'unité peut quitter la cellule `x` pour la cellule `y`.
-next :: Board -> Unit -> CellKey -> CellKey -> Bool
-next board unit x y = (strength unit <= capacityLeft board (faction unit) y)
-                      && (touch (boardSize board) x y)
-                      && ((not $ isContested board x)
-                          || (getMarker board y == Just f)
-                          || (hasUnit board f y))
+next :: Atlas -> Board -> Unit -> CellKey -> CellKey -> Bool
+next atlas board unit x y = (strength unit <= capacityLeft atlas board (faction unit) y)
+                            && (touch (gridSize atlas) x y)
+                            && ((not $ isContested board x)
+                                || (getMarker board y == Just f)
+                                || (hasUnit board f y))
   where
     f = faction unit
 
 -- | Résout la phase d'encerclement.
-encirclement :: Board -> Board
-encirclement board = removeSurrounded Red redsSurrounded
-                     (removeSurrounded Blue bluesSurrounded board)
+encirclement :: Atlas -> Board -> Board
+encirclement atlas board = removeSurrounded Red redsSurrounded
+                           $ removeSurrounded Blue bluesSurrounded board
   where
 
     bluesSurrounded = allSurrounded Blue
@@ -89,9 +92,9 @@ encirclement board = removeSurrounded Red redsSurrounded
     ravel xs = foldr S.union S.empty xs
 
     allSurrounded :: Faction -> Set CellKey
-    allSurrounded f = ravel (filter (surrounded board (opponent f)) locs)
+    allSurrounded f = ravel (filter (surrounded atlas board (opponent f)) locs)
       where
-        locs = connex (boardSize board) (getLocations board f)
+        locs = connex (gridSize atlas) (getLocations board f)
 
     removeSurrounded :: Faction -> Set CellKey -> Board -> Board
     removeSurrounded f xs b = foldr (removeFaction f) b xs
@@ -124,26 +127,26 @@ touchFold :: Foldable t => GridSize -> CellKey -> t CellKey -> Bool
 touchFold gsize x ys = any (touch gsize x) ys
 
 -- | Indique si l'ensemble de cases `ks` est encerclé par la faction `f`.
-surrounded :: Board -> Faction -> Set CellKey -> Bool
-surrounded board f ks = all go edge
+surrounded :: Atlas -> Board -> Faction -> Set CellKey -> Bool
+surrounded atlas board f ks = all go edge
   where
-    edge = border board ks
+    edge = border atlas ks
     go :: CellKey -> Bool
     go key = (tile cell == Water) || (not (null (getOpponents f cell)))
       where
-        cell = getCell board key
+        cell = getCell atlas board key
 
 -- | Renvoie les identifiants des cases qui entourent les cases données.
-border :: Board -> Set CellKey -> Set CellKey
-border board inside = surroundings `S.difference` inside
+border :: Atlas -> Set CellKey -> Set CellKey
+border atlas inside = surroundings `S.difference` inside
   where
     surroundings = foldr go S.empty inside
     go :: CellKey -> Set CellKey -> Set CellKey
-    go k ks = S.union (S.fromList $ getDiskKeys board k 1) ks
+    go k ks = S.union (S.fromList $ getDiskKeys atlas k 1) ks
 
 -- | Résout la phase de bombardement.
-bombing :: Board -> Board
-bombing board = foldr go board (initiative board)
+bombing :: Atlas -> Board -> Board
+bombing atlas board = foldr go board (initiative board)
   where
     go :: UnitKey -> Board -> Board
     go key b = case kind unit of
@@ -156,12 +159,12 @@ bombing board = foldr go board (initiative board)
         g = opponent f
         damage = (strength unit) / 15
 
-        disk = getDisk b loc 1
+        disk = getDisk atlas b loc 1
         target = getStrongestOpponent f disk
 
 -- | Résout la phase de combat.
-fight :: Board -> Board
-fight board = foldr go board (getContested board)
+fight :: Atlas -> Board -> Board
+fight atlas board = foldr go board (getContested atlas board)
   where
     go :: Cell -> Board -> Board
     go cell b = wound damageToRed Red cell (wound damageToBlue Blue cell b)

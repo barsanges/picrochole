@@ -9,6 +9,7 @@ Géographie du jeu.
 module Picrochole.Data.Atlas
   ( Atlas
   , CellParams(..)
+  , module Picrochole.Data.Utils.HexGrid
   ) where
 
 import Picrochole.Data.Base

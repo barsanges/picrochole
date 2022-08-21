@@ -11,17 +11,19 @@ module Picrochole.Engine.Reporting
   ) where
 
 import qualified Data.Map as M
+import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
 
 -- | Effectue la remontée d'informations entre les unités et leurs état-majors.
-reporting :: TurnCount
+reporting :: Atlas
+          -> TurnCount
           -> (Faction -> UnitKey)
           -> Board
           -> Register Report
           -> Register Report
-reporting tcount getHQ board reports = foldr go reports (initiative board)
+reporting atlas tcount getHQ board reports = foldr go reports (initiative board)
   where
     go :: UnitKey -> Register Report -> Register Report
     go ukey r = if d <= 3 * (tcount - prev) || prev == 0
@@ -29,16 +31,16 @@ reporting tcount getHQ board reports = foldr go reports (initiative board)
                 else r
       where
         hq = getHQ (faction $ getUnit board ukey)
-        d = getDist board ukey hq
+        d = getDist atlas board ukey hq
         prev = case (lastReceived tcount r ukey hq) of
           Just msg -> received (header msg)
           Nothing -> 0
         h = mkHeader tcount ukey hq d
-        report = mkReport board ukey
+        report = mkReport atlas board ukey
 
 -- | Construit le rapport d'une unité à son état-major.
-mkReport :: Board -> UnitKey -> Report
-mkReport board ukey = report
+mkReport :: Atlas -> Board -> UnitKey -> Report
+mkReport atlas board ukey = report
   where
     ckey = getLocation board ukey
     radius = if isContested board ckey
@@ -47,8 +49,8 @@ mkReport board ukey = report
                     Cavalery -> 4
                     Infantery -> 2
                     Artillery -> 2
-    cells = getDisk board ckey radius
-    report = foldr go M.empty cells
+    disk = getDisk atlas board ckey radius
+    report = foldr go M.empty disk
 
     go :: Cell -> Report -> Report
     go c r = M.insert (cellKey c) (cellContent c) r

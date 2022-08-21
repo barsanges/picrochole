@@ -14,11 +14,11 @@ import Data.Map ( Map )
 import qualified Data.Map as M
 import Data.Set ( Set )
 import qualified Data.Set as S
+import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
 import Picrochole.Data.Mail
 import Picrochole.Data.Plan
-import Picrochole.Data.Utils.HexGrid
 
 -- | Information associée à une case du plateau.
 data InfoCell = InfoCell { cellContent_ :: CellContent
@@ -43,7 +43,8 @@ instance Ord BaseOrder where
   compare (BaseOrder x _) (BaseOrder y _) = compare x y
 
 -- | Envoie des ordres aux subordonnés.
-schedule :: TurnCount
+schedule :: Atlas
+         -> TurnCount
          -> Board
          -> UnitKey
          -> Faction
@@ -52,12 +53,12 @@ schedule :: TurnCount
          -> Register Report
          -> Register Order
          -> Register Order
-schedule tcount board ukey f limit plan rreg oreg = oreg'
+schedule atlas tcount board ukey f limit plan rreg oreg = oreg'
   where
-    gsize = boardSize board
+    gsize = gridSize atlas
     info = mkInfo tcount ukey limit rreg
     orders = assign gsize f plan info
-    oreg' = command tcount board ukey orders oreg
+    oreg' = command atlas tcount board ukey orders oreg
 
 -- | Construit une image du conflit avec les dernières informations disponibles.
 mkInfo :: TurnCount -> UnitKey -> Int -> Register Report -> Info
@@ -119,16 +120,17 @@ assess gsize f info obj = if any go surroundings
       Just c -> null (getOpponents' f (cellContent_ c))
 
 -- | Indique à chaque subordonné son objectif.
-command :: TurnCount
+command :: Atlas
+        -> TurnCount
         -> Board
         -> UnitKey
         -> Set BaseOrder
         -> Register Order
         -> Register Order
-command tcount board hq orders reg = foldr go reg orders
+command atlas tcount board hq orders reg = foldr go reg orders
   where
     go :: BaseOrder -> Register Order -> Register Order
     go (BaseOrder ukey obj) r = send h obj r
       where
-        d = getDist board ukey hq
+        d = getDist atlas board ukey hq
         h = mkHeader tcount hq ukey d

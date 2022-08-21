@@ -31,7 +31,6 @@ module Picrochole.Data.Board
   , getStrongest
   , Board
   , mkBoard
-  , boardSize
   , touch
   , initiative
   , allUnits
@@ -60,7 +59,6 @@ import Data.Set ( Set )
 import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
-import Picrochole.Data.Utils.HexGrid
 import Picrochole.Data.Utils.XsMap
 
 -- | Paramètres immuables d'une unité.
@@ -189,25 +187,18 @@ getStrongest f cell = if null units
     comp x y = compare (strength x) (strength y)
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
-data Board = Board { bCellParams :: Atlas
-                   , bXsMap :: XsMap CellKey UnitKey Faction Unit
+data Board = Board { bXsMap :: XsMap CellKey UnitKey Faction Unit
                    , bInitiative :: [UnitKey]
                    }
   deriving Show
 
 -- | Renvoie une nouvelle instance de `Board`.
-mkBoard :: Atlas
-        -> XsMap CellKey UnitKey Faction Unit
+mkBoard :: XsMap CellKey UnitKey Faction Unit
         -> [UnitKey]
         -> Board
-mkBoard hex xs is = Board { bCellParams = hex
-                          , bXsMap = xs
-                          , bInitiative = is
-                          }
-
--- | Renvoie les dimensions du plateau de jeu.
-boardSize :: Board -> GridSize
-boardSize b = gridSize (bCellParams b)
+mkBoard xs is = Board { bXsMap = xs
+                      , bInitiative = is
+                      }
 
 -- | Renvoie les identifiants des unités par ordre d'initiative (i.e. : la
 -- première unité qui doit jouer est la première unité de la liste).
@@ -225,10 +216,10 @@ getUnit board ukey = case lookupKey ukey (bXsMap board) of
   Nothing -> error "malformed board" -- HACK
 
 -- | Renvoie la distance à vol d'oiseau entre deux unités.
-getDist :: Board -> UnitKey -> UnitKey -> Int
-getDist board x y = dist gsize x' y'
+getDist :: Atlas -> Board -> UnitKey -> UnitKey -> Int
+getDist atlas board x y = dist gsize x' y'
   where
-    gsize = gridSize (bCellParams board)
+    gsize = gridSize atlas
     x' = case lookupKey x (bXsMap board) of
       Just u -> location u
       Nothing -> error "malformed board" -- HACK
@@ -289,12 +280,12 @@ getLocations board f = foldr go S.empty (bXsMap board)
              else s
 
 -- | Renvoie une case du plateau de jeu.
-getCell :: Board -> CellKey -> Cell
-getCell board ck = Cell { cellParams = params
-                        , cellContent_ = content
-                        }
+getCell :: Atlas -> Board -> CellKey -> Cell
+getCell atlas board ck = Cell { cellParams = params
+                              , cellContent_ = content
+                              }
   where
-    params = getHex (bCellParams board) ck
+    params = getHex atlas ck
     content = case lookupLocation ck (bXsMap board) of
       Left f -> Left f
       Right units -> Right (blues, reds)
@@ -303,20 +294,20 @@ getCell board ck = Cell { cellParams = params
 
 -- | Renvoie les identifiants d'un disque de cases du plateau de jeu, dont le
 -- centre est la case indiquée.
-getDiskKeys :: Board -> CellKey -> Int -> [CellKey]
-getDiskKeys board ck radius = diskKeys (gridSize (bCellParams board)) ck radius
+getDiskKeys :: Atlas -> CellKey -> Int -> [CellKey]
+getDiskKeys atlas ck radius = diskKeys (gridSize atlas) ck radius
 
 -- | Renvoie un disque de cases du plateau de jeu, dont le centre est la case
 -- indiquée.
-getDisk :: Board -> CellKey -> Int -> [Cell]
-getDisk board ck radius = fmap (getCell board) keys
+getDisk :: Atlas -> Board -> CellKey -> Int -> [Cell]
+getDisk atlas board ck radius = fmap (getCell atlas board) keys
   where
-    keys = getDiskKeys board ck radius
+    keys = getDiskKeys atlas ck radius
 
 -- | Renvoie toutes les cases du plateau de jeu qui contiennent des unités
 -- des deux camps.
-getContested :: Board -> [Cell]
-getContested board = fmap (getCell board) contested
+getContested :: Atlas -> Board -> [Cell]
+getContested atlas board = fmap (getCell atlas board) contested
   where
     blues = getLocations board Blue
     reds = getLocations board Red
@@ -334,10 +325,10 @@ removeFaction f ck board = foldr go board bunits
              else b
 
 -- | Renvoie la capacité d'accueil restante de la case donnée.
-capacityLeft :: Board -> Faction -> CellKey -> Double
-capacityLeft board f ck = foldr go maxCapacity bunits
+capacityLeft :: Atlas -> Board -> Faction -> CellKey -> Double
+capacityLeft atlas board f ck = foldr go maxCapacity bunits
   where
-    maxCapacity = capacity_ (getHex (bCellParams board) ck)
+    maxCapacity = capacity_ (getHex atlas ck)
     bunits = lookupLocationContent ck (bXsMap board)
 
     go :: Unit -> Double -> Double
@@ -346,8 +337,8 @@ capacityLeft board f ck = foldr go maxCapacity bunits
              else c
 
 -- | Renvoie la nature du terrain sur la case donnée.
-tile' :: Board -> CellKey -> Tile
-tile' board ck = tile_ (getHex (bCellParams board) ck)
+tile' :: Atlas -> CellKey -> Tile
+tile' atlas ck = tile_ (getHex atlas ck)
 
 -- | Renvoie le marqueur sur la case donnée.
 getMarker :: Board -> CellKey -> Maybe Faction
