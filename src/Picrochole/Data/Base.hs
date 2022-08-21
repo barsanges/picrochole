@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Picrochole.Data.Base
@@ -10,8 +11,9 @@ Types de base pour décrire le jeu.
 module Picrochole.Data.Base
   ( TurnCount
   , Faction(..)
+  , readFaction
   , opponent
-  , UnitKey
+  , UnitKey(..)
   , UnitKind(..)
   , Tile(..)
   , speed
@@ -27,6 +29,13 @@ type TurnCount = Int
 data Faction = Blue
              | Red
   deriving (Eq, Generic, Show)
+
+-- | Transforme une chaîne de caractères en un identifiant de faction.
+readFaction :: T.Text -> Maybe Faction
+readFaction txt = case T.toLower (T.strip txt) of
+  "blue" -> Just Blue
+  "red" -> Just Red
+  _ -> Nothing
 
 -- | Renvoie la faction adverse.
 opponent :: Faction -> Faction
