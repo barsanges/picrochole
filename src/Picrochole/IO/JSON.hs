@@ -26,9 +26,10 @@ import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Mail
-import qualified Picrochole.Data.Mail as PM
+import Picrochole.Data.Orders
 import Picrochole.Data.Plan
+import Picrochole.Data.Reports
+import qualified Picrochole.Data.Structs.Register as R
 import Picrochole.Data.Structs.XsMap
 
 -- Pour mémoire :
@@ -127,7 +128,7 @@ readOrders fp = do
   mxs <- eitherDecodeFileStrict fp
   case mxs of
     Left m -> return (Left m)
-    Right xs -> return (Right (PM.fromVector xs))
+    Right xs -> return (Right (R.fromVector xs))
 
 -- | Construit une instance de `Register Report` à partir d'un fichier JSON.
 readReports :: FilePath -> IO (Either String (Register Report))
@@ -135,15 +136,15 @@ readReports fp = do
   mxs <- eitherDecodeFileStrict fp
   case mxs of
     Left m -> return (Left m)
-    Right xs -> return (Right (PM.fromVector xs))
+    Right xs -> return (Right (R.fromVector xs))
 
 -- | Enregistre l'instance de `Register Order` dans le fichier indiqué.
 writeOrders :: FilePath -> Register Order -> IO ()
-writeOrders fp x = encodeFile fp (PM.toVector x)
+writeOrders fp x = encodeFile fp (R.toVector x)
 
 -- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
 writeReports :: FilePath -> Register Report -> IO ()
-writeReports fp x = encodeFile fp (PM.toVector x)
+writeReports fp x = encodeFile fp (R.toVector x)
 
 -- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.
 readInitiative :: FilePath -> IO (Either String [UnitKey])

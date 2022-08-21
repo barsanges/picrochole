@@ -14,7 +14,7 @@ import qualified Data.Map as M
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Mail
+import Picrochole.Data.Reports
 
 -- | Effectue la remontée d'informations entre les unités et leurs état-majors.
 reporting :: Atlas

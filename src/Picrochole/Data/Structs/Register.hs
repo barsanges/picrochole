@@ -1,17 +1,15 @@
 {- |
-   Module      : Picrochole.Data.Mail
+   Module      : Picrochole.Data.Structs.Register
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
-Les messages que les unités s'échangent.
+Ensemble des messages d'un type donné que s'échangent les unités.
 -}
 
-module Picrochole.Data.Mail
+module Picrochole.Data.Structs.Register
   ( Register
   , Header(..)
   , Msg(..)
-  , Report
-  , Order
   , fromVector
   , toVector
   , mkHeader
@@ -31,7 +29,6 @@ import qualified Data.Sequence as S
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 import Picrochole.Data.Base
-import Picrochole.Data.Board
 
 -- | Identifiant (censément unique) d'un message.
 type MsgId = Int
@@ -60,12 +57,6 @@ data Msg a = Msg { header :: Header
 
 instance Functor Msg where
   fmap f x = x { content = f (content x) }
-
--- | Rapport d'une unité à son état-major.
-type Report = Map CellKey CellContent
-
--- | Ordre de l'état-major à un subordonné.
-type Order = CellKey
 
 -- | Construit un registre à partir d'un vecteur de messages.
 fromVector :: Vector (Msg a) -> Register a

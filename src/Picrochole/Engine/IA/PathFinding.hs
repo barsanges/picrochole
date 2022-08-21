@@ -16,7 +16,7 @@ import qualified Data.Map as M
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Mail
+import Picrochole.Data.Orders
 
 -- | Détermine le chemin suivi par les unités.
 route :: Atlas

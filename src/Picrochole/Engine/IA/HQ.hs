@@ -17,8 +17,9 @@ import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Mail
+import Picrochole.Data.Orders
 import Picrochole.Data.Plan
+import Picrochole.Data.Reports
 
 -- | Information associée à une case du plateau.
 data InfoCell = InfoCell { cellContent_ :: CellContent
