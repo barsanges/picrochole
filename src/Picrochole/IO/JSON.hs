@@ -147,33 +147,6 @@ writeOrders fp x = encodeFile fp (PM.toVector x)
 writeReports :: FilePath -> Register Report -> IO ()
 writeReports fp x = encodeFile fp (PM.toVector x)
 
-instance FromJSON CellParams where
-  parseJSON = withObject "CellParams" go
-    where
-      go v = do
-        t <- v .: "tile"
-        ca <- v .: "capacity"
-        return CP { tile_ = t
-                  , capacity_ = ca
-                  }
-
-instance FromJSON a => FromJSON (HexGrid a) where
-  parseJSON = withObject "HexGrid" go
-    where
-      go v = do
-        c <- v .: "ncols"
-        r <- v .: "nrows"
-        xs <- v .: "content"
-        return HexGrid { gridSize_ = GridSize { ncols = c
-                                              , nrows = r
-                                              }
-                       , cells = xs
-                       }
-
--- | Construit une instance du terrain de jeu à partir d'un fichier JSON.
-readAtlas :: FilePath -> IO (Either String Atlas)
-readAtlas fp = eitherDecodeFileStrict fp
-
 -- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.
 readInitiative :: FilePath -> IO (Either String [UnitKey])
 readInitiative = eitherDecodeFileStrict
