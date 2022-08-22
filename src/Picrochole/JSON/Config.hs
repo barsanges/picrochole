@@ -20,6 +20,7 @@ data Config = Config { iaFaction :: T.Text
                      , hqRed :: T.Text
                      , limit :: Int
                      }
+  deriving Show
 
 instance FromJSON Config where
   parseJSON = withObject "Config" go
