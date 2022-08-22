@@ -122,14 +122,6 @@ instance ToJSON a => ToJSON (Msg a) where
                     , "content" .= content x
                     ]
 
--- | Construit une instance de `Register Order` à partir d'un fichier JSON.
-readOrders :: FilePath -> IO (Either String (Register Order))
-readOrders fp = do
-  mxs <- eitherDecodeFileStrict fp
-  case mxs of
-    Left m -> return (Left m)
-    Right xs -> return (Right (R.fromVector xs))
-
 -- | Construit une instance de `Register Report` à partir d'un fichier JSON.
 readReports :: FilePath -> IO (Either String (Register Report))
 readReports fp = do
@@ -137,10 +129,6 @@ readReports fp = do
   case mxs of
     Left m -> return (Left m)
     Right xs -> return (Right (R.fromVector xs))
-
--- | Enregistre l'instance de `Register Order` dans le fichier indiqué.
-writeOrders :: FilePath -> Register Order -> IO ()
-writeOrders fp x = encodeFile fp (R.toVector x)
 
 -- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
 writeReports :: FilePath -> Register Report -> IO ()
