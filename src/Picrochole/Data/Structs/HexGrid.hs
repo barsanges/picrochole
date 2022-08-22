@@ -10,7 +10,7 @@ Une grille hexagonale, dont les hexagones sont orientés pointe en haut.
 module Picrochole.Data.Structs.HexGrid
   ( HexGrid
   , GridSize(..)
-  , CellKey
+  , CellKey(..)
   , fromVector
   , toVector
   , gridSize
