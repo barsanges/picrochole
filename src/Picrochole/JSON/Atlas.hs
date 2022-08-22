@@ -18,6 +18,8 @@ import Data.Aeson
 import qualified Data.Text as T
 import Data.Vector ( Vector )
 
+import Picrochole.JSON.Utils
+
 -- | Paramètres d'une case du plateau de jeu.
 data Tile = Crossable T.Text Double
           | Uncrossable T.Text
@@ -25,8 +27,8 @@ data Tile = Crossable T.Text Double
 
 -- | Renvoie la nature du terrain associé à la case.
 topography :: Tile -> T.Text
-topography (Crossable t _) = (T.toLower . T.strip) t
-topography (Uncrossable t) = (T.toLower . T.strip) t
+topography (Crossable t _) = normalize t
+topography (Uncrossable t) = normalize t
 
 -- | Renvoie la capacité de la case.
 capacity :: Tile -> Double

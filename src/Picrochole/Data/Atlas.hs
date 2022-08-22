@@ -19,13 +19,11 @@ module Picrochole.Data.Atlas
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
-import Data.Either ( partitionEithers )
 import qualified Data.Text as T
-import Data.Vector ( Vector )
-import qualified Data.Vector as V
 
 import Picrochole.Data.Structs.HexGrid
 import qualified Picrochole.JSON.Atlas as J
+import Picrochole.JSON.Utils
 
 -- | Paramètres immuables d'une case du plateau de jeu.
 data Tile = TRoad Double
@@ -64,23 +62,11 @@ readAtlas fp = do
       let gsize = GridSize { ncols = J.ncols a
                            , nrows = J.nrows a
                            }
-      case go (J.content a) of
+      case eitherFmap readTile (J.content a) of
         Left m -> return (Left m)
         Right vec -> case fromVector gsize vec of
           Nothing -> return (Left "unable to parse the atlas, due to a mismatch between the grid size and the length of the vector")
           Just atlas -> return (Right atlas)
-
-  where
-
-    go :: Vector J.Tile -> Either String (Vector Tile)
-    go vec = case lefts of
-      [] -> Right (V.fromList rights)
-      (m:_) -> Left m
-
-      where
-
-        tmp = fmap readTile (V.toList vec)
-        (lefts, rights) = partitionEithers tmp
 
 -- | Crée une instance de `Tile` à partir de paramètres lus dans un JSON.
 readTile :: J.Tile -> Either String Tile

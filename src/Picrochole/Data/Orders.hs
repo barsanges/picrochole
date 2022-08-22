@@ -14,15 +14,13 @@ module Picrochole.Data.Orders
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict, encodeFile )
-import Data.Either ( partitionEithers )
 import Data.Text ( Text )
-import Data.Vector ( Vector )
-import qualified Data.Vector as V
 
 import Picrochole.Data.Atlas ( CellKey(..) )
 import Picrochole.Data.Base ( UnitKey(..) )
 import Picrochole.Data.Structs.Register
 import qualified Picrochole.JSON.Orders as J
+import Picrochole.JSON.Utils
 
 -- | Ordre de l'état-major à un subordonné.
 type Order = CellKey
@@ -34,21 +32,9 @@ readOrders fp = do
   case mxs of
     Left m -> return (Left m)
     Right xs -> do
-      case go xs of
+      case eitherFmap readOrder xs of
         Left m -> return (Left m)
         Right vec -> return (Right (fromVector vec))
-
-  where
-
-    go :: Vector J.Order -> Either String (Vector (Msg Order))
-    go vec = case lefts of
-      [] -> Right (V.fromList rights)
-      (m:_) -> Left m
-
-      where
-
-        tmp = fmap readOrder (V.toList vec)
-        (lefts, rights) = partitionEithers tmp
 
 -- | Crée une instance de `Msg Order` à partir de paramètres lus dans un JSON.
 readOrder :: J.Order -> Either String (Msg Order)
