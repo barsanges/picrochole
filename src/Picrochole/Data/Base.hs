@@ -16,6 +16,7 @@ module Picrochole.Data.Base
   , opponent
   , UnitKey(..)
   , UnitKind(..)
+  , readUnitKind
   , showUnitKind
   , speed
   ) where
@@ -59,6 +60,14 @@ data UnitKind = Infantery
               | Cavalery
               | Artillery
   deriving (Eq, Generic, Show)
+
+-- | Transforme une chaîne de caractères en un type d'unité.
+readUnitKind :: T.Text -> Either String UnitKind
+readUnitKind txt = case T.toLower (T.strip txt) of
+  "infantery" -> Right Infantery
+  "cavalery" -> Right Cavalery
+  "artillery" -> Right Artillery
+  _ -> Left ("unable to parse " ++ (T.unpack txt) ++ " as a unit kind")
 
 -- | Transforme un type d'unité en une chaîne de caractères.
 showUnitKind :: UnitKind -> T.Text
