@@ -9,8 +9,7 @@ Sérialisation en JSON des différents objets du jeu.
 -}
 
 module Picrochole.IO.JSON
-  ( readPlan
-  , readAtlas
+  ( readAtlas
   , readInitiative
   , writeInitiative
   , readUnits
@@ -18,11 +17,9 @@ module Picrochole.IO.JSON
   ) where
 
 import Data.Aeson
-import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Plan
 import Picrochole.Data.Structs.XsMap
 
 -- Pour mémoire :
@@ -42,32 +39,6 @@ instance FromJSON UnitKey
 
 instance ToJSON UnitKind
 instance FromJSON UnitKind
-
-instance FromJSON Objective where
-  parseJSON = withObject "Objective" go
-    where
-      go v = do
-        t <- v .: "target"
-        a <- v .: "assigned"
-        r <- v .: "reinforcements"
-        return Objective { target = t
-                         , assigned = S.fromList a
-                         , reinforcements = S.fromList r
-                         }
-
-instance FromJSON Plan where
-  parseJSON = withObject "Plan" go
-    where
-      go v = do
-        s <- v .: "subordinates"
-        o <- v .: "objectives"
-        return Plan { subordinates = S.fromList s
-                    , objectives = o
-                    }
-
--- | Construit une instance de `Plan` à partir d'un fichier JSON.
-readPlan :: FilePath -> IO (Either String Plan)
-readPlan = eitherDecodeFileStrict
 
 instance FromJSON Unit where
   parseJSON = withObject "Unit" go
