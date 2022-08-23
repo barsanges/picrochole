@@ -15,11 +15,14 @@ module Picrochole.Data.Atlas
   , capacity
   , module Picrochole.Data.Structs.HexGrid
   , readAtlas
+  , readCellKey
   , topography'
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
+import Data.Text ( Text )
 import qualified Data.Text as T
+import Data.Text.Read ( decimal )
 
 import Picrochole.Data.Structs.HexGrid
 import qualified Picrochole.JSON.Atlas as J
@@ -67,6 +70,15 @@ readAtlas fp = do
         Right vec -> case fromVector gsize vec of
           Nothing -> return (Left "unable to parse the atlas, due to a mismatch between the grid size and the length of the vector")
           Just atlas -> return (Right atlas)
+
+-- | Crée une instance de `CellKey` à partir d'une chaîne de caractères lue dans
+-- un JSON.
+readCellKey :: Text -> Either String CellKey
+readCellKey txt = case decimal (T.strip txt) of
+  Left m -> Left m
+  Right (i, txt') -> if T.null txt'
+                     then Right (CK i)
+                     else Left ("some characters could be parsed as a cell key" ++ (T.unpack txt'))
 
 -- | Crée une instance de `Tile` à partir de paramètres lus dans un JSON.
 readTile :: J.Tile -> Either String Tile
