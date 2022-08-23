@@ -34,11 +34,11 @@ data Faction = Blue
   deriving (Eq, Generic, Show)
 
 -- | Transforme une chaîne de caractères en un identifiant de faction.
-readFaction :: T.Text -> Maybe Faction
+readFaction :: T.Text -> Either String Faction
 readFaction txt = case T.toLower (T.strip txt) of
-  "blue" -> Just Blue
-  "red" -> Just Red
-  _ -> Nothing
+  "blue" -> Right Blue
+  "red" -> Right Red
+  _ -> Left ("unable to parse " ++ (T.unpack txt) ++ " as a faction name")
 
 -- | Transforme un identifiant de faction en une chaîne de caractères.
 showFaction :: Faction -> T.Text

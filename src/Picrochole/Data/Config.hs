@@ -30,9 +30,9 @@ readConfig fp = do
   case mcfg of
     Left m -> return (Left m)
     Right cfg -> case readFaction (J.iaFaction cfg) of
-      Just f -> return (Right Config { iaFaction = f
-                                     , hqBlue = UK (J.hqBlue cfg)
-                                     , hqRed = UK (J.hqRed cfg)
-                                     , limit = J.limit cfg
-                                     })
-      Nothing -> return (Left "unable to parse the name of the IA faction")
+      Right f -> return (Right Config { iaFaction = f
+                                      , hqBlue = UK (J.hqBlue cfg)
+                                      , hqRed = UK (J.hqRed cfg)
+                                      , limit = J.limit cfg
+                                      })
+      Left m -> return (Left m)
