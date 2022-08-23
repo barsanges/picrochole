@@ -10,10 +10,6 @@ Sérialisation en JSON des différents objets du jeu.
 
 module Picrochole.IO.JSON
   ( readPlan
-  , readOrders
-  , readReports
-  , writeOrders
-  , writeReports
   , readAtlas
   , readInitiative
   , writeInitiative
@@ -26,10 +22,7 @@ import qualified Data.Set as S
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
-import Picrochole.Data.Orders
 import Picrochole.Data.Plan
-import Picrochole.Data.Reports
-import qualified Picrochole.Data.Structs.Register as R
 import Picrochole.Data.Structs.XsMap
 
 -- Pour mémoire :
@@ -96,43 +89,6 @@ instance ToJSON Unit where
                     , "location" .= location x
                     , "progress" .= progress x
                     ]
-
-instance FromJSON a => FromJSON (Msg a) where
-  parseJSON = withObject "Msg" go
-    where
-      go v = do
-        f <- v .: "from"
-        t <- v .: "to"
-        s <- v .: "sent"
-        r <- v .: "received"
-        c <- v .: "content"
-        return Msg { header = Header { from = f
-                                     , to = t
-                                     , sent = s
-                                     , received = r
-                                     }
-                   , content = c
-                   }
-
-instance ToJSON a => ToJSON (Msg a) where
-  toJSON x = object [ "from" .= (from . header) x
-                    , "to" .= (to . header) x
-                    , "sent" .= (sent . header) x
-                    , "received" .= (received . header) x
-                    , "content" .= content x
-                    ]
-
--- | Construit une instance de `Register Report` à partir d'un fichier JSON.
-readReports :: FilePath -> IO (Either String (Register Report))
-readReports fp = do
-  mxs <- eitherDecodeFileStrict fp
-  case mxs of
-    Left m -> return (Left m)
-    Right xs -> return (Right (R.fromVector xs))
-
--- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
-writeReports :: FilePath -> Register Report -> IO ()
-writeReports fp x = encodeFile fp (R.toVector x)
 
 -- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.
 readInitiative :: FilePath -> IO (Either String [UnitKey])
