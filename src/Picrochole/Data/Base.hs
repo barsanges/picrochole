@@ -12,9 +12,11 @@ module Picrochole.Data.Base
   ( TurnCount
   , Faction(..)
   , readFaction
+  , showFaction
   , opponent
   , UnitKey(..)
   , UnitKind(..)
+  , showUnitKind
   , speed
   ) where
 
@@ -38,6 +40,11 @@ readFaction txt = case T.toLower (T.strip txt) of
   "red" -> Just Red
   _ -> Nothing
 
+-- | Transforme un identifiant de faction en une chaîne de caractères.
+showFaction :: Faction -> T.Text
+showFaction Blue = "blue"
+showFaction Red = "red"
+
 -- | Renvoie la faction adverse.
 opponent :: Faction -> Faction
 opponent Blue = Red
@@ -52,6 +59,12 @@ data UnitKind = Infantery
               | Cavalery
               | Artillery
   deriving (Eq, Generic, Show)
+
+-- | Transforme un type d'unité en une chaîne de caractères.
+showUnitKind :: UnitKind -> T.Text
+showUnitKind Infantery = "infantery"
+showUnitKind Cavalery = "cavalery"
+showUnitKind Artillery = "artillery"
 
 -- | Renvoie la vitesse à laquelle un type d'unité progresse sur un type de
 -- case.
