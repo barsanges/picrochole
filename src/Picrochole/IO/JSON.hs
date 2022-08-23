@@ -9,8 +9,7 @@ Sérialisation en JSON des différents objets du jeu.
 -}
 
 module Picrochole.IO.JSON
-  ( readAtlas
-  , readInitiative
+  ( readInitiative
   , writeInitiative
   , readUnits
   , writeUnits
