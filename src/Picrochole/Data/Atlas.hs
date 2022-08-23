@@ -65,7 +65,7 @@ readAtlas fp = do
       let gsize = GridSize { ncols = J.ncols a
                            , nrows = J.nrows a
                            }
-      case eitherFmap readTile (J.content a) of
+      case parseVector readTile (J.content a) of
         Left m -> return (Left m)
         Right vec -> case fromVector gsize vec of
           Nothing -> return (Left "unable to parse the atlas, due to a mismatch between the grid size and the length of the vector")

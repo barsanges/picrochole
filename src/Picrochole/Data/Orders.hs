@@ -32,7 +32,7 @@ readOrders fp = do
   case mxs of
     Left m -> return (Left m)
     Right xs -> do
-      case eitherFmap readOrder xs of
+      case parseVector readOrder xs of
         Left m -> return (Left m)
         Right vec -> return (Right (fromVector vec))
 

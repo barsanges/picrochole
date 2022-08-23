@@ -9,10 +9,11 @@ Utilitaires pour la sérialisation en JSON.
 
 module Picrochole.JSON.Utils
   ( normalize
-  , eitherFmap
+  , parseVector
   ) where
 
 import Data.Either ( partitionEithers )
+import Data.Map ( Map )
 import Data.Text ( Text )
 import qualified Data.Text as T
 import Data.Vector ( Vector )
@@ -24,8 +25,8 @@ normalize :: Text -> Text
 normalize = T.toLower . T.strip
 
 -- | `fmap` sur un vecteur, avec une possibilité d'échec.
-eitherFmap :: (a -> Either String b) -> Vector a -> Either String (Vector b)
-eitherFmap f vec = case lefts of
+parseVector :: (a -> Either String b) -> Vector a -> Either String (Vector b)
+parseVector f vec = case lefts of
   [] -> Right (V.fromList rights)
   (m:_) -> Left m
 
