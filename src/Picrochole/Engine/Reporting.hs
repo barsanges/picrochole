@@ -36,7 +36,7 @@ reporting atlas tcount getHQ board reports = foldr go reports (initiative board)
                     then send h report r
                     else r
             where
-              prev = case (lastSent tcount r ukey hq) of
+              prev = case (lastSent r ukey hq) of
                 Just msg -> sent (header msg)
                 Nothing -> 0
               h = mkHeader tcount ukey hq d
