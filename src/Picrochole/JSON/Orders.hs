@@ -20,7 +20,7 @@ import Data.Vector ( Vector )
 data Order = Order { from :: Text
                    , to :: Text
                    , sent :: Int
-                   , received :: Int
+                   , received :: Maybe Int
                    , content :: Int
                    }
   deriving Show

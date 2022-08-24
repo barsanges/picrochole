@@ -38,7 +38,7 @@ readOrders fp = do
 
 -- | Crée une instance de `Msg Order` à partir de paramètres lus dans un JSON.
 readOrder :: J.Order -> Either String (Msg Order)
-readOrder o = if J.received o < J.sent o
+readOrder o = if err (J.received o)
               then Left ("got a malformed message which has been received before being sent\n" ++ show o)
               else Right (Msg { header = Header { from = UK (J.from o)
                                                 , to = UK (J.to o)
@@ -47,6 +47,10 @@ readOrder o = if J.received o < J.sent o
                                                 }
                               , content = CK (J.content o)
                               })
+  where
+    err :: Maybe Int -> Bool
+    err Nothing = False
+    err (Just x) = x < J.sent o
 
 -- | Enregistre l'instance de `Register Order` dans le fichier indiqué.
 writeOrders :: FilePath -> Register Order -> IO ()

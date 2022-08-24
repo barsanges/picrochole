@@ -44,7 +44,7 @@ readReports fp = do
 
 -- | Crée une instance de `Msg Report` à partir de paramètres lus dans un JSON.
 readReport :: J.Report -> Either String (Msg Report)
-readReport r = if J.received r < J.sent r
+readReport r = if err (J.received r)
                then Left ("got a malformed message which has been received before being sent\n" ++ show r)
                else case readContent (J.content r) of
                       Left m -> Left m
@@ -55,6 +55,10 @@ readReport r = if J.received r < J.sent r
                                                               }
                                             , content = c
                                             })
+  where
+    err :: Maybe Int -> Bool
+    err Nothing = False
+    err (Just x) = x < J.sent r
 
 -- | Crée une instance de `Report` à partir de paramètres lus dans un JSON.
 readContent :: Map Text J.CellContent -> Either String Report

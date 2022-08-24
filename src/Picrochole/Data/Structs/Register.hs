@@ -28,6 +28,7 @@ import Data.Sequence ( Seq(..), (|>) )
 import qualified Data.Sequence as S
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
+
 import Picrochole.Data.Base
 
 -- | Identifiant (censément unique) d'un message.
@@ -45,7 +46,7 @@ data Register a = Register { senders :: Map UnitKey (Map UnitKey (Seq MsgId))
 data Header = Header { from :: UnitKey
                      , to :: UnitKey
                      , sent :: TurnCount
-                     , received :: TurnCount
+                     , received :: Maybe TurnCount
                      }
   deriving Show
 
@@ -76,11 +77,11 @@ toVector reg = V.fromList (fmap snd (IM.toList (messages reg)))
 
 -- | Construit un en-tête de message. Cette fonction doit être préférée à la
 -- construction "à la main" d'un en-tête.
-mkHeader :: TurnCount -> UnitKey -> UnitKey -> Int -> Header
+mkHeader :: TurnCount -> UnitKey -> UnitKey -> Maybe Int -> Header
 mkHeader tCount sender receiver d = Header { from = sender
                                            , to = receiver
                                            , sent = tCount
-                                           , received = eta tCount d
+                                           , received = fmap (eta tCount) d
                                            }
 
 -- | Calcule la date de réception d'un message.
@@ -169,7 +170,9 @@ lastReceived' tcount reg x = case M.lookup x (receivers reg) of
 hasBeenReceived :: TurnCount -> Register a -> MsgId -> Bool
 hasBeenReceived tcount reg idx = case IM.lookup idx (messages reg) of
   Nothing -> False
-  Just msg -> received (header msg) <= tcount
+  Just msg -> case received (header msg) of
+    Nothing -> False
+    Just tcount' -> tcount' <= tcount
 
 -- | Renvoie le premier élément (en partant de la droite) qui satisfait un
 -- prédicat.

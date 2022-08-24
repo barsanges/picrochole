@@ -10,7 +10,9 @@ module Picrochole.Engine.Reporting
   ( reporting
   ) where
 
+import Data.Maybe ( fromMaybe )
 import qualified Data.Map as M
+
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Board
@@ -30,15 +32,15 @@ reporting atlas tcount getHQ board reports = foldr go reports (initiative board)
       Nothing -> r
       Just hq -> case mkReport atlas board ukey of
         Nothing -> r
-        Just report -> case getDist atlas board ukey hq of
-          Nothing -> error "HACK"
-          Just d -> if d <= 3 * (tcount - prev) || prev == 0
-                    then send h report r
-                    else r
+        Just report -> if d' <= 3 * (tcount - prev) || prev == 0
+                       then send h report r
+                       else r
             where
               prev = case (lastSent r ukey hq) of
                 Just msg -> sent (header msg)
                 Nothing -> 0
+              d = getDist atlas board ukey hq
+              d' = fromMaybe (maxBound :: Int) d
               h = mkHeader tcount ukey hq d
 
 -- | Construit le rapport d'une unité à son état-major.

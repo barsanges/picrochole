@@ -37,7 +37,7 @@ data CellContent = Units (Vector Unit)
 data Report = Report { from :: Text
                      , to :: Text
                      , sent :: Int
-                     , received :: Int
+                     , received :: Maybe Int
                      , content :: Map Text CellContent
                      }
   deriving Show
