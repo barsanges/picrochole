@@ -39,23 +39,24 @@ movement atlas actions board = foldr go board (initiative board)
         action = M.findWithDefault [] ukey actions
 
         goo :: Double -> [CellKey] -> Board -> Board
-        goo ds keys b = case keys of
-          [] -> setPosition ukey pos' b
-          (y:ys) -> if isNothing (currentProgress pos')
-                       && (next atlas b unit x y)
-                    then goo ds' ys b'
-                    else setPosition ukey pos' b
-            where
-              f = faction unit
-              x = currentCell pos
-              new = Position { currentCell = y, currentProgress = Just 0 }
-              b' = setMarker f x (setPosition ukey new b)
+        goo ds keys b = case getUnit b ukey of
+          Nothing -> b
+          Just unit -> case keys of
+            [] -> setPosition ukey pos' b
+            (y:ys) -> if isNothing (currentProgress pos')
+                         && (next atlas b unit x y)
+                      then goo ds' ys b'
+                      else setPosition ukey pos' b
+              where
+                f = faction unit
+                x = currentCell pos
+                new = Position { currentCell = y, currentProgress = Just 0 }
+                b' = setMarker f x (setPosition ukey new b)
 
-          where
-            unit = getUnit b ukey
-            pos = getPosition b ukey
-            t = topography' atlas (currentCell pos)
-            (ds', pos') = fwd t unit (ds, pos)
+            where
+              pos = position unit
+              t = topography' atlas (currentCell pos)
+              (ds', pos') = fwd t unit (ds, pos)
 
 -- | Fait avancer l'unité sur sa case.
 fwd :: Topography -> Unit -> (Double, Position) -> (Double, Position)
@@ -149,18 +150,19 @@ bombing :: Atlas -> Board -> Board
 bombing atlas board = foldr go board (initiative board)
   where
     go :: UnitKey -> Board -> Board
-    go key b = case kind unit of
-      Artillery -> wound damage g target b
-      _ -> b
-      where
-        loc = getLocation b key
-        unit = getUnit b key
-        f = faction unit
-        g = opponent f
-        damage = (strength unit) / 15
+    go key b = case getUnit b key of
+      Nothing -> b
+      Just unit -> case kind unit of
+        Artillery -> wound damage g target b
+        _ -> b
+        where
+          loc = location unit
+          f = faction unit
+          g = opponent f
+          damage = (strength unit) / 15
 
-        disk = getDisk atlas b loc 1
-        target = getStrongestOpponent f disk
+          disk = getDisk atlas b loc 1
+          target = getStrongestOpponent f disk
 
 -- | Résout la phase de combat.
 fight :: Atlas -> Board -> Board

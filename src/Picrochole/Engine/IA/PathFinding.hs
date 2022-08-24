@@ -37,15 +37,17 @@ findPath :: Atlas
          -> (Faction -> UnitKey)
          -> UnitKey
          -> [CellKey]
-findPath atlas tcount board orders getHQ ukey = case lastReceived tcount orders ukey hq of
-  Just msg -> shortest atlas board k size start (content msg)
-  Nothing -> []
-  where
-    start = currentCell (getPosition board ukey)
-    unit = getUnit board ukey
-    hq = getHQ (faction unit)
-    k = kind unit
-    size = strength unit
+findPath atlas tcount board orders getHQ ukey =
+  case getUnit board ukey of
+    Nothing -> []
+    Just unit -> case lastReceived tcount orders ukey hq of
+      Nothing -> []
+      Just msg -> shortest atlas board k size start (content msg)
+      where
+        start = location unit
+        hq = getHQ (faction unit)
+        k = kind unit
+        size = strength unit
 
 -- | Renvoie le plus court chemin entre deux emplacements, sans tenir compte
 -- de l'occupation des cases, mais en tenant compte de la capacité maximale

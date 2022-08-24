@@ -15,6 +15,7 @@ module Picrochole.Data.Board
   , strength
   , location
   , progress
+  , position
   , mkUnit
   , CellKey
   , CellContent
@@ -103,6 +104,10 @@ location = currentCell . position_
 -- | Renvoie l'état d'avancement de l'unité sur sa case.
 progress :: Unit -> Maybe Double
 progress = currentProgress . position_
+
+-- | Renvoie la position de l'unité.
+position :: Unit -> Position
+position = position_
 
 -- | Renvoie une unité.
 mkUnit :: UnitKey
@@ -210,22 +215,15 @@ allUnits :: Board -> XsMap CellKey UnitKey Faction Unit
 allUnits b = bXsMap b
 
 -- | Renvoie une unité du plateau de jeu.
-getUnit :: Board -> UnitKey -> Unit
-getUnit board ukey = case lookupKey ukey (bXsMap board) of
-  Just u -> u
-  Nothing -> error "malformed board" -- HACK
+getUnit :: Board -> UnitKey -> Maybe Unit
+getUnit board ukey = lookupKey ukey (bXsMap board)
 
 -- | Renvoie la distance à vol d'oiseau entre deux unités.
-getDist :: Atlas -> Board -> UnitKey -> UnitKey -> Int
-getDist atlas board x y = dist gsize x' y'
-  where
-    gsize = gridSize atlas
-    x' = case lookupKey x (bXsMap board) of
-      Just u -> location u
-      Nothing -> error "malformed board" -- HACK
-    y' = case lookupKey y (bXsMap board) of
-      Just u -> location u
-      Nothing -> error "malformed board" -- HACK
+getDist :: Atlas -> Board -> UnitKey -> UnitKey -> Maybe Int
+getDist atlas board x y = do
+  x' <- lookupKey x (bXsMap board)
+  y' <- lookupKey y (bXsMap board)
+  return (dist (gridSize atlas) (location x') (location y'))
 
 -- | Supprime une unité du plateau de jeu.
 removeUnit :: UnitKey -> Board -> Board
@@ -248,27 +246,23 @@ decrStrength uk ds board = case lookupKey uk (bXsMap board) of
       u' = u { strength_ = s' }
 
 -- | Renvoie la position d'une unité sur le plateau de jeu.
-getPosition :: Board -> UnitKey -> Position
-getPosition board ukey = case lookupKey ukey (bXsMap board) of
-  Just u -> position_ u
-  Nothing -> error "malformed board" -- HACK
+getPosition :: Board -> UnitKey -> Maybe Position
+getPosition board ukey = fmap position_ (lookupKey ukey (bXsMap board))
 
 -- | Change la position d'une unité sur le plateau de jeu.
 setPosition :: UnitKey -> Position -> Board -> Board
-setPosition ukey pos board = board { bXsMap = xs' }
+setPosition ukey pos board = case lookupKey ukey xs of
+  Nothing -> board
+  Just u -> board { bXsMap = xs' }
+    where
+      u' = u { position_ = pos }
+      xs' = insertKey ukey u' xs
   where
     xs = bXsMap board
-    u = case lookupKey ukey xs of
-      Just u_ -> u_
-      Nothing -> error "malformed board" -- HACK
-    u' = u { position_ = pos }
-    xs' = insertKey ukey u' xs
 
 -- | Renvoie l'emplacement d'une unité du plateau de jeu.
-getLocation :: Board -> UnitKey -> CellKey
-getLocation board ukey = case lookupKey ukey (bXsMap board) of
-  Just u -> location u
-  Nothing -> error "malformed board" -- HACK
+getLocation :: Board -> UnitKey -> Maybe CellKey
+getLocation board ukey = fmap location (lookupKey ukey (bXsMap board))
 
 -- | Renvoie l'emplacement de toutes les unités d'un camp.
 getLocations :: Board -> Faction -> Set CellKey

@@ -26,31 +26,35 @@ reporting :: Atlas
 reporting atlas tcount getHQ board reports = foldr go reports (initiative board)
   where
     go :: UnitKey -> Register Report -> Register Report
-    go ukey r = if d <= 3 * (tcount - prev) || prev == 0
-                then send h report r
-                else r
-      where
-        hq = getHQ (faction $ getUnit board ukey)
-        d = getDist atlas board ukey hq
-        prev = case (lastReceived tcount r ukey hq) of
-          Just msg -> received (header msg)
-          Nothing -> 0
-        h = mkHeader tcount ukey hq d
-        report = mkReport atlas board ukey
+    go ukey r = case fmap getHQ (fmap faction (getUnit board ukey)) of
+      Nothing -> r
+      Just hq -> case mkReport atlas board ukey of
+        Nothing -> r
+        Just report -> case getDist atlas board ukey hq of
+          Nothing -> error "HACK"
+          Just d -> if d <= 3 * (tcount - prev) || prev == 0
+                    then send h report r
+                    else r
+            where
+              prev = case (lastReceived tcount r ukey hq) of
+                Just msg -> received (header msg)
+                Nothing -> 0
+              h = mkHeader tcount ukey hq d
 
 -- | Construit le rapport d'une unité à son état-major.
-mkReport :: Atlas -> Board -> UnitKey -> Report
-mkReport atlas board ukey = report
-  where
-    ckey = getLocation board ukey
-    radius = if isContested board ckey
-             then 1
-             else case undefined of
-                    Cavalery -> 4
-                    Infantery -> 2
-                    Artillery -> 2
-    disk = getDisk atlas board ckey radius
-    report = foldr go M.empty disk
+mkReport :: Atlas -> Board -> UnitKey -> Maybe Report
+mkReport atlas board ukey = case getLocation board ukey of
+  Nothing -> Nothing
+  Just ckey -> Just report
+    where
+      radius = if isContested board ckey
+               then 1
+               else case undefined of
+                      Cavalery -> 4
+                      Infantery -> 2
+                      Artillery -> 2
+      disk = getDisk atlas board ckey radius
+      report = foldr go M.empty disk
 
-    go :: Cell -> Report -> Report
-    go c r = M.insert (cellKey c) (cellContent c) r
+      go :: Cell -> Report -> Report
+      go c r = M.insert (cellKey c) (cellContent c) r

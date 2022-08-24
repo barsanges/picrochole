@@ -133,5 +133,7 @@ command atlas tcount board hq orders reg = foldr go reg orders
     go :: BaseOrder -> Register Order -> Register Order
     go (BaseOrder ukey obj) r = send h obj r
       where
-        d = getDist atlas board ukey hq
+        d = case getDist atlas board ukey hq of
+          Just d' -> d'
+          Nothing -> error "HACK"
         h = mkHeader tcount hq ukey d
