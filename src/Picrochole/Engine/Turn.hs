@@ -21,15 +21,15 @@ import Picrochole.Data.Base
 import Picrochole.Data.Board
 
 -- | Résout un tour de jeu.
-turn :: Atlas -> Map UnitKey [CellKey] -> Board -> Board
-turn atlas actions board = fight atlas
-                           $ bombing atlas
-                           $ encirclement atlas
-                           $ movement atlas actions board
+turn :: Atlas -> [UnitKey] -> Map UnitKey [CellKey] -> Board -> Board
+turn atlas initiative actions board = fight atlas
+                                      $ bombing atlas initiative
+                                      $ encirclement atlas
+                                      $ movement atlas initiative actions board
 
 -- | Résout la phase de mouvement.
-movement :: Atlas -> Map UnitKey [CellKey] -> Board -> Board
-movement atlas actions board = foldr go board (initiative board)
+movement :: Atlas -> [UnitKey] -> Map UnitKey [CellKey] -> Board -> Board
+movement atlas initiative actions board = foldr go board initiative
   where
 
     go :: UnitKey -> Board -> Board
@@ -146,8 +146,8 @@ border atlas inside = surroundings `S.difference` inside
     go k ks = S.union (S.fromList $ getDiskKeys atlas k 1) ks
 
 -- | Résout la phase de bombardement.
-bombing :: Atlas -> Board -> Board
-bombing atlas board = foldr go board (initiative board)
+bombing :: Atlas -> [UnitKey] -> Board -> Board
+bombing atlas initiative board = foldr go board initiative
   where
     go :: UnitKey -> Board -> Board
     go key b = case getUnit b key of

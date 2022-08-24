@@ -33,7 +33,6 @@ module Picrochole.Data.Board
   , Board
   , mkBoard
   , touch
-  , initiative
   , allUnits
   , getUnit
   , getDist
@@ -192,23 +191,12 @@ getStrongest f cell = if null units
     comp x y = compare (strength x) (strength y)
 
 -- | Le plateau de jeu avec l'ensemble des unités des deux camps.
-data Board = Board { bXsMap :: XsMap CellKey UnitKey Faction Unit
-                   , bInitiative :: [UnitKey]
-                   }
+data Board = Board { bXsMap :: XsMap CellKey UnitKey Faction Unit }
   deriving Show
 
 -- | Renvoie une nouvelle instance de `Board`.
-mkBoard :: XsMap CellKey UnitKey Faction Unit
-        -> [UnitKey]
-        -> Board
-mkBoard xs is = Board { bXsMap = xs
-                      , bInitiative = is
-                      }
-
--- | Renvoie les identifiants des unités par ordre d'initiative (i.e. : la
--- première unité qui doit jouer est la première unité de la liste).
-initiative :: Board -> [UnitKey]
-initiative board = bInitiative board
+mkBoard :: XsMap CellKey UnitKey Faction Unit -> Board
+mkBoard xs = Board { bXsMap = xs }
 
 -- | Renvoie les unités du plateau de jeu.
 allUnits :: Board -> XsMap CellKey UnitKey Faction Unit
@@ -227,12 +215,9 @@ getDist atlas board x y = do
 
 -- | Supprime une unité du plateau de jeu.
 removeUnit :: UnitKey -> Board -> Board
-removeUnit uk board = board { bXsMap = xs'
-                            , bInitiative = init'
-                            }
+removeUnit uk board = board { bXsMap = xs' }
   where
     xs' = deleteKey uk (bXsMap board)
-    init' = filter (\ k -> k /= uk) (bInitiative board) -- Inefficace
 
 -- | Diminue la force d'une unité sur le plateau de jeu.
 decrStrength :: UnitKey -> Double -> Board -> Board

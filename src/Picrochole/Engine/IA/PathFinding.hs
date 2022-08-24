@@ -20,12 +20,13 @@ import Picrochole.Data.Orders
 
 -- | Détermine le chemin suivi par les unités.
 route :: Atlas
+      -> [UnitKey]
       -> TurnCount
       -> Board
       -> Register Order
       -> (Faction -> UnitKey)
       -> Map UnitKey [CellKey]
-route atlas tcount board orders getHQ = foldr go M.empty (initiative board)
+route atlas initiative tcount board orders getHQ = foldr go M.empty initiative
   where
     go ukey m = M.insert ukey (findPath atlas tcount board orders getHQ ukey) m
 

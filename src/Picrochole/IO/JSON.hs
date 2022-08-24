@@ -9,9 +9,7 @@ Sérialisation en JSON des différents objets du jeu.
 -}
 
 module Picrochole.IO.JSON
-  ( readInitiative
-  , writeInitiative
-  , readUnits
+  ( readUnits
   , writeUnits
   ) where
 
@@ -59,14 +57,6 @@ instance ToJSON Unit where
                     , "location" .= location x
                     , "progress" .= progress x
                     ]
-
--- | Construit une instance de `[UnitKey]` à partir d'un fichier JSON.
-readInitiative :: FilePath -> IO (Either String [UnitKey])
-readInitiative = eitherDecodeFileStrict
-
--- | Enregistre l'instance de `[UnitKey]` dans le fichier indiqué.
-writeInitiative :: FilePath -> [UnitKey] -> IO ()
-writeInitiative = encodeFile
 
 -- | Construit un conteneur d'unités à partir d'un fichier JSON.
 readUnits :: FilePath -> IO (Either String (XsMap CellKey UnitKey Faction Unit))

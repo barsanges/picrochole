@@ -20,12 +20,13 @@ import Picrochole.Data.Reports
 
 -- | Effectue la remontée d'informations entre les unités et leurs état-majors.
 reporting :: Atlas
+          -> [UnitKey]
           -> TurnCount
           -> (Faction -> UnitKey)
           -> Board
           -> Register Report
           -> Register Report
-reporting atlas tcount getHQ board reports = foldr go reports (initiative board)
+reporting atlas initiative tcount getHQ board reports = foldr go reports initiative
   where
     go :: UnitKey -> Register Report -> Register Report
     go ukey r = case fmap getHQ (fmap faction (getUnit board ukey)) of
