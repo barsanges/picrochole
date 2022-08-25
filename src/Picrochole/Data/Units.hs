@@ -20,9 +20,20 @@ module Picrochole.Data.Units
   , location
   , progress
   , mkUnit
-  , decrStrength'
-  , setPosition'
+  , location'
+  , position'
+  , locations
+  , decrStrength
+  , setPosition
+  , removeFaction
+  , getDist
+  , capacityLeft
+  , hasUnit
+  , isContested
   ) where
+
+import Data.Set ( Set )
+import qualified Data.Set as S
 
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
@@ -91,9 +102,27 @@ mkUnit ky f ki s l p = Unit { unitKey_ = ky
                                                    }
                             }
 
+-- | Renvoie l'identifiant de la cellule sur laquelle se trouve une unité du
+-- plateau de jeu.
+location' :: Units -> UnitKey -> Maybe CellKey
+location' xs ukey = fmap location (lookupKey ukey xs)
+
+-- | Renvoie la position d'une unité sur le plateau de jeu.
+position' :: Units -> UnitKey -> Maybe Position
+position' xs ukey = fmap position (lookupKey ukey xs)
+
+-- | Renvoie l'emplacement de toutes les unités d'un camp.
+locations :: Units -> Faction -> Set CellKey
+locations xs f = foldr go S.empty xs
+  where
+    go :: Unit -> Set CellKey -> Set CellKey
+    go u s = if faction u == f
+             then S.insert (location u) s
+             else s
+
 -- | Diminue la force d'une unité sur le plateau de jeu.
-decrStrength' :: UnitKey -> Double -> Units -> Units
-decrStrength' uk ds xs = case lookupKey uk xs of
+decrStrength :: UnitKey -> Double -> Units -> Units
+decrStrength uk ds xs = case lookupKey uk xs of
   Nothing -> xs
   Just u -> if s' > 0
             then insertKey uk u' xs
@@ -102,10 +131,51 @@ decrStrength' uk ds xs = case lookupKey uk xs of
       s' = (strength u) - ds
       u' = u { strength_ = s' }
 
+-- | Supprime toutes les unités d'un camp sur la case donnée.
+removeFaction :: Faction -> CellKey -> Units -> Units
+removeFaction f ck xs = foldr go xs bunits
+  where
+    bunits = lookupLocationContent ck xs
+
+    go :: Unit -> Units -> Units
+    go u ys = if faction u == f
+              then deleteKey (unitKey u) ys
+              else ys
+
 -- | Change la position d'une unité sur le plateau de jeu.
-setPosition' :: UnitKey -> Position -> Units -> Units
-setPosition' ukey pos xs = case lookupKey ukey xs of
+setPosition :: UnitKey -> Position -> Units -> Units
+setPosition ukey pos xs = case lookupKey ukey xs of
   Nothing -> xs
   Just u -> insertKey ukey u' xs
     where
       u' = u { position_ = pos }
+
+-- | Renvoie la distance à vol d'oiseau entre deux unités.
+getDist :: Atlas -> Units -> UnitKey -> UnitKey -> Maybe Int
+getDist atlas xs u v = do
+  u' <- lookupKey u xs
+  v' <- lookupKey v xs
+  return (dist (gridSize atlas) (location u') (location v'))
+
+-- | Renvoie la capacité d'accueil restante de la case donnée.
+capacityLeft :: Atlas -> Units -> Faction -> CellKey -> Double
+capacityLeft atlas xs f ck = foldr go maxCapacity bunits
+  where
+    maxCapacity = capacity (getHex atlas ck)
+    bunits = lookupLocationContent ck xs
+
+    go :: Unit -> Double -> Double
+    go u c = if faction u == f
+             then c - (strength u)
+             else c
+
+-- | Indique si la case donnée contient une unité du camp indiqué.
+hasUnit :: Units -> Faction -> CellKey -> Bool
+hasUnit xs f ckey = any go (lookupLocationContent ckey xs)
+  where
+    go :: Unit -> Bool
+    go u = (faction u) == f
+
+-- | Indique si la case donnée contient des unités des deux camps.
+isContested :: Units -> CellKey -> Bool
+isContested xs ckey = (hasUnit xs Blue ckey) && (hasUnit xs Red ckey)

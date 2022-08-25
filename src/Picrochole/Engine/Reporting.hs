@@ -15,23 +15,24 @@ import qualified Data.Map as M
 
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
-import Picrochole.Data.Board
+import Picrochole.Data.Cell
 import Picrochole.Data.Reports
+import Picrochole.Data.Units
 
 -- | Effectue la remontée d'informations entre les unités et leurs état-majors.
 reporting :: Atlas
           -> [UnitKey]
           -> TurnCount
           -> (Faction -> UnitKey)
-          -> Board
+          -> Units
           -> Register Report
           -> Register Report
-reporting atlas initiative tcount getHQ board reports = foldr go reports initiative
+reporting atlas initiative tcount getHQ xs reports = foldr go reports initiative
   where
     go :: UnitKey -> Register Report -> Register Report
-    go ukey r = case fmap getHQ (fmap faction (getUnit board ukey)) of
+    go ukey r = case fmap getHQ (fmap faction (lookupKey ukey xs)) of
       Nothing -> r
-      Just hq -> case mkReport atlas board ukey of
+      Just hq -> case mkReport atlas xs ukey of
         Nothing -> r
         Just report -> if d' <= 3 * (tcount - prev) || prev == 0
                        then send h report r
@@ -40,23 +41,23 @@ reporting atlas initiative tcount getHQ board reports = foldr go reports initiat
               prev = case (lastSent r ukey hq) of
                 Just msg -> sent (header msg)
                 Nothing -> 0
-              d = getDist atlas board ukey hq
+              d = getDist atlas xs ukey hq
               d' = fromMaybe (maxBound :: Int) d
               h = mkHeader tcount ukey hq d
 
 -- | Construit le rapport d'une unité à son état-major.
-mkReport :: Atlas -> Board -> UnitKey -> Maybe Report
-mkReport atlas board ukey = case getLocation board ukey of
+mkReport :: Atlas -> Units -> UnitKey -> Maybe Report
+mkReport atlas xs ukey = case location' xs ukey of
   Nothing -> Nothing
   Just ckey -> Just report
     where
-      radius = if isContested board ckey
+      radius = if isContested xs ckey
                then 1
                else case undefined of
                       Cavalery -> 4
                       Infantery -> 2
                       Artillery -> 2
-      disk = getDisk atlas board ckey radius
+      disk = getDisk atlas xs ckey radius
       report = foldr go M.empty disk
 
       go :: Cell -> Report -> Report

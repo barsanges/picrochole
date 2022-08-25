@@ -16,8 +16,8 @@ module Picrochole.IO.JSON
 import Data.Aeson
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
-import Picrochole.Data.Board
 import Picrochole.Data.Structs.XsMap
+import Picrochole.Data.Units
 
 -- Pour mémoire :
 --   toJSON :: a -> Value

@@ -23,8 +23,9 @@ import qualified Data.Vector as V
 
 import Picrochole.Data.Atlas ( CellKey(..), readCellKey )
 import Picrochole.Data.Base
-import Picrochole.Data.Board
+import Picrochole.Data.Cell
 import Picrochole.Data.Structs.Register
+import Picrochole.Data.Units
 import qualified Picrochole.JSON.Reports as J
 import Picrochole.JSON.Utils
 

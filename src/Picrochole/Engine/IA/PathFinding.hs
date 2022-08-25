@@ -13,37 +13,39 @@ module Picrochole.Engine.IA.PathFinding
 import Algorithm.Search ( dijkstra )
 import Data.Map ( Map )
 import qualified Data.Map as M
+
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
-import Picrochole.Data.Board
+import Picrochole.Data.Cell
 import Picrochole.Data.Orders
+import Picrochole.Data.Units
 
 -- | Détermine le chemin suivi par les unités.
 route :: Atlas
       -> [UnitKey]
       -> TurnCount
-      -> Board
+      -> Units
       -> Register Order
       -> (Faction -> UnitKey)
       -> Map UnitKey [CellKey]
-route atlas initiative tcount board orders getHQ = foldr go M.empty initiative
+route atlas initiative tcount xs orders getHQ = foldr go M.empty initiative
   where
-    go ukey m = M.insert ukey (findPath atlas tcount board orders getHQ ukey) m
+    go ukey m = M.insert ukey (findPath atlas tcount xs orders getHQ ukey) m
 
 -- | Calcule le chemin que doit suivre l'unité.
 findPath :: Atlas
          -> TurnCount
-         -> Board
+         -> Units
          -> Register Order
          -> (Faction -> UnitKey)
          -> UnitKey
          -> [CellKey]
-findPath atlas tcount board orders getHQ ukey =
-  case getUnit board ukey of
+findPath atlas tcount xs orders getHQ ukey =
+  case lookupKey ukey xs of
     Nothing -> []
     Just unit -> case lastReceived tcount orders ukey hq of
       Nothing -> []
-      Just msg -> shortest atlas board k size start (content msg)
+      Just msg -> shortest atlas xs k size start (content msg)
       where
         start = location unit
         hq = getHQ (faction unit)
@@ -54,20 +56,20 @@ findPath atlas tcount board orders getHQ ukey =
 -- de l'occupation des cases, mais en tenant compte de la capacité maximale
 -- des cellules.
 shortest :: Atlas
-         -> Board
+         -> Units
          -> UnitKind
          -> Double
          -> CellKey
          -> CellKey
          -> [CellKey]
-shortest atlas board k size start end = case sol of
-                                          Nothing -> []
-                                          Just (_, path) -> path
+shortest atlas xs k size start end = case sol of
+                                       Nothing -> []
+                                       Just (_, path) -> path
   where
     sol = dijkstra ngb dst (\ x -> x == end) start
 
     ngb :: CellKey -> [CellKey]
-    ngb x = fmap cellKey (filter sieve (getDisk atlas board x 1))
+    ngb x = fmap cellKey (filter sieve (getDisk atlas xs x 1))
 
     sieve :: Cell -> Bool
     sieve c = ((cellTopography c == Road) || (cellTopography c == Land))

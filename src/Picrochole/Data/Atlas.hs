@@ -17,6 +17,7 @@ module Picrochole.Data.Atlas
   , readAtlas
   , readCellKey
   , topography'
+  , getDiskKeys
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
@@ -94,3 +95,8 @@ readTile cp =
 -- | Renvoie la nature du terrain sur la case donnée.
 topography' :: Atlas -> CellKey -> Topography
 topography' atlas ck = topography (getHex atlas ck)
+
+-- | Renvoie les identifiants d'un disque de cases du plateau de jeu, dont le
+-- centre est la case indiquée.
+getDiskKeys :: Atlas -> CellKey -> Int -> [CellKey]
+getDiskKeys atlas ck radius = diskKeys (gridSize atlas) ck radius
