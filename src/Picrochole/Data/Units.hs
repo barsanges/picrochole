@@ -30,14 +30,25 @@ module Picrochole.Data.Units
   , capacityLeft
   , hasUnit
   , isContested
+  , readUnits
+  , readUnit
+  , writeUnits
+  , showUnit
   ) where
 
+import Data.Aeson ( eitherDecodeFileStrict, encodeFile )
+import qualified Data.Map as M
 import Data.Set ( Set )
 import qualified Data.Set as S
+import Data.Text ( Text )
+import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Structs.XsMap
+import qualified Picrochole.JSON.Units as J
+import Picrochole.JSON.Utils
 
 -- | Une unité du plateau de jeu.
 data Unit = Unit { unitKey_ :: UnitKey
@@ -179,3 +190,58 @@ hasUnit xs f ckey = any go (lookupLocationContent ckey xs)
 -- | Indique si la case donnée contient des unités des deux camps.
 isContested :: Units -> CellKey -> Bool
 isContested xs ckey = (hasUnit xs Blue ckey) && (hasUnit xs Red ckey)
+
+-- | Construit une instance de `Units` à partir d'un fichier JSON.
+readUnits :: FilePath -> IO (Either String Units)
+readUnits fp = do
+  mxs <- eitherDecodeFileStrict fp
+  case mxs of
+    Left m -> return (Left m)
+    Right xs -> do
+      case parseMap readCellKey go xs of
+        Left m -> return (Left m)
+        Right xs' -> return (Right (fromMap location unitKey xs'))
+
+  where
+
+    go :: CellKey -> J.CellContent -> Either String (Either Faction [Unit])
+    go _ (J.Marker txt) = fmap Left (readFaction txt)
+    go ckey (J.Units vec) = case parseVector (readUnit ckey) vec of
+      Left m -> Left m
+      Right vec' -> Right (Right (V.toList vec'))
+
+-- | Crée une instance de `Unit` à partir de paramètres lus dans un JSON.
+readUnit :: CellKey -> J.Unit -> Either String Unit
+readUnit ckey u = do
+  f <- readFaction (J.faction u)
+  ukind <- readUnitKind (J.kind u)
+  let ukey = UK (J.unitKey u)
+  return (mkUnit ukey f ukind (J.strength u) ckey (J.progress u))
+
+-- | Enregistre l'instance de `Units` dans le fichier indiqué.
+writeUnits :: FilePath -> Units -> IO ()
+writeUnits fp xs = encodeFile fp xs'
+
+  where
+
+    xs' = M.mapKeys fkey (M.map fvalue (toMap xs))
+
+    fkey :: CellKey -> Text
+    fkey (CK x) = T.pack . show $ x
+
+    fvalue :: Either Faction [Unit] -> J.CellContent
+    fvalue (Left f) = J.Marker (showFaction f)
+    fvalue (Right us) = J.Units (fmap showUnit (V.fromList us))
+
+-- | Convertit une instance de `Unit` en une structure prête à être
+-- sérialisée en JSON.
+showUnit :: Unit -> J.Unit
+showUnit x = J.Unit { J.unitKey = rawUK (unitKey x)
+                    , J.faction = showFaction (faction x)
+                    , J.kind = showUnitKind (kind x)
+                    , J.strength = strength x
+                    , J.progress = progress x
+                    }
+  where
+    rawUK :: UnitKey -> Text
+    rawUK (UK u) = u

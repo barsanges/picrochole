@@ -72,14 +72,6 @@ readContent xs = parseMap readCellKey fvalue xs
       Left m -> Left m
       Right vec' -> Right (Right (partition (\ x -> faction x == Blue) (V.toList vec')))
 
--- | Crée une instance de `Unit` à partir de paramètres lus dans un JSON.
-readUnit :: CellKey -> J.Unit -> Either String Unit
-readUnit ckey u = do
-  f <- readFaction (J.faction u)
-  ukind <- readUnitKind (J.kind u)
-  let ukey = UK (J.unitKey u)
-  return (mkUnit ukey f ukind (J.strength u) ckey (J.progress u))
-
 -- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
 writeReports :: FilePath -> Register Report -> IO ()
 writeReports fp x = encodeFile fp (fmap showReport (toVector x))
@@ -104,14 +96,6 @@ showReport r = J.Report { J.from = rawUK (from . header $ r)
 
     fvalue :: CellContent -> J.CellContent
     fvalue (Left f) = J.Marker (showFaction f)
-    fvalue (Right (xs, ys)) = J.Units (fmap go (V.concat [ V.fromList xs
-                                                         , V.fromList ys
-                                                         ]))
-
-    go :: Unit -> J.Unit
-    go x = J.Unit { J.unitKey = rawUK (unitKey x)
-                  , J.faction = showFaction (faction x)
-                  , J.kind = showUnitKind (kind x)
-                  , J.strength = strength x
-                  , J.progress = progress x
-                  }
+    fvalue (Right (xs, ys)) = J.Units (fmap showUnit (V.concat [ V.fromList xs
+                                                               , V.fromList ys
+                                                               ]))
