@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-} -- FIXME : à supprimer à terme.
 {- |
    Module      : Picrochole.Data.Structs.HexGrid
    Copyright   : Copyright (C) 2022 barsanges
@@ -20,7 +19,6 @@ module Picrochole.Data.Structs.HexGrid
   , diskKeys
   ) where
 
-import GHC.Generics ( Generic )
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
@@ -38,7 +36,7 @@ data HexGrid a = HexGrid { cells :: Vector a
 
 -- | Identifiant unique d'une case.
 newtype CellKey = CK Int
-  deriving (Eq, Generic, Ord, Show)
+  deriving (Eq, Ord, Show)
 
 -- | Construit une grille à partir d'un vecteur.
 fromVector :: GridSize -> Vector a -> Maybe (HexGrid a)

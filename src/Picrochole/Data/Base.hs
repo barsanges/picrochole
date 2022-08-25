@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 {- |
    Module      : Picrochole.Data.Base
    Copyright   : Copyright (C) 2022 barsanges
@@ -22,7 +21,6 @@ module Picrochole.Data.Base
   ) where
 
 import qualified Data.Text as T
-import GHC.Generics ( Generic )
 
 import Picrochole.Data.Atlas
 
@@ -32,7 +30,7 @@ type TurnCount = Int
 -- | Faction à laquelle appartient une unité.
 data Faction = Blue
              | Red
-  deriving (Eq, Generic, Show)
+  deriving (Eq, Show)
 
 -- | Transforme une chaîne de caractères en un identifiant de faction.
 readFaction :: T.Text -> Either String Faction
@@ -53,13 +51,13 @@ opponent Red = Blue
 
 -- | Identifiant unique d'une unité.
 newtype UnitKey = UK T.Text
-  deriving (Eq, Generic, Ord, Show)
+  deriving (Eq, Ord, Show)
 
 -- | Arme d'une unité.
 data UnitKind = Infantery
               | Cavalery
               | Artillery
-  deriving (Eq, Generic, Show)
+  deriving (Eq, Show)
 
 -- | Transforme une chaîne de caractères en un type d'unité.
 readUnitKind :: T.Text -> Either String UnitKind
