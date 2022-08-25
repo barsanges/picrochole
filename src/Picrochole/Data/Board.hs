@@ -7,16 +7,7 @@ Le plateau de jeu et les unités des deux camps.
 -}
 
 module Picrochole.Data.Board
-  ( Unit
-  , Position(..)
-  , unitKey
-  , faction
-  , kind
-  , strength
-  , location
-  , progress
-  , position
-  , mkUnit
+  ( module Picrochole.Data.Units
   , CellKey
   , CellContent
   , Cell
@@ -56,75 +47,11 @@ module Picrochole.Data.Board
 import Data.List ( maximumBy, partition )
 import Data.Set ( Set )
 import qualified Data.Set as S
+
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Structs.XsMap
-
--- | Paramètres immuables d'une unité.
-data UnitParams = UP { unitKey_ :: UnitKey
-                     , faction_ :: Faction
-                     , kind_ :: UnitKind
-                     }
-  deriving Show
-
--- | Une unité du plateau de jeu.
-data Unit = Unit { unitParams :: UnitParams
-                 , strength_ :: Double
-                 , position_ :: Position
-                 }
-  deriving Show
-
--- | Position d'une unité sur le plateau de jeu.
-data Position = Position { currentCell :: CellKey
-                         , currentProgress :: Maybe Double
-                         }
-  deriving Show
-
--- | Renvoie l'identifiant de l'unité.
-unitKey :: Unit -> UnitKey
-unitKey u = unitKey_ (unitParams u)
-
--- | Renvoie la faction de l'unité.
-faction :: Unit -> Faction
-faction u = faction_ (unitParams u)
-
--- | Renvoie l'arme de l'unité.
-kind :: Unit -> UnitKind
-kind u = kind_ (unitParams u)
-
--- | Renvoie la force de l'unité.
-strength :: Unit -> Double
-strength = strength_
-
--- | Renvoie l'identifiant de la cellule sur laquelle se trouve l'unité.
-location :: Unit -> CellKey
-location = currentCell . position_
-
--- | Renvoie l'état d'avancement de l'unité sur sa case.
-progress :: Unit -> Maybe Double
-progress = currentProgress . position_
-
--- | Renvoie la position de l'unité.
-position :: Unit -> Position
-position = position_
-
--- | Renvoie une unité.
-mkUnit :: UnitKey
-       -> Faction
-       -> UnitKind
-       -> Double
-       -> CellKey
-       -> Maybe Double
-       -> Unit
-mkUnit ky f ki s l p = Unit { unitParams = UP { unitKey_ = ky
-                                              , faction_ = f
-                                              , kind_ = ki
-                                              }
-                            , strength_ = s
-                            , position_ = Position { currentCell = l
-                                                   , currentProgress = p
-                                                   }
-                            }
+import Picrochole.Data.Units
 
 -- | Contenu d'une cellule.
 type CellContent = Either Faction ([Unit], [Unit])
@@ -220,30 +147,23 @@ removeUnit uk board = board { bXsMap = xs' }
     xs' = deleteKey uk (bXsMap board)
 
 -- | Diminue la force d'une unité sur le plateau de jeu.
+-- FIXME : à supprimer à terme.
 decrStrength :: UnitKey -> Double -> Board -> Board
-decrStrength uk ds board = case lookupKey uk (bXsMap board) of
-  Nothing -> board
-  Just u -> if s' > 0
-            then board { bXsMap = insertKey uk u' (bXsMap board) }
-            else removeUnit uk board
-    where
-      s' = (strength u) - ds
-      u' = u { strength_ = s' }
+decrStrength uk ds board = board { bXsMap = xs' }
+  where
+    xs' = decrStrength' uk ds (bXsMap board)
 
 -- | Renvoie la position d'une unité sur le plateau de jeu.
+-- FIXME : à déplacer dans Units.hs à terme.
 getPosition :: Board -> UnitKey -> Maybe Position
-getPosition board ukey = fmap position_ (lookupKey ukey (bXsMap board))
+getPosition board ukey = fmap position (lookupKey ukey (bXsMap board))
 
 -- | Change la position d'une unité sur le plateau de jeu.
+-- FIXME : à supprimer à terme.
 setPosition :: UnitKey -> Position -> Board -> Board
-setPosition ukey pos board = case lookupKey ukey xs of
-  Nothing -> board
-  Just u -> board { bXsMap = xs' }
-    where
-      u' = u { position_ = pos }
-      xs' = insertKey ukey u' xs
+setPosition ukey pos board = board { bXsMap = xs' }
   where
-    xs = bXsMap board
+    xs' = setPosition' ukey pos (bXsMap board)
 
 -- | Renvoie l'emplacement d'une unité du plateau de jeu.
 getLocation :: Board -> UnitKey -> Maybe CellKey
