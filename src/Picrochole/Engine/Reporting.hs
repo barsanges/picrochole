@@ -30,7 +30,7 @@ reporting :: Atlas
 reporting atlas initiative tcount getHQ xs reports = foldr go reports initiative
   where
     go :: UnitKey -> Register Report -> Register Report
-    go ukey r = case fmap getHQ (fmap faction (lookupKey ukey xs)) of
+    go ukey r = case fmap (getHQ . faction) (lookupKey ukey xs) of
       Nothing -> r
       Just hq -> case mkReport atlas xs ukey of
         Nothing -> r

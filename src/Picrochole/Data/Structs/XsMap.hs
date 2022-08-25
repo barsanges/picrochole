@@ -134,12 +134,12 @@ rmLoc :: (Ord k1, Ord k2)
       -> M.Map k1 (Either a (S.Set k2))
 rmLoc k ms = case M.lookup k (content ms) of
   Nothing -> ls
-  Just x -> case M.lookup (k1_ ms $ x) ls of
+  Just x -> case M.lookup (k1_ ms x) ls of
     Nothing -> error "trying to use a malformed XsMap"
     Just (Left _) -> error "trying to use a malformed XsMap"
     Just (Right s) -> if null s'
-                      then M.delete (k1_ ms $ x) ls
-                      else M.insert (k1_ ms $ x) (Right s') ls
+                      then M.delete (k1_ ms x) ls
+                      else M.insert (k1_ ms x) (Right s') ls
       where
         s' = S.delete k s
   where

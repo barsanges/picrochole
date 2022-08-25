@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {- |
    Module      : Picrochole.JSON.Initiative
    Copyright   : Copyright (C) 2022 barsanges
