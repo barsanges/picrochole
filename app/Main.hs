@@ -28,6 +28,15 @@ import Picrochole.Engine.IA.PathFinding ( route )
 import Picrochole.Engine.Reporting ( reporting )
 import Picrochole.Engine.Turn ( turn )
 
+context :: (FilePath -> IO (Either String a))
+        -> FilePath
+        -> IO (Either String a)
+context f fp = do
+  res <- f fp
+  case res of
+    Left m -> return (Left ("Error in file " ++ fp ++ ": " ++ m))
+    Right x -> return (Right x)
+
 err :: IO (Either String a) -> IO (Maybe a)
 err imx = do
   mx <- imx
@@ -68,14 +77,14 @@ main = do
   case cond of
     False -> putStrLn "unable to find the game directory"
     True -> do
-      mx <- (err (readAtlas (dir </> "atlas.json")))
-            &> (readInitiative (dir </> "initiative.json"))
-            &> (readUnits (dir </> "current-units.json"))
-            &> (readOrders (dir </> "orders.json"))
-            &> (readReports (dir </> "reports.json"))
-            &> (readPlan (dir </> "ia-plan.json"))
-            &> (readConfig (dir </> "config.json"))
-            &> (readCurrentTurn (dir </> "current-turn.json"))
+      mx <- (err (context readAtlas (dir </> "atlas.json")))
+            &> (context readInitiative (dir </> "initiative.json"))
+            &> (context readUnits (dir </> "current-units.json"))
+            &> (context readOrders (dir </> "orders.json"))
+            &> (context readReports (dir </> "reports.json"))
+            &> (context readPlan (dir </> "ia-plan.json"))
+            &> (context readConfig (dir </> "config.json"))
+            &> (context readCurrentTurn (dir </> "current-turn.json"))
       case mx of
         Nothing -> return ()
         Just ((((((((atlas), initiative), units), orders), reports), iaPlan), config), tcount) -> do
