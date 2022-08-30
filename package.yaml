@@ -23,3 +23,13 @@ dependencies:
 
 library:
   source-dirs: src
+
+executables:
+  pic:
+    source-dirs:      app
+    main:             Main.hs
+    dependencies:
+    - directory
+    - filepath
+    - optparse-applicative
+    - picrochole
