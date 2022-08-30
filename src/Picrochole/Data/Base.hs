@@ -9,6 +9,7 @@ Types de base pour décrire le jeu.
 
 module Picrochole.Data.Base
   ( TurnCount
+  , readCurrentTurn
   , Faction(..)
   , readFaction
   , showFaction
@@ -20,12 +21,17 @@ module Picrochole.Data.Base
   , speed
   ) where
 
+import Data.Aeson ( eitherDecodeFileStrict )
 import qualified Data.Text as T
 
 import Picrochole.Data.Atlas
 
 -- | Numéro du tour en cours.
 type TurnCount = Int
+
+-- | Lit un fichier contenant l'identifiant du tour courant.
+readCurrentTurn :: FilePath -> IO (Either String TurnCount)
+readCurrentTurn = eitherDecodeFileStrict
 
 -- | Faction à laquelle appartient une unité.
 data Faction = Blue
