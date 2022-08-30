@@ -19,7 +19,6 @@ module Picrochole.Data.Units
   , position
   , location
   , progress
-  , mkUnit
   , location'
   , position'
   , locations
@@ -95,23 +94,6 @@ location = currentCell . position_
 -- | Renvoie l'état d'avancement de l'unité sur sa case.
 progress :: Unit -> Maybe Double
 progress = currentProgress . position_
-
--- | Renvoie une unité. FIXME : à supprimer.
-mkUnit :: UnitKey
-       -> Faction
-       -> UnitKind
-       -> Double
-       -> CellKey
-       -> Maybe Double
-       -> Unit
-mkUnit ky f ki s l p = Unit { unitKey_ = ky
-                            , faction_ = f
-                            , kind_ = ki
-                            , strength_ = s
-                            , position_ = Position { currentCell = l
-                                                   , currentProgress = p
-                                                   }
-                            }
 
 -- | Renvoie l'identifiant de la cellule sur laquelle se trouve une unité du
 -- plateau de jeu.
@@ -216,7 +198,14 @@ readUnit ckey u = do
   f <- readFaction (J.faction u)
   ukind <- readUnitKind (J.kind u)
   let ukey = UK (J.unitKey u)
-  return (mkUnit ukey f ukind (J.strength u) ckey (J.progress u))
+  return Unit { unitKey_ = ukey
+              , faction_ = f
+              , kind_ = ukind
+              , strength_ = J.strength u
+              , position_ = Position { currentCell = ckey
+                                     , currentProgress = J.progress u
+                                     }
+              }
 
 -- | Enregistre l'instance de `Units` dans le fichier indiqué.
 writeUnits :: FilePath -> Units -> IO ()
