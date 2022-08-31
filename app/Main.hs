@@ -1,5 +1,5 @@
 {- |
-   Module      : CLI
+   Module      : Main
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
