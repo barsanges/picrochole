@@ -99,6 +99,7 @@ main = do
 
           writeReports (dir </> "reports.json") reports'
           writeOrders (dir </> "orders.json") orders'
+          writeCurrentTurn (dir </> "current-turn.json") tcount'
 
           renameFile (dir </> "current-units.json") (dir </> ("units-"  ++ show tcount' ++ ".json"))
           writeUnits (dir </> "current-units.json") units'
