@@ -9,6 +9,7 @@ Paramètres généraux de la partie.
 module Picrochole.Data.Config
   ( Config(..)
   , readConfig
+  , getHQ
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
@@ -22,6 +23,11 @@ data Config = Config { iaFaction :: Faction
                      , hqRed :: UnitKey
                      , limit :: Int
                      }
+
+-- | Renvoie l'état-major de la faction indiquée.
+getHQ :: Config -> Faction -> UnitKey
+getHQ config Blue = hqBlue config
+getHQ config Red = hqRed config
 
 -- | Lit un fichier contenant les paramètres généraux de la partie.
 readConfig :: FilePath -> IO (Either String Config)

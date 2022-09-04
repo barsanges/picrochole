@@ -89,10 +89,10 @@ main = do
         Nothing -> return ()
         Just ((((((((atlas), initiative), units), orders), reports), iaPlan), config), tcount) -> do
 
-          let routes = route atlas initiative tcount units orders getHQ
+          let routes = route atlas initiative tcount units orders (getHQ config)
           let units' = turn atlas initiative routes units
           let tcount' = tcount + 1
-          let reports' = reporting atlas initiative tcount' getHQ units' reports
+          let reports' = reporting atlas initiative tcount' (getHQ config) units' reports
           let orders' = schedule atlas tcount' units' iaHQ ia lim iaPlan reports' orders
 
           createDirectoryIfMissing False (dir </> "past")
@@ -107,9 +107,5 @@ main = do
             where
 
               ia = iaFaction config
-              iaHQ = getHQ ia
+              iaHQ = getHQ config ia
               lim = limit config
-
-              getHQ :: Faction -> UnitKey
-              getHQ Blue = hqBlue config
-              getHQ Red = hqRed config
