@@ -17,6 +17,8 @@ dependencies:
 - aeson
 - base
 - containers
+- directory
+- filepath
 - search-algorithms
 - text
 - vector
@@ -29,7 +31,5 @@ executables:
     source-dirs:      app
     main:             Main.hs
     dependencies:
-    - directory
-    - filepath
     - optparse-applicative
     - picrochole

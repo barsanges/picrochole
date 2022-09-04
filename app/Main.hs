@@ -14,12 +14,9 @@ import qualified Options.Applicative as O
 import System.FilePath.Posix ( (</>) )
 import System.Directory
 
-import Picrochole.Data.Atlas
 import Picrochole.Data.Base
 import Picrochole.Data.Config
-import Picrochole.Data.Initiative
 import Picrochole.Data.Orders
-import Picrochole.Data.Plan
 import Picrochole.Data.Reports
 import Picrochole.Data.Units
 
@@ -28,35 +25,7 @@ import Picrochole.Engine.IA.PathFinding ( route )
 import Picrochole.Engine.Reporting ( reporting )
 import Picrochole.Engine.Turn ( turn )
 
-context :: (FilePath -> IO (Either String a))
-        -> FilePath
-        -> IO (Either String a)
-context f fp = do
-  res <- f fp
-  case res of
-    Left m -> return (Left ("Error in file " ++ fp ++ ": " ++ m))
-    Right x -> return (Right x)
-
-err :: IO (Either String a) -> IO (Maybe a)
-err imx = do
-  mx <- imx
-  case mx of
-    Left m -> do
-      putStrLn m
-      return Nothing
-    Right x -> return (Just x)
-
-(&>) :: IO (Maybe a) -> IO (Either String b) -> IO (Maybe (a, b))
-(&>) imx imy = do
-  mx <- imx
-  my <- imy
-  case my of
-    Left m -> do
-      putStrLn m
-      return Nothing
-    Right y -> case mx of
-      Just x -> return (Just (x, y))
-      Nothing -> return Nothing
+import Picrochole.JSON.Pieces
 
 -- | Command line parser for 'turing'.
 args :: ParserInfo FilePath
@@ -73,39 +42,34 @@ args = O.info ( arg <**> O.helper ) desc
 main :: IO ()
 main = do
   dir <- O.execParser args
-  cond <- doesPathExist dir
-  case cond of
-    False -> putStrLn "unable to find the game directory"
-    True -> do
-      mx <- (err (context readAtlas (dir </> "atlas.json")))
-            &> (context readInitiative (dir </> "initiative.json"))
-            &> (context readUnits (dir </> "current-units.json"))
-            &> (context readOrders (dir </> "orders.json"))
-            &> (context readReports (dir </> "reports.json"))
-            &> (context readPlan (dir </> "ia-plan.json"))
-            &> (context readConfig (dir </> "config.json"))
-            &> (context readCurrentTurn (dir </> "current-turn.json"))
-      case mx of
-        Nothing -> return ()
-        Just ((((((((atlas), initiative), units), orders), reports), iaPlan), config), tcount) -> do
+  meverything <- loadEverythingDir dir
+  case meverything of
+    Left m -> putStrLn m
+    Right everything -> do
+      let atlas = eatlas everything
+      let config = econfig everything
+      let tcount = ecurrentTurn everything
+      let initiative = einitiative everything
+      let orders = eorders everything
+      let reports = ereports everything
+      let iaPlan = eplan everything
+      let units = eunits everything
 
-          let routes = route atlas initiative tcount units orders (getHQ config)
-          let units' = turn atlas initiative routes units
-          let tcount' = tcount + 1
-          let reports' = reporting atlas initiative tcount' (getHQ config) units' reports
-          let orders' = schedule atlas tcount' units' iaHQ ia lim iaPlan reports' orders
+      let ia = iaFaction config
+      let iaHQ = getHQ config ia
+      let lim = limit config
 
-          createDirectoryIfMissing False (dir </> "past")
+      let routes = route atlas initiative tcount units orders (getHQ config)
+      let units' = turn atlas initiative routes units
+      let tcount' = tcount + 1
+      let reports' = reporting atlas initiative tcount' (getHQ config) units' reports
+      let orders' = schedule atlas tcount' units' iaHQ ia lim iaPlan reports' orders
 
-          writeReports (dir </> "reports.json") reports'
-          writeOrders (dir </> "orders.json") orders'
-          writeCurrentTurn (dir </> "current-turn.json") tcount'
+      createDirectoryIfMissing False (dir </> "past")
 
-          renameFile (dir </> "current-units.json") (dir </> ("units-"  ++ show tcount' ++ ".json"))
-          writeUnits (dir </> "current-units.json") units'
+      writeReports (dir </> "reports.json") reports'
+      writeOrders (dir </> "orders.json") orders'
+      writeCurrentTurn (dir </> "current-turn.json") tcount'
 
-            where
-
-              ia = iaFaction config
-              iaHQ = getHQ config ia
-              lim = limit config
+      renameFile (dir </> "current-units.json") (dir </> ("units-"  ++ show tcount' ++ ".json"))
+      writeUnits (dir </> "current-units.json") units'
