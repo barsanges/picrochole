@@ -16,6 +16,7 @@ module Picrochole.JSON.Pieces
   , reportsFileName
   , unitsFileName
   , Some(..)
+  , (&>)
   , loadSome
   , loadSomeDir
   , Everything(..)
@@ -66,6 +67,12 @@ reportsFileName = "reports.json"
 -- | Nom standard du fichier contenant les unités.
 unitsFileName :: String
 unitsFileName = "current-units.json"
+
+-- | Concatène des valeurs optionnelles.
+(&>) :: Maybe a -> Maybe b -> Maybe (a, b)
+(&>) Nothing _ = Nothing
+(&>) _ Nothing = Nothing
+(&>) (Just x) (Just y) = Just (x, y)
 
 -- | Une partie des données du jeu.
 data Some = Some { satlas :: Maybe Atlas
