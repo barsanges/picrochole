@@ -148,7 +148,7 @@ getDist :: Atlas -> Units -> UnitKey -> UnitKey -> Maybe Int
 getDist atlas xs u v = do
   u' <- lookupKey u xs
   v' <- lookupKey v xs
-  return (dist (gridSize atlas) (location u') (location v'))
+  dist (gridSize atlas) (location u') (location v')
 
 -- | Renvoie la capacité d'accueil restante de la case donnée.
 capacityLeft :: Atlas -> Units -> Faction -> CellKey -> Double

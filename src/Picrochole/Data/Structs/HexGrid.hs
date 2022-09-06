@@ -19,6 +19,7 @@ module Picrochole.Data.Structs.HexGrid
   , diskKeys
   ) where
 
+import Data.Maybe ( catMaybes )
 import Data.Vector ( Vector )
 import qualified Data.Vector as V
 
@@ -58,58 +59,47 @@ gridSize = gridSize_
 getHex :: HexGrid a -> CellKey -> a
 getHex grid (CK idx) = (cells grid) V.! idx
 
--- | Convertit l'index en un couple de coordonnées pour une grille hexagonale.
-toPair :: GridSize -> CellKey -> (Int, Int)
-toPair gsize (CK a) = (a `mod` (ncols gsize), a `div` (ncols gsize))
-
--- | Convertit le couple de coordoonées en un index.
-fromPair :: GridSize -> (Int, Int) -> CellKey
-fromPair gsize (x, y) = CK (y * (ncols gsize) + x)
-
 -- | Convertit l'index en un triplet de coordonnées pour une grille hexagonale.
 -- Les hexagones sont orientés pointe en haut.
-toHexCoord :: GridSize -> CellKey -> (Int, Int, Int)
-toHexCoord gsize ckey = (q, r, -q-r)
+toHexCoord :: GridSize -> CellKey -> Maybe (Int, Int, Int)
+toHexCoord gs (CK idx) = if (0 <= idx) && (idx < (ncols gs) * (nrows gs))
+                         then Just (q, r, -q-r)
+                         else Nothing
   where
-    (x, y) = toPair gsize ckey
-    q = x - truncate (0.5 * fromIntegral (y - (y `mod` 2)) :: Double)
-    r = y
--- FIXME : à terme, supprimer cette étape ?
+    r = idx `div` (ncols gs)
+    q = (idx `mod` (ncols gs)) - truncate (0.5 * fromIntegral (r - (r `mod` 2)) :: Double)
 
 -- | Convertit le triplet de coordonnées en une clef de lieu. Les hexagones sont
 -- orientés pointe en haut.
-fromHexCoord :: GridSize -> (Int, Int, Int) -> CellKey
-fromHexCoord gsize (q, r, _) = fromPair gsize (x, y)
+fromHexCoord :: GridSize -> (Int, Int, Int) -> Maybe CellKey
+fromHexCoord gs (q, r, _) =
+  if (0 <= x) && (x < ncols gs) && (0 <= r) && (r < nrows gs)
+  then Just (CK (r * (ncols gs) + x))
+  else Nothing
   where
     x = q + truncate (0.5 * fromIntegral (r - (r `mod` 2)) :: Double)
-    y = r
 
 -- | Calcule la distance en nombre de cases entre deux emplacements,
 -- cf. [ici](https://www.redblobgames.com/grids/hexagons).
-dist :: GridSize -> CellKey -> CellKey -> Int
-dist gsize x y = truncate (0.5 * fromIntegral (diff) :: Double)
-  where
-    (xq, xr, xs) = toHexCoord gsize x
-    (yq, yr, ys) = toHexCoord gsize y
-    diff = abs (xq - yq) + abs (xr - yr) + abs (xs - ys)
-
--- | Indique si la case se situe dans la grille.
-withinGrid :: GridSize -> CellKey -> Bool
-withinGrid gsize ckey = 0 <= x && x < (ncols gsize) && 0 <= y && y < (nrows gsize)
-  where
-    (x, y) = toPair gsize ckey
+dist :: GridSize -> CellKey -> CellKey -> Maybe Int
+dist gsize x y = do
+  (xq, xr, xs) <- toHexCoord gsize x
+  (yq, yr, ys) <- toHexCoord gsize y
+  let diff = abs (xq - yq) + abs (xr - yr) + abs (xs - ys)
+  return (truncate (0.5 * fromIntegral (diff) :: Double))
 
 -- | Indique si les cases `x` et `y` sont adjacentes.
 touch :: GridSize -> CellKey -> CellKey -> Bool
-touch gsize x y = (dist gsize x y) == 1
+touch gsize x y = (dist gsize x y) == (Just 1)
 
 -- | Renvoie les identifiants d'un disque de cases de la grille, dont le centre
 -- est la case indiquée.
 diskKeys :: GridSize -> CellKey -> Int -> [CellKey]
-diskKeys gsize ck radius = filter (withinGrid gsize) allKeys
-  where
-    (q, r, s) = toHexCoord gsize ck
-    allKeys = [fromHexCoord gsize (q + dq, r + dr, s - (dq + dr))
-               | dq <- [-radius..radius]
-               , dr <- [(max (-radius) (-dq - radius))..(max radius (dq + radius))]
-              ]
+diskKeys gsize ck radius = case toHexCoord gsize ck of
+  Nothing -> []
+  Just (q, r, s) -> catMaybes allKeys
+    where
+      allKeys = [fromHexCoord gsize (q + dq, r + dr, s - (dq + dr))
+                | dq <- [-radius..radius]
+                , dr <- [(max (-radius) (-dq - radius))..(min radius (-dq + radius))]
+                ]
