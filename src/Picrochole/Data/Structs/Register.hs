@@ -12,6 +12,7 @@ module Picrochole.Data.Structs.Register
   , Msg(..)
   , fromVector
   , toVector
+  , toList
   , mkHeader
   , send
   , lastSent
@@ -73,7 +74,11 @@ fromVector xs = foldr go zero xs
 
 -- | Convertit un registre en un vecteur de messages.
 toVector :: Register a -> Vector (Msg a)
-toVector reg = V.fromList (fmap snd (IM.toList (messages reg)))
+toVector reg = V.fromList (toList reg)
+
+-- | Convertit un registre en une liste de messages.
+toList :: Register a ->[Msg a]
+toList reg = fmap snd (IM.toList (messages reg))
 
 -- | Construit un en-tête de message. Cette fonction doit être préférée à la
 -- construction "à la main" d'un en-tête.
