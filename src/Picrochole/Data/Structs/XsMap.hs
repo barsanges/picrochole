@@ -12,6 +12,7 @@ module Picrochole.Data.Structs.XsMap
   ( XsMap
   , fromMap
   , toMap
+  , toList
   , lookupLocation
   , lookupLocationToken
   , lookupLocationContent
@@ -65,6 +66,10 @@ toMap ms = M.map go (locs ms)
     go (Right xs) = Right (mapMaybe f (S.toList xs))
 
     f k = M.lookup k (content ms)
+
+-- | Transforme le dictionnaire en une liste de paires clef / valeur.
+toList :: Ord k2 => XsMap k1 k2 a b -> [(k1, Either a [b])]
+toList = M.toList . toMap
 
 -- | Renvoie tous les éléments (marqueur ou contenu) associés au lieu donné.
 lookupLocation :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Either a [b]
