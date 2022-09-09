@@ -8,6 +8,10 @@ Résout un tour de jeu.
 
 module Picrochole.Engine.Turn
   ( turn
+  , movement
+  , encirclement
+  , bombing
+  , fight
   ) where
 
 import Data.Foldable ( maximumBy )
