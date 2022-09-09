@@ -49,13 +49,13 @@ data Header = Header { from :: UnitKey
                      , sent :: TurnCount
                      , received :: Maybe TurnCount
                      }
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Un message.
 data Msg a = Msg { header :: Header
                  , content :: a
                  }
-  deriving Show
+  deriving (Eq, Show)
 
 instance Functor Msg where
   fmap f x = x { content = f (content x) }
