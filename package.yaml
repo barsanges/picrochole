@@ -33,3 +33,11 @@ executables:
     dependencies:
     - optparse-applicative
     - picrochole
+
+tests:
+  picrochole-test:
+    main:                Spec.hs
+    source-dirs:         test
+    dependencies:
+    - hspec
+    - picrochole
