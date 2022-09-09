@@ -33,6 +33,7 @@ module Picrochole.Data.Units
   , readUnit
   , writeUnits
   , showUnit
+  , approxEq
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict, encodeFile )
@@ -66,6 +67,21 @@ data Position = Position { currentCell :: CellKey
 
 -- | Les unités des deux camps.
 type Units = XsMap CellKey UnitKey Faction Unit
+
+-- | Indique si deux unités sont approximativement égales (i.e. : les champs
+-- flottants sont comparés à une précision de 1e-12).
+approxEq :: Unit -> Unit -> Bool
+approxEq x y = (unitKey x == unitKey y)
+               && (faction x == faction y)
+               && (kind x == kind y)
+               && (location x == location y)
+               && (doubleComp (strength x) (strength y))
+               && sameProgress
+  where
+    doubleComp u v = abs (u - v) < 1e-12
+    sameProgress = case (progress x, progress y) of
+      (Just px, Just py) -> doubleComp px py
+      _ -> False
 
 -- | Renvoie l'identifiant de l'unité.
 unitKey :: Unit -> UnitKey
