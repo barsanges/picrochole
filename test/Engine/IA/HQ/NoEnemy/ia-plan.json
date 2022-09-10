@@ -1,0 +1,16 @@
+{
+    "subordinates": ["HQ Blue", "1st Blue"],
+    "objectives":
+    [
+        {
+            "target": 17,
+            "assigned": ["1st Blue"],
+            "reinforcements": ["HQ Blue"]
+        },
+        {
+            "target": 44,
+            "assigned": ["HQ Blue"],
+            "reinforcements": ["1st Blue"]
+        }
+    ]
+}

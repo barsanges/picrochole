@@ -1,0 +1,16 @@
+[
+    {
+        "from": "HQ Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 44
+    },
+    {
+        "from": "HQ Blue",
+        "to": "1st Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 17
+    }
+]
