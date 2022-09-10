@@ -54,8 +54,8 @@ mkReport atlas xs ukey = case location' xs ukey of
       radius = if isContested xs ckey
                then 1
                else case undefined of
-                      Cavalery -> 4
-                      Infantery -> 2
+                      Cavalry -> 4
+                      Infantry -> 2
                       Artillery -> 2
       disk = getDisk atlas xs ckey radius
       report = foldr go M.empty disk

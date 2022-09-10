@@ -191,8 +191,8 @@ totalStrength' units = foldr (\ u x -> x + go u)  0 units
   where
     go :: Unit -> Double
     go u = case kind u of
-      Cavalery -> strength u
-      Infantery -> strength u
+      Cavalry -> strength u
+      Infantry -> strength u
       Artillery -> 0
 
 -- | Renvoie la cellule contenant le plus fort groupe d'adversaires.

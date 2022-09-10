@@ -65,32 +65,32 @@ newtype UnitKey = UK T.Text
   deriving (Eq, Ord, Show)
 
 -- | Arme d'une unité.
-data UnitKind = Infantery
-              | Cavalery
+data UnitKind = Infantry
+              | Cavalry
               | Artillery
   deriving (Eq, Show)
 
 -- | Transforme une chaîne de caractères en un type d'unité.
 readUnitKind :: T.Text -> Either String UnitKind
 readUnitKind txt = case T.toLower (T.strip txt) of
-  "infantery" -> Right Infantery
-  "cavalery" -> Right Cavalery
+  "infantry" -> Right Infantry
+  "cavalry" -> Right Cavalry
   "artillery" -> Right Artillery
   _ -> Left ("unable to parse " ++ (T.unpack txt) ++ " as a unit kind")
 
 -- | Transforme un type d'unité en une chaîne de caractères.
 showUnitKind :: UnitKind -> T.Text
-showUnitKind Infantery = "infantery"
-showUnitKind Cavalery = "cavalery"
+showUnitKind Infantry = "infantry"
+showUnitKind Cavalry = "cavalry"
 showUnitKind Artillery = "artillery"
 
 -- | Renvoie la vitesse à laquelle un type d'unité progresse sur un type de
 -- case.
 speed :: UnitKind -> Topography -> Double
-speed Cavalery Road = 2
-speed Infantery Road = 1
+speed Cavalry Road = 2
+speed Infantry Road = 1
 speed Artillery Road = 1
-speed Cavalery Land = 1
-speed Infantery Land = 0.5
+speed Cavalry Land = 1
+speed Infantry Land = 0.5
 speed Artillery Land = 0.25
 speed _ Water = 0
