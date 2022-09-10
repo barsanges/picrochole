@@ -1,0 +1,12 @@
+{
+    "47":
+    [
+        {
+            "unit-key": "HQ Blue",
+            "faction": "blue",
+            "kind": "infantery",
+            "strength": 4,
+            "progress": 0
+        }
+    ]
+}
