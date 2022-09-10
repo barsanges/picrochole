@@ -4,7 +4,7 @@
         {
             "unit-key": "HQ Red",
             "faction": "red",
-            "kind": "infantery",
+            "kind": "infantry",
             "strength": 4,
             "progress": 0
         }
@@ -14,7 +14,7 @@
         {
             "unit-key": "HQ Blue",
             "faction": "blue",
-            "kind": "infantery",
+            "kind": "infantry",
             "strength": 4,
             "progress": 0
         }
@@ -24,7 +24,7 @@
         {
             "unit-key": "1st Blue",
             "faction": "blue",
-            "kind": "infantery",
+            "kind": "infantry",
             "strength": 4,
             "progress": 0
         }

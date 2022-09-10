@@ -4,7 +4,7 @@
         {
             "unit-key": "HQ Blue",
             "faction": "blue",
-            "kind": "infantery",
+            "kind": "infantry",
             "strength": 2,
             "progress": 0
         }
