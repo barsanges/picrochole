@@ -47,13 +47,14 @@ reporting atlas initiative tcount getHQ xs reports = foldr go reports initiative
 
 -- | Construit le rapport d'une unité à son état-major.
 mkReport :: Atlas -> Units -> UnitKey -> Maybe Report
-mkReport atlas xs ukey = case location' xs ukey of
+mkReport atlas xs ukey = case lookupKey ukey xs of
   Nothing -> Nothing
-  Just ckey -> Just report
+  Just unit -> Just report
     where
+      ckey = location unit
       radius = if isContested xs ckey
                then 1
-               else case undefined of
+               else case kind unit of
                       Cavalry -> 4
                       Infantry -> 2
                       Artillery -> 2
