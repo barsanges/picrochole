@@ -120,7 +120,7 @@ assess gsize f info obj = if any go surroundings
     go :: CellKey -> Bool
     go ckey = case M.lookup ckey info of
       Nothing -> False
-      Just c -> null (getOpponents' f (cellContent_ c))
+      Just c -> (not . null) (getOpponents' f (cellContent_ c))
 
 -- | Indique à chaque subordonné son objectif.
 command :: Atlas
