@@ -21,7 +21,7 @@ instance Eq Unit where
 
 spec :: Spec
 spec = do
-  it "cavalry has a 2 hexes wide line of sight" $ do
+  it "cavalry has a 4 hexes wide line of sight" $ do
     mpieces <- loadSomeDir "test/Engine/Reporting/FromCavalry/"
     mexpected <- R.readReports "test/Engine/Reporting/FromCavalry/expected-reports.json"
     case (mpieces, mexpected) of
