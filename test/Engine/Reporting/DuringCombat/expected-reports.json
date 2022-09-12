@@ -1,0 +1,97 @@
+[
+    {
+        "from": "HQ Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 0,
+        "content":
+        {
+            "19": [],
+            "20": [],
+            "25": [],
+            "26": [],
+            "27": [],
+            "32": [],
+            "33": [],
+            "34":
+            [
+                {
+                    "unit-key": "HQ Blue",
+                    "faction": "blue",
+                    "kind": "infantry",
+                    "strength": 1,
+                    "progress": 0
+                }
+            ],
+            "39": [],
+            "40": [],
+            "41": [],
+            "47": [],
+            "48": []
+        }
+    },
+    {
+        "from": "1st Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 1,
+        "content":
+        {
+            "3": [],
+            "4": [],
+            "9": [],
+            "10":
+            [
+                {
+                    "unit-key": "HQ Red",
+                    "faction": "red",
+                    "kind": "infantry",
+                    "strength": 2,
+                    "progress": 0
+                },
+                {
+                    "unit-key": "1st Blue",
+                    "faction": "blue",
+                    "kind": "cavalry",
+                    "strength": 4,
+                    "progress": 0
+                }
+            ],
+            "11" :[],
+            "17": "red",
+            "18": []
+        }
+    },
+    {
+        "from": "HQ Red",
+        "to": "HQ Red",
+        "sent": 0,
+        "received": 0,
+        "content":
+        {
+            "3": [],
+            "4": [],
+            "9": [],
+            "10":
+            [
+                {
+                    "unit-key": "1st Blue",
+                    "faction": "blue",
+                    "kind": "cavalry",
+                    "strength": 4,
+                    "progress": 0
+                },
+                {
+                    "unit-key": "HQ Red",
+                    "faction": "red",
+                    "kind": "infantry",
+                    "strength": 2,
+                    "progress": 0
+                }
+            ],
+            "11" :[],
+            "17": "red",
+            "18": []
+        }
+    }
+]
