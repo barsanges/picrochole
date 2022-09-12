@@ -1,0 +1,93 @@
+[
+    {
+        "from": "HQ Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 0,
+        "content":
+        {
+            "19": [],
+            "20": [],
+            "25": [],
+            "26": [],
+            "27": [],
+            "32": [],
+            "33": [],
+            "34":
+            [
+                {
+                    "unit-key": "HQ Blue",
+                    "faction": "blue",
+                    "kind": "infantry",
+                    "strength": 1,
+                    "progress": 0
+                }
+            ],
+            "39": [],
+            "40": [],
+            "41": [],
+            "47": [],
+            "48": []
+        }
+    },
+    {
+        "from": "1st Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 1,
+        "content":
+        {
+            "4": [],
+            "5": [],
+            "6":
+            [
+                {
+                    "unit-key": "1st Blue",
+                    "faction": "blue",
+                    "kind": "infantry",
+                    "strength": 4,
+                    "progress": 0
+                }
+            ],
+            "11" :[],
+            "12": [],
+            "13": [],
+            "19": [],
+            "20": []
+        }
+    },
+    {
+        "from": "HQ Red",
+        "to": "HQ Red",
+        "sent": 0,
+        "received": 0,
+        "content":
+        {
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": [],
+            "8": [],
+            "9": [],
+            "10":
+            [
+                {
+                    "unit-key": "HQ Red",
+                    "faction": "red",
+                    "kind": "infantry",
+                    "strength": 2,
+                    "progress": 0
+                }
+            ],
+            "11": [],
+            "12": [],
+            "16": [],
+            "17": "red",
+            "18": [],
+            "19": [],
+            "23": "red",
+            "24": [],
+            "25": []
+        }
+    }
+]
