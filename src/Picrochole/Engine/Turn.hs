@@ -15,6 +15,7 @@ module Picrochole.Engine.Turn
   ) where
 
 import Data.Foldable ( maximumBy )
+import Data.List ( foldl' )
 import Data.Map ( Map )
 import qualified Data.Map as M
 import Data.Maybe ( isNothing )
@@ -35,7 +36,7 @@ turn atlas initiative actions units = fight atlas
 
 -- | Résout la phase de mouvement.
 movement :: Atlas -> [UnitKey] -> Map UnitKey [CellKey] -> Units -> Units
-movement atlas initiative actions units = foldr go units initiative
+movement atlas initiative actions units = foldl' (flip go) units initiative
   where
 
     go :: UnitKey -> Units -> Units
