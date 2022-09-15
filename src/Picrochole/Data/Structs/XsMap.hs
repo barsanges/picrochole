@@ -10,6 +10,7 @@ lieu.
 
 module Picrochole.Data.Structs.XsMap
   ( XsMap
+  , module Picrochole.Data.Structs.Bag
   , fromMap
   , toMap
   , toList
@@ -26,6 +27,9 @@ import Data.Maybe ( mapMaybe )
 import Data.Either ( rights )
 import qualified Data.Map as M -- FIXME : IntMap ?
 import qualified Data.Set as S
+
+import Picrochole.Data.Structs.Bag hiding ( fromList, toList )
+import qualified Picrochole.Data.Structs.Bag as B
 
 -- | Dictionnaire pouvant être requêté soit par un lieu (`k1`), soit par une
 -- clef unique (`k2`). Plusieurs valeurs peuvent être associées à un même lieu.
@@ -59,24 +63,26 @@ fromMap f g m = XsMap { content = content'
     go (Right xs) = Right (S.fromList $ fmap g xs)
 
 -- | Transforme le dictionnaire en un dictionnaire simple.
-toMap :: Ord k2 => XsMap k1 k2 a b -> M.Map k1 (Either a [b])
+toMap :: Ord k2 => XsMap k1 k2 a b -> M.Map k1 (Either a (Bag b))
 toMap ms = M.map go (locs ms)
   where
     go (Left x) = Left x
-    go (Right xs) = Right (mapMaybe f (S.toList xs))
+    go (Right xs) = Right (B.fromList $ mapMaybe f (S.toList xs))
 
     f k = M.lookup k (content ms)
 
 -- | Transforme le dictionnaire en une liste de paires clef / valeur.
-toList :: Ord k2 => XsMap k1 k2 a b -> [(k1, Either a [b])]
+toList :: Ord k2 => XsMap k1 k2 a b -> [(k1, Either a (Bag b))]
 toList = M.toList . toMap
 
 -- | Renvoie tous les éléments (marqueur ou contenu) associés au lieu donné.
-lookupLocation :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Either a [b]
+lookupLocation :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Either a (Bag b)
 lookupLocation here ms = case M.lookup here (locs ms) of
-  Nothing -> Right []
+  Nothing -> Right emptyBag
   Just (Left x) -> Left x
-  Just (Right ls) -> Right $ mapMaybe (\ k -> lookupKey k ms) (S.toList ls)
+  Just (Right ls) -> Right
+                     $ B.fromList
+                     $ mapMaybe (\ k -> lookupKey k ms) (S.toList ls)
 
 -- | Renvoie le marqueur éventuel associé au lieu donné.
 lookupLocationToken :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Maybe a
@@ -85,9 +91,9 @@ lookupLocationToken here ms = case lookupLocation here ms of
   Right _ -> Nothing
 
 -- | Renvoie tout le contenu associé au lieu donné.
-lookupLocationContent :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> [b]
+lookupLocationContent :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Bag b
 lookupLocationContent here ms = case lookupLocation here ms of
-  Left _ -> []
+  Left _ -> emptyBag
   Right xs -> xs
 
 -- | Renvoie l'élément associé à la clef donnée.

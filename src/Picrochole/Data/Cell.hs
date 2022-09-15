@@ -24,7 +24,7 @@ module Picrochole.Data.Cell
   , getContested
   ) where
 
-import Data.List ( maximumBy, partition )
+import Data.List ( maximumBy )
 import qualified Data.Set as S
 
 import Picrochole.Data.Atlas
@@ -33,7 +33,7 @@ import Picrochole.Data.Structs.XsMap
 import Picrochole.Data.Units
 
 -- | Contenu d'une cellule.
-type CellContent = Either Faction ([Unit], [Unit])
+type CellContent = Either Faction (Bag Unit, Bag Unit)
 
 -- | Une case du plateau de jeu.
 data Cell = Cell { tile_ :: Tile
@@ -59,30 +59,30 @@ cellContent :: Cell -> CellContent
 cellContent c = cellContent_ c
 
 -- | Renvoie les unités bleues sur la case.
-getBlues :: Cell -> [Unit]
+getBlues :: Cell -> Bag Unit
 getBlues c = case cellContent c of
-  Left _ -> []
+  Left _ -> emptyBag
   Right (xs, _) -> xs
 
 -- | Renvoie les unités rouges sur la case.
-getReds :: Cell -> [Unit]
+getReds :: Cell -> Bag Unit
 getReds c = case cellContent c of
-  Left _ -> []
+  Left _ -> emptyBag
   Right (_, ys) -> ys
 
 -- | Renvoie toutes les unités de la faction sur la case.
-getFaction :: Faction -> Cell -> [Unit]
+getFaction :: Faction -> Cell -> Bag Unit
 getFaction Blue cell = getBlues cell
 getFaction Red cell = getReds cell
 
 -- | Renvoie toutes les unités adverses sur la case.
-getOpponents :: Faction -> Cell -> [Unit]
+getOpponents :: Faction -> Cell -> Bag Unit
 getOpponents Blue cell = getReds cell
 getOpponents Red cell = getBlues cell
 
 -- | Renvoie toutes les unités adverses sur la case.
-getOpponents' :: Faction -> CellContent -> [Unit]
-getOpponents' _ (Left _) = []
+getOpponents' :: Faction -> CellContent -> Bag Unit
+getOpponents' _ (Left _) = emptyBag
 getOpponents' Blue (Right (_, ys)) = ys
 getOpponents' Red (Right (xs, _)) = xs
 
@@ -99,9 +99,9 @@ getStrongest f cell = if null units
 -- | Renvoie une case du plateau de jeu.
 getCell :: Atlas -> Units -> CellKey -> Cell
 getCell atlas xs ck = Cell { tile_ = tile
-                              , cellContent_ = content
-                              , cellKey_ = ck
-                              }
+                           , cellContent_ = content
+                           , cellKey_ = ck
+                           }
   where
     tile = getHex atlas ck
     content = case lookupLocation ck xs of

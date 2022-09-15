@@ -46,6 +46,7 @@ import qualified Data.Vector as V
 
 import Picrochole.Data.Atlas
 import Picrochole.Data.Base
+import qualified Picrochole.Data.Structs.Bag as B
 import Picrochole.Data.Structs.XsMap
 import qualified Picrochole.JSON.Units as J
 import Picrochole.JSON.Utils
@@ -234,9 +235,9 @@ writeUnits fp xs = encodeFile fp xs'
     fkey :: CellKey -> Text
     fkey (CK x) = T.pack . show $ x
 
-    fvalue :: Either Faction [Unit] -> J.CellContent
+    fvalue :: Either Faction (Bag Unit) -> J.CellContent
     fvalue (Left f) = J.Marker (showFaction f)
-    fvalue (Right us) = J.Units (fmap showUnit (V.fromList us))
+    fvalue (Right us) = J.Units (fmap showUnit (V.fromList . B.toList $ us))
 
 -- | Convertit une instance de `Unit` en une structure prête à être
 -- sérialisée en JSON.

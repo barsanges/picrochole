@@ -14,7 +14,6 @@ module Picrochole.Data.Reports
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict, encodeFile )
-import Data.List ( partition )
 import Data.Map ( Map )
 import qualified Data.Map as M
 import Data.Text ( Text )
@@ -24,6 +23,7 @@ import qualified Data.Vector as V
 import Picrochole.Data.Atlas ( CellKey(..), readCellKey )
 import Picrochole.Data.Base
 import Picrochole.Data.Cell
+import qualified Picrochole.Data.Structs.Bag as B
 import Picrochole.Data.Structs.Register
 import Picrochole.Data.Units
 import qualified Picrochole.JSON.Reports as J
@@ -70,7 +70,7 @@ readContent xs = parseMap readCellKey fvalue xs
     fvalue _ (J.Marker txt) = fmap Left (readFaction txt)
     fvalue ckey (J.Units vec) = case parseVector (readUnit ckey) vec of
       Left m -> Left m
-      Right vec' -> Right (Right (partition (\ x -> faction x == Blue) (V.toList vec')))
+      Right vec' -> Right (Right (partition (\ x -> faction x == Blue) (B.fromList . V.toList $ vec')))
 
 -- | Enregistre l'instance de `Register Report` dans le fichier indiqué.
 writeReports :: FilePath -> Register Report -> IO ()
@@ -96,6 +96,6 @@ showReport r = J.Report { J.from = rawUK (from . header $ r)
 
     fvalue :: CellContent -> J.CellContent
     fvalue (Left f) = J.Marker (showFaction f)
-    fvalue (Right (xs, ys)) = J.Units (fmap showUnit (V.concat [ V.fromList xs
-                                                               , V.fromList ys
+    fvalue (Right (xs, ys)) = J.Units (fmap showUnit (V.concat [ (V.fromList . B.toList) xs
+                                                               , (V.fromList . B.toList) ys
                                                                ]))
