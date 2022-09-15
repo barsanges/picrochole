@@ -82,6 +82,7 @@ approxEq x y = (unitKey x == unitKey y)
     doubleComp u v = abs (u - v) < 1e-12
     sameProgress = case (progress x, progress y) of
       (Just px, Just py) -> doubleComp px py
+      (Nothing, Nothing) -> True
       _ -> False
 
 -- | Renvoie l'identifiant de l'unité.
