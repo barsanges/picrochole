@@ -18,7 +18,7 @@ import Data.List ( (\\) )
 import qualified Data.List as L
 
 -- | Un ensemble d'éléments dont l'ordre n'a pas d'importance.
-data Bag a = Bag [a]
+newtype Bag a = Bag [a]
     deriving Show
 
 instance Eq a => Eq (Bag a) where
