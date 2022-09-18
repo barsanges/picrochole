@@ -1,0 +1,24 @@
+{
+    "4":
+    [
+        {
+            "unit-key": "HQ Blue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 1,
+            "progress": 0.5
+        }
+    ],
+    "10": "red",
+    "36": "blue",
+    "44":
+    [
+        {
+            "unit-key": "HQ Red",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 2,
+            "progress": 0
+        }
+    ]
+}

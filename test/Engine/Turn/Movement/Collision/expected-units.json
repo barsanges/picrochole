@@ -1,0 +1,30 @@
+{
+    "2":
+    [
+        {
+            "unit-key": "HQ Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 1,
+            "progress": 0.5
+        }
+    ],
+    "4": "blue",
+    "10":
+    [
+        {
+            "unit-key": "HQ Red",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 2,
+            "progress": null
+        },
+        {
+            "unit-key": "1st Blue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 4,
+            "progress": null
+        }
+    ]
+}
