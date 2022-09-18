@@ -153,9 +153,9 @@ loadSomeDir dir = do
     go :: FilePath -> IO (Maybe FilePath)
     go fp = do
       cond <- doesPathExist (dir </> fp)
-      case cond of
-        False -> return (Nothing)
-        True -> return (Just (dir </> fp))
+      if cond
+        then return (Just (dir </> fp))
+        else return (Nothing)
 
 -- | Charge toutes les données du jeu.
 loadEverything :: FilePath
@@ -191,14 +191,14 @@ loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
 loadEverythingDir :: FilePath -> IO (Either String Everything)
 loadEverythingDir dir = do
   cond <- doesPathExist dir
-  case cond of
-    False -> return (Left "unable to find the game directory")
-    True -> loadEverything
-            (dir </> atlasFileName)
-            (dir </> configFileName)
-            (dir </> currentTurnFileName)
-            (dir </> initiativeFileName)
-            (dir </> ordersFileName)
-            (dir </> planFileName)
-            (dir </> reportsFileName)
-            (dir </> unitsFileName)
+  if cond
+    then loadEverything
+         (dir </> atlasFileName)
+         (dir </> configFileName)
+         (dir </> currentTurnFileName)
+         (dir </> initiativeFileName)
+         (dir </> ordersFileName)
+         (dir </> planFileName)
+         (dir </> reportsFileName)
+         (dir </> unitsFileName)
+    else return (Left "unable to find the game directory")
