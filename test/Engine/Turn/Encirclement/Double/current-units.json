@@ -1,0 +1,52 @@
+{
+    "19":
+    [
+        {
+            "unit-key": "1st Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "20":
+    [
+        {
+            "unit-key": "2nd Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "26":
+    [
+        {
+            "unit-key": "1st Red",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 2,
+            "progress": 0
+        }
+    ],
+    "27":
+    [
+        {
+            "unit-key": "2nd Red",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 2,
+            "progress": 0
+        }
+    ],
+    "34":
+    [
+        {
+            "unit-key": "3d Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 1,
+            "progress": 0
+        }
+    ]
+}
