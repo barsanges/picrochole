@@ -100,7 +100,7 @@ encirclement atlas units = removeSurrounded Red redsSurrounded
     ravel xs = foldr S.union S.empty xs
 
     allSurrounded :: Faction -> Set CellKey
-    allSurrounded f = ravel (filter (surrounded atlas units (opponent f)) locs)
+    allSurrounded f = ravel (filter (surrounded atlas units f) locs)
       where
         locs = connex (gridSize atlas) (locations units f)
 
@@ -134,7 +134,8 @@ connex gsize keys = foldr go [] keys
 touchFold :: Foldable t => GridSize -> CellKey -> t CellKey -> Bool
 touchFold gsize x ys = any (touch gsize x) ys
 
--- | Indique si l'ensemble de cases `ks` est encerclé par la faction `f`.
+-- | Indique si l'ensemble de cases `ks` est encerclé par la faction opposée
+-- à `f`.
 surrounded :: Atlas -> Units -> Faction -> Set CellKey -> Bool
 surrounded atlas units f ks = all go edge
   where
