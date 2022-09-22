@@ -11,6 +11,7 @@ module Picrochole.Engine.IA.PathFinding
   ) where
 
 import Algorithm.Search ( dijkstra )
+import Data.List ( foldl' )
 import Data.Map ( Map )
 import qualified Data.Map as M
 
@@ -28,7 +29,7 @@ route :: Atlas
       -> Register Order
       -> (Faction -> UnitKey)
       -> Map UnitKey [CellKey]
-route atlas initiative tcount xs orders getHQ = foldr go M.empty initiative
+route atlas initiative tcount xs orders getHQ = foldl' (flip go) M.empty initiative
   where
     go ukey m = M.insert ukey (findPath atlas tcount xs orders getHQ ukey) m
 

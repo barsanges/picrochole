@@ -155,7 +155,7 @@ border atlas inside = surroundings `S.difference` inside
 
 -- | Résout la phase de bombardement.
 bombing :: Atlas -> [UnitKey] -> Units -> Units
-bombing atlas initiative units = foldr go units initiative
+bombing atlas initiative units = foldl' (flip go) units initiative
   where
     go :: UnitKey -> Units -> Units
     go key u = case lookupKey key u of

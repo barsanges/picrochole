@@ -10,6 +10,7 @@ module Picrochole.Engine.Reporting
   ( reporting
   ) where
 
+import Data.List ( foldl' )
 import Data.Maybe ( fromMaybe )
 import qualified Data.Map as M
 
@@ -27,7 +28,7 @@ reporting :: Atlas
           -> Units
           -> Register Report
           -> Register Report
-reporting atlas initiative tcount getHQ xs reports = foldr go reports initiative
+reporting atlas initiative tcount getHQ xs reports = foldl' (flip go) reports initiative
   where
     go :: UnitKey -> Register Report -> Register Report
     go ukey r = case fmap (getHQ . faction) (lookupKey ukey xs) of
