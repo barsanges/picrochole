@@ -1,0 +1,23 @@
+{
+    "objectives":
+    [
+        {
+            "target": 17,
+            "assigned": ["1st Infantry Blue"],
+            "reinforcements": ["3d Infantry Blue", "1st Cavalry Blue"]
+        },
+        {
+            "target": 32,
+            "assigned": ["2nd Infantry Blue"],
+            "reinforcements": ["4th Infantry Blue", "1st Cavalry Blue"]
+        }
+    ],
+    "concentration": 36,
+    "reserve":
+    [
+        "HQ Blue",
+        "1st Cavalry Blue",
+        "3d Infantry Blue",
+        "4th Infantry Blue"
+    ]
+}

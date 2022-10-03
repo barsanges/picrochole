@@ -1,0 +1,44 @@
+[
+    {
+        "from": "HQ Blue",
+        "to": "HQ Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 36
+    },
+    {
+        "from": "HQ Blue",
+        "to": "1st Cavalry Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 17
+    },
+    {
+        "from": "HQ Blue",
+        "to": "1st Infantry Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 17
+    },
+    {
+        "from": "HQ Blue",
+        "to": "2nd Infantry Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 32
+    },
+    {
+        "from": "HQ Blue",
+        "to": "3d Infantry Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 17
+    },
+    {
+        "from": "HQ Blue",
+        "to": "4th Infantry Blue",
+        "sent": 0,
+        "received": 0,
+        "content": 32
+    }
+]
