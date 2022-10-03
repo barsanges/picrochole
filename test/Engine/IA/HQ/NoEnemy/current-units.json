@@ -1,5 +1,5 @@
 {
-    "0":
+    "4":
     [
         {
             "unit-key": "HQ Red",
@@ -9,23 +9,54 @@
             "progress": 0
         }
     ],
-    "28":
+    "23":
     [
         {
-            "unit-key": "HQ Blue",
+            "unit-key": "1st Infantry Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "2nd Infantry Blue",
             "faction": "blue",
             "kind": "infantry",
             "strength": 4,
             "progress": 0
         }
     ],
-    "35":
+    "30":
     [
         {
-            "unit-key": "1st Blue",
+            "unit-key": "3d Infantry Blue",
             "faction": "blue",
             "kind": "infantry",
             "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "4th Infantry Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        }
+    ],
+    "36":
+    [
+        {
+            "unit-key": "HQ Blue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "1st Cavalry Blue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
             "progress": 0
         }
     ]

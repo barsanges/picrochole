@@ -10,9 +10,9 @@ module Picrochole.Engine.IA.HQ
   ( schedule
   ) where
 
+import Data.List ( foldl' )
 import Data.Map ( Map )
 import qualified Data.Map as M
-import Data.Set ( Set )
 import qualified Data.Set as S
 
 import Picrochole.Data.Atlas
@@ -32,18 +32,6 @@ data InfoCell = InfoCell { cellContent_ :: CellContent
 -- | Dernières informations dont dispose le QG. Cela s'approche d'une
 -- photographie "en temps réel" du conflit.
 type Info = Map CellKey InfoCell
-
--- | Association d'une unité et d'un objectif. La relation d'égalité associée à
--- ce type ne porte que sur l'unité (i.e. : elle ignore l'objectif), de manière
--- à pouvoir définir un Set qui ne contient chaque unité qu'une fois.
-data BaseOrder = BaseOrder UnitKey CellKey
-  deriving Show
-
-instance Eq BaseOrder where
-  (BaseOrder x _) == (BaseOrder y _) = (x == y)
-
-instance Ord BaseOrder where
-  compare (BaseOrder x _) (BaseOrder y _) = compare x y
 
 -- | Envoie des ordres aux subordonnés.
 schedule :: Atlas
@@ -87,25 +75,33 @@ mkInfo tcount ukey limit reg = foldr f M.empty reports
             icell = InfoCell { cellContent_ = inner, date_ = sent (header msg) }
 
 -- | Affecte un objectif à chaque unité.
-assign :: GridSize -> Faction -> Plan -> Info -> Set BaseOrder
+assign :: GridSize -> Faction -> Plan -> Info -> Map UnitKey CellKey
 assign gsize f plan info = res
-
   where
 
-    (_, res) = foldr go (subordinates plan, S.empty) (objectives plan)
+    -- Les unités qui ont été appelées pour des objectifs :
+    targets = foldl' go M.empty (objectives plan)
 
-    go :: Objective
-       -> (Set UnitKey, Set BaseOrder)
-       -> (Set UnitKey, Set BaseOrder)
-    go obj (ukeys, tmp) = (left, tmp')
+    -- Les unités de la réserve qui n'ont pas été appelées :
+    left = S.difference (reserve plan) (M.keysSet targets)
+
+    -- L'ensemble des ordres :
+    res = foldr (insertMissing (concentration plan)) targets left
+
+    go :: Map UnitKey CellKey
+       -> Objective
+       -> Map UnitKey CellKey
+    go tmp obj = foldr (insertMissing t) tmp called
       where
         t = target obj
         called = case assess gsize f info t of
                   None -> assigned obj
                   AtRisk -> S.union (assigned obj) (reinforcements obj)
-        left = S.difference ukeys called
-        new = S.map (\ x -> BaseOrder x t) called
-        tmp' = S.union tmp new
+
+-- | Insère un couple `(k, x)` dans le dictionnaire `mp` si et seulement si
+-- celui ne contient pas déjà la clef `k`.
+insertMissing :: Ord k => a -> k -> Map k a -> Map k a
+insertMissing x k mp = M.insertWith (\ _ old -> old) k x mp
 
 -- | Evalue le danger associé à un objectif.
 assess :: GridSize -> Faction -> Info -> CellKey -> ThreatLevel
@@ -127,13 +123,13 @@ command :: Atlas
         -> TurnCount
         -> Units
         -> UnitKey
-        -> Set BaseOrder
+        -> Map UnitKey CellKey
         -> Register Order
         -> Register Order
-command atlas tcount units hq orders reg = foldr go reg orders
+command atlas tcount units hq orders reg = M.foldrWithKey go reg orders
   where
-    go :: BaseOrder -> Register Order -> Register Order
-    go (BaseOrder ukey obj) r = send h obj r
+    go :: UnitKey -> CellKey -> Register Order -> Register Order
+    go ukey obj r = send h obj r
       where
         d = getDist atlas units ukey hq
         h = mkHeader tcount hq ukey d

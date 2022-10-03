@@ -24,8 +24,9 @@ data Objective = Objective { target :: Int
   deriving Show
 
 -- | Un plan de bataille pour l'IA.
-data Plan = Plan { subordinates :: Vector Text
-                 , objectives :: Vector Objective
+data Plan = Plan { objectives :: Vector Objective
+                 , concentration :: Int
+                 , reserve :: Vector Text
                  }
   deriving Show
 
@@ -45,8 +46,10 @@ instance FromJSON Plan where
   parseJSON = withObject "Plan" go
     where
       go v = do
-        s <- v .: "subordinates"
         o <- v .: "objectives"
-        return Plan { subordinates = s
-                    , objectives = o
+        c <- v .: "concentration"
+        r <- v .: "reserve"
+        return Plan { objectives = o
+                    , concentration = c
+                    , reserve = r
                     }

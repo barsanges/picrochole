@@ -10,6 +10,9 @@ module Picrochole.Data.Plan
   ( ThreatLevel(..)
   , Objective(..)
   , Plan(..)
+  , objectives
+  , concentration
+  , reserve
   , readPlan
   ) where
 
@@ -36,10 +39,23 @@ data Objective = Objective { target :: CellKey
   deriving Show
 
 -- | Un plan de bataille pour l'IA.
-data Plan = Plan { subordinates :: Set UnitKey
-                 , objectives :: [Objective]
+data Plan = Plan { objectives_ :: [Objective]
+                 , concentration_ :: CellKey
+                 , reserve_ :: Set UnitKey
                  }
   deriving Show
+
+-- | Renvoie la liste des objectifs associés à un plan.
+objectives :: Plan -> [Objective]
+objectives = objectives_
+
+-- | Renvoie le lieu de rassemblement de la réserve.
+concentration :: Plan -> CellKey
+concentration = concentration_
+
+-- | Renvoie les identifiants des unités qui constituent la réserve.
+reserve :: Plan -> Set UnitKey
+reserve = reserve_
 
 -- | Lit un fichier contenant le plan de bataille de l'IA.
 readPlan :: FilePath -> IO (Either String Plan)
@@ -47,9 +63,34 @@ readPlan fp = do
   mp <- eitherDecodeFileStrict fp
   case mp of
     Left m -> return (Left m)
-    Right p -> return (Right (Plan { subordinates = vectorToSet (fmap UK (J.subordinates p))
-                                   , objectives = V.toList (fmap readObjective (J.objectives p))
-                                   }))
+    Right p -> if not (S.null multipleObj)
+      then return (Left ("the following units are assigned to multiple\
+                         \ objectives: " ++ (show $ S.toList multipleObj)))
+      else if not (S.null mixed)
+      then return (Left ("the following units are assigned to an objective\
+                         \ but belong to the reserve: "
+                         ++ (show $ S.toList mixed)))
+      else if not (S.null notInRes)
+      then return (Left ("the following units are assigned as reinforcements\
+                         \ but do not appear in the reserve: "
+                         ++ (show $ S.toList notInRes)))
+      else return (Right (Plan { objectives_ = obj
+                               , concentration_ = CK (J.concentration p)
+                               , reserve_ = res
+                               }))
+      where
+        obj = V.toList (fmap readObjective (J.objectives p))
+        res = vectorToSet (fmap UK (J.reserve p))
+        multipleObj = multiple (fmap assigned obj)
+        notInRes = S.difference (S.unions (fmap reinforcements obj)) res
+        mixed = S.intersection (S.unions (fmap assigned obj)) res
+
+-- | Renvoie les éléments qui se trouvent dans au moins deux ensembles du
+-- groupe d'ensemble `xs`.
+multiple :: (Ord a, Foldable t) => t (Set a) -> Set a
+multiple xss = snd (foldr go (S.empty, S.empty) xss)
+  where
+    go xs (done, mul) = (S.union xs done, S.union mul (S.intersection xs done))
 
 -- | Crée une instance de `Objective` à partir de paramètres lus dans un JSON.
 readObjective :: J.Objective -> Objective
