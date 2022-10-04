@@ -216,14 +216,17 @@ readUnit ckey u = do
   f <- readFaction (J.faction u)
   ukind <- readUnitKind (J.kind u)
   let ukey = UK (J.unitKey u)
-  return Unit { unitKey_ = ukey
-              , faction_ = f
-              , kind_ = ukind
-              , strength_ = J.strength u
-              , position_ = Position { currentCell = ckey
-                                     , currentProgress = J.progress u
-                                     }
-              }
+  if (J.strength u) > 0
+    then return Unit { unitKey_ = ukey
+                     , faction_ = f
+                     , kind_ = ukind
+                     , strength_ = J.strength u
+                     , position_ = Position { currentCell = ckey
+                                            , currentProgress = J.progress u
+                                            }
+                     }
+    else Left ("got a unit with a negative strength: "
+               ++ (T.unpack $ J.unitKey u))
 
 -- | Enregistre l'instance de `Units` dans le fichier indiqué.
 writeUnits :: FilePath -> Units -> IO ()
