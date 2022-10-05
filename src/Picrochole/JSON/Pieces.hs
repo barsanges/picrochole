@@ -107,6 +107,16 @@ maybeDecode f (Just fp) = do
         Left m -> return (Left ("Error in file " ++ fp ++ ": " ++ m))
         Right x -> return (Right (Just x))
 
+-- | Lit le contenu d'un fichier si un chemin est effectivement fourni.
+justDecode :: (FilePath -> IO (Either String a))
+            -> FilePath
+            -> IO (Either String a)
+justDecode f fp = do
+    mx <- f fp
+    case mx of
+        Left m -> return (Left ("Error in file " ++ fp ++ ": " ++ m))
+        Right x -> return (Right x)
+
 -- | Charge une partie des données du jeu.
 loadSome :: Maybe FilePath
          -> Maybe FilePath
@@ -168,14 +178,14 @@ loadEverything :: FilePath
                -> FilePath
                -> IO (Either String Everything)
 loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
-  atlas <- readAtlas fAtlas
-  config <- readConfig fConfig
-  currentTurn <- readCurrentTurn fTurn
-  initiative <- readInitiative fInit
-  orders <- readOrders fOrders
-  plan <- readPlan fPlan
-  reports <- readReports fReports
-  units <- readUnits fUnits
+  atlas <- justDecode readAtlas fAtlas
+  config <- justDecode readConfig fConfig
+  currentTurn <- justDecode readCurrentTurn fTurn
+  initiative <- justDecode readInitiative fInit
+  orders <- justDecode readOrders fOrders
+  plan <- justDecode readPlan fPlan
+  reports <- justDecode readReports fReports
+  units <- justDecode readUnits fUnits
   return ( Everything
            <$> atlas
            <*> config
