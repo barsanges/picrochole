@@ -42,7 +42,7 @@ fromList = Bag
 toList :: Bag a -> [a]
 toList (Bag xs) = xs
 
--- | TODO.
+-- | Renvoie les éléments du sac qui satisfont et ne satisfont pas le prédicat.
 partition :: (a -> Bool) -> Bag a -> (Bag a, Bag a)
 partition f (Bag xs) = (Bag ys, Bag zs)
   where
