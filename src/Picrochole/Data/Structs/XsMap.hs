@@ -14,6 +14,7 @@ module Picrochole.Data.Structs.XsMap
   , fromMap
   , toMap
   , toList
+  , elemKeys
   , lookupLocation
   , lookupLocationToken
   , lookupLocationContent
@@ -26,6 +27,7 @@ module Picrochole.Data.Structs.XsMap
 import Data.Maybe ( mapMaybe )
 import Data.Either ( rights )
 import qualified Data.Map as M -- FIXME : IntMap ?
+import Data.Set ( Set )
 import qualified Data.Set as S
 
 import Picrochole.Data.Structs.Bag hiding ( fromList, toList )
@@ -74,6 +76,10 @@ toMap ms = M.map go (locs ms)
 -- | Transforme le dictionnaire en une liste de paires clef / valeur.
 toList :: Ord k2 => XsMap k1 k2 a b -> [(k1, Either a (Bag b))]
 toList = M.toList . toMap
+
+-- | Renvoie les clefs de tous les éléments de la structure.
+elemKeys :: Ord k2 => XsMap k1 k2 a b -> Set k2
+elemKeys xs = M.keysSet (content xs)
 
 -- | Renvoie tous les éléments (marqueur ou contenu) associés au lieu donné.
 lookupLocation :: (Ord k1, Ord k2) => k1 -> XsMap k1 k2 a b -> Either a (Bag b)

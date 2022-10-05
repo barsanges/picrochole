@@ -24,6 +24,7 @@ module Picrochole.JSON.Pieces
   , loadEverythingDir
   ) where
 
+import qualified Data.Set as S
 import System.FilePath.Posix ( (</>) )
 import System.Directory
 
@@ -186,16 +187,31 @@ loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
   plan <- justDecode readPlan fPlan
   reports <- justDecode readReports fReports
   units <- justDecode readUnits fUnits
-  return ( Everything
-           <$> atlas
-           <*> config
-           <*> currentTurn
-           <*> initiative
-           <*> orders
-           <*> plan
-           <*> reports
-           <*> units
-         )
+  let mev = Everything
+            <$> atlas
+            <*> config
+            <*> currentTurn
+            <*> initiative
+            <*> orders
+            <*> plan
+            <*> reports
+            <*> units
+  return (foldr go mev [checkUnitsInitiative])
+  where
+    go _ (Left m) = Left m
+    go f (Right x) = f x
+
+-- | Vérifie que le fichier des unités et le fichier d'initiative sont
+-- compatibles.
+checkUnitsInitiative :: Everything -> Either String Everything
+checkUnitsInitiative ev =
+  if inUnits `S.isSubsetOf` inInitiative
+  then Right ev
+  else Left ("some units are not listed in the initiative file: "
+             ++ (show $ S.toList (S.difference inUnits inInitiative)))
+  where
+    inUnits = (elemKeys $ eunits ev)
+    inInitiative = (S.fromList $ einitiative ev)
 
 -- | Charge toutes les données depuis un seul dossier.
 loadEverythingDir :: FilePath -> IO (Either String Everything)
