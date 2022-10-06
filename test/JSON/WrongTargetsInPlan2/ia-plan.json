@@ -1,0 +1,16 @@
+{
+    "objectives":
+    [
+        {
+            "target": 160,
+            "assigned": ["1st Infantry Blue"],
+            "reinforcements": []
+        }
+    ],
+    "concentration": 230,
+    "reserve":
+    [
+        "HQ Blue",
+        "1st Blue"
+    ]
+}

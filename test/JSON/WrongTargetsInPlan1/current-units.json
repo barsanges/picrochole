@@ -1,0 +1,36 @@
+{
+    "17":
+    [
+        {
+            "unit-key": "HQ Red",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "1st Red",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        }
+    ],
+    "23":
+    [
+        {
+            "unit-key": "1st Blue",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "HQ Blue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        }
+    ]
+}

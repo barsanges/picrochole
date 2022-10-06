@@ -196,7 +196,7 @@ loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
             <*> plan
             <*> reports
             <*> units
-  return (foldr go mev [checkUnitsInitiative])
+  return (foldr go mev [checkUnitsInitiative, checkPlanLocations])
   where
     go _ (Left m) = Left m
     go f (Right x) = f x
@@ -212,6 +212,21 @@ checkUnitsInitiative ev =
   where
     inUnits = (elemKeys $ eunits ev)
     inInitiative = (S.fromList $ einitiative ev)
+
+-- | Vérifie que le plan de l'IA et l'atlas sont compatibles.
+checkPlanLocations :: Everything -> Either String Everything
+checkPlanLocations ev
+  | not (null notLegit) = Left ("some targets of the IA are not legitimate locations: "
+                                ++ (show notLegit))
+  | not (null noCapacity) = Left ("some targets of the IA have no capacity: "
+                                  ++ (show noCapacity))
+  | otherwise = Right ev
+  where
+    grid = eatlas ev
+    targets = (concentration (eplan ev)):(fmap target (objectives (eplan ev)))
+    notLegit = filter (not . (isInsideGrid grid)) targets
+    testCapacity x = capacity (getHex grid x) <= 0
+    noCapacity = filter testCapacity targets
 
 -- | Charge toutes les données depuis un seul dossier.
 loadEverythingDir :: FilePath -> IO (Either String Everything)
