@@ -196,7 +196,10 @@ loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
             <*> plan
             <*> reports
             <*> units
-  return (foldr go mev [checkUnitsInitiative, checkPlanLocations])
+  return (foldr go mev [ checkUnitsInitiative
+                       , checkPlanLocations
+                       , checkUnitsLocations
+                       ])
   where
     go _ (Left m) = Left m
     go f (Right x) = f x
@@ -227,6 +230,24 @@ checkPlanLocations ev
     notLegit = filter (not . (isInsideGrid grid)) targets
     testCapacity x = capacity (getHex grid x) <= 0
     noCapacity = filter testCapacity targets
+
+-- | Vérifie que le fichier des unités et l'atlas sont compatibles.
+checkUnitsLocations :: Everything -> Either String Everything
+checkUnitsLocations ev
+  | not (null notLegit) = Left ("some units are not on legitimate locations: "
+                                ++ (show notLegit))
+  | not (null wrongCapacity) = Left ("some cells have more units than allowed: "
+                                     ++ (show wrongCapacity))
+  | otherwise = Right ev
+  where
+    grid = eatlas ev
+    us = eunits ev
+    locs = S.toList (locationKeys (eunits ev))
+    notLegit = filter (not . (isInsideGrid grid)) locs
+    testCapacity x = (go Blue) || (go Red)
+      where
+        go f = (capacityLeft grid us f x) < 0
+    wrongCapacity = filter testCapacity locs
 
 -- | Charge toutes les données depuis un seul dossier.
 loadEverythingDir :: FilePath -> IO (Either String Everything)
