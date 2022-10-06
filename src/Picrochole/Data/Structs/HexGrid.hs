@@ -13,6 +13,7 @@ module Picrochole.Data.Structs.HexGrid
   , fromVector
   , toVector
   , gridSize
+  , isInsideGrid
   , getHex
   , dist
   , touch
@@ -54,6 +55,10 @@ toVector = cells
 -- | Renvoie les dimensions de la grille.
 gridSize :: HexGrid a -> GridSize
 gridSize = gridSize_
+
+-- | Indique si l'index correspond bien à une case de la grille.
+isInsideGrid :: HexGrid a -> CellKey -> Bool
+isInsideGrid grid (CK idx) = (0 <= idx) && (idx < V.length (cells grid))
 
 -- | Renvoie le contenu d'une cellule.
 getHex :: HexGrid a -> CellKey -> a
