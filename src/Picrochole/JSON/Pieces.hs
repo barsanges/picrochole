@@ -199,6 +199,7 @@ loadEverything fAtlas fConfig fTurn fInit fOrders fPlan fReports fUnits = do
   return (foldr go mev [ checkUnitsInitiative
                        , checkPlanLocations
                        , checkUnitsLocations
+                       , checkUnitsPlan
                        ])
   where
     go _ (Left m) = Left m
@@ -248,6 +249,18 @@ checkUnitsLocations ev
       where
         go f = (capacityLeft grid us f x) < 0
     wrongCapacity = filter testCapacity locs
+
+-- | Vérifie que le fichier des unités et le plan de l'IA sont compatibles.
+checkUnitsPlan :: Everything -> Either String Everything
+checkUnitsPlan ev =
+  if inUnits `S.isSubsetOf` inPlan
+  then Right ev
+  else Left ("some IA units are not listed in the plan file: "
+             ++ (show $ S.toList (S.difference inUnits inPlan)))
+  where
+    ia = iaFaction (econfig ev)
+    inUnits = (unitKeys (eunits ev) ia)
+    inPlan = allUnitKeys (eplan ev)
 
 -- | Charge toutes les données depuis un seul dossier.
 loadEverythingDir :: FilePath -> IO (Either String Everything)
