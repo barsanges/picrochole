@@ -22,6 +22,7 @@ module Picrochole.Data.Units
   , location'
   , position'
   , locations
+  , unitKeys
   , decrStrength
   , setPosition
   , removeFaction
@@ -129,6 +130,15 @@ locations xs f = foldr go S.empty xs
     go :: Unit -> Set CellKey -> Set CellKey
     go u s = if faction u == f
              then S.insert (location u) s
+             else s
+
+-- | Renvoie l'identifiant de toutes les unités d'un camp.
+unitKeys :: Units -> Faction -> Set UnitKey
+unitKeys xs f = foldr go S.empty xs
+  where
+    go :: Unit -> Set UnitKey -> Set UnitKey
+    go u s = if faction u == f
+             then S.insert (unitKey u) s
              else s
 
 -- | Diminue la force d'une unité sur le plateau de jeu.
