@@ -14,6 +14,7 @@ module Picrochole.Data.Plan
   , concentration
   , reserve
   , readPlan
+  , allUnitKeys
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
@@ -102,3 +103,10 @@ readObjective o = Objective { target = CK (J.target o)
 -- | Transforme un vecteur en un set.
 vectorToSet :: Ord a => Vector a -> Set a
 vectorToSet = S.fromList . V.toList
+
+-- | Renvoie l'ensemble des unités concernées par le plan.
+allUnitKeys :: Plan -> Set UnitKey
+allUnitKeys p = foldr go (reserve p) (objectives p)
+  where
+    go :: Objective -> Set UnitKey -> Set UnitKey
+    go obj xs = S.union (assigned obj) xs
