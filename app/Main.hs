@@ -71,5 +71,5 @@ main = do
       writeOrders (dir </> "orders.json") orders'
       writeCurrentTurn (dir </> "current-turn.json") tcount'
 
-      renameFile (dir </> "current-units.json") (dir </> ("units-"  ++ show tcount' ++ ".json"))
+      renameFile (dir </> "current-units.json") (dir </> "past" </> ("units-"  ++ show tcount' ++ ".json"))
       writeUnits (dir </> "current-units.json") units'
