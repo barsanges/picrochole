@@ -52,7 +52,7 @@ instance FromJSON Unit where
                     }
 
 instance ToJSON Unit where
-  toJSON x = object [ "key" .= unitKey x
+  toJSON x = object [ "unit-key" .= unitKey x
                     , "faction" .= faction x
                     , "kind" .= kind x
                     , "strength" .= strength x
