@@ -23,6 +23,7 @@ data Config = Config { iaFaction :: Faction
                      , hqRed :: UnitKey
                      , limit :: Int
                      }
+  deriving (Eq, Show)
 
 -- | Renvoie l'état-major de la faction indiquée.
 getHQ :: Config -> Faction -> UnitKey
