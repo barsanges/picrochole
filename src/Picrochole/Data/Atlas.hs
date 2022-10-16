@@ -18,6 +18,7 @@ module Picrochole.Data.Atlas
   , readCellKey
   , topography'
   , getDiskKeys
+  , approxEq
   ) where
 
 import Data.Aeson ( eitherDecodeFileStrict )
@@ -52,6 +53,14 @@ capacity :: Tile -> Double
 capacity (TRoad x) = x
 capacity (TLand x) = x
 capacity TWater = 0
+
+-- | Indique si deux cases sont approximativement égales (i.e. : les capacités
+-- sont comparées à une précision de 1e-12).
+approxEq :: Tile -> Tile -> Bool
+approxEq x y = (topography x == topography y)
+               && (doubleComp (capacity x) (capacity y))
+  where
+    doubleComp u v = abs (u - v) < 1e-12
 
 -- | Géographie du jeu.
 type Atlas = HexGrid Tile

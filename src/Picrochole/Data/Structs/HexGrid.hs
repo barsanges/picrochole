@@ -34,7 +34,7 @@ data GridSize = GridSize { ncols :: Int
 data HexGrid a = HexGrid { cells :: Vector a
                          , gridSize_ :: GridSize
                          }
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Identifiant unique d'une case.
 newtype CellKey = CK Int

@@ -13,11 +13,12 @@ import Test.Hspec
 import Picrochole.Data.Config
 import qualified Picrochole.Data.Reports as R
 import Picrochole.Data.Units
+import qualified Picrochole.Data.Units as U
 import Picrochole.Engine.Reporting ( reporting )
 import Picrochole.JSON.Pieces
 
 instance Eq Unit where
-  x == y = x `approxEq` y
+  x == y = x `U.approxEq` y
 
 spec :: Spec
 spec = do

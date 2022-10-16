@@ -19,7 +19,7 @@ import Picrochole.Engine.Turn ( movement )
 import Picrochole.JSON.Pieces
 
 instance Eq Unit where
-  x == y = x `approxEq` y
+  x == y = x `U.approxEq` y
 
 spec :: Spec
 spec = do

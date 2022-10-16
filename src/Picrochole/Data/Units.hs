@@ -45,7 +45,7 @@ import Data.Text ( Text )
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
-import Picrochole.Data.Atlas
+import Picrochole.Data.Atlas hiding ( approxEq )
 import Picrochole.Data.Base
 import qualified Picrochole.Data.Structs.Bag as B
 import Picrochole.Data.Structs.XsMap
