@@ -35,18 +35,19 @@ executables:
     - picrochole
 
 tests:
-  picrochole-test:
+  functional:
     main:                Spec.hs
-    source-dirs:         test
+    source-dirs:         test/functional
     dependencies:
     - hspec
     - picrochole
 
   end-to-end:
     main:                Spec.hs
-    source-dirs:         end-to-end
+    source-dirs:         test/end-to-end
     dependencies:
     - hspec
     - picrochole
     # L'exécutable pic est aussi une dépendance et doit être reconstruit avant de lancer le test
+    # Un moyen est d'inclure l'exécutable dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:pic
     - process
