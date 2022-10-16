@@ -1,0 +1,12 @@
+{
+    "objectives":
+    [
+        {
+            "target": 17,
+            "assigned": ["1st Red"],
+            "reinforcements": []
+        }
+    ],
+    "concentration": 30,
+    "reserve": ["HQ Red"]
+}

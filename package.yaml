@@ -41,3 +41,12 @@ tests:
     dependencies:
     - hspec
     - picrochole
+
+  end-to-end:
+    main:                Spec.hs
+    source-dirs:         end-to-end
+    dependencies:
+    - hspec
+    - picrochole
+    # L'exécutable pic est aussi une dépendance et doit être reconstruit avant de lancer le test
+    - process
