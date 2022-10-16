@@ -37,14 +37,14 @@ data Objective = Objective { target :: CellKey
                            , assigned :: Set UnitKey
                            , reinforcements :: Set UnitKey
                            }
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Un plan de bataille pour l'IA.
 data Plan = Plan { objectives_ :: [Objective]
                  , concentration_ :: CellKey
                  , reserve_ :: Set UnitKey
                  }
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Renvoie la liste des objectifs associés à un plan.
 objectives :: Plan -> [Objective]
