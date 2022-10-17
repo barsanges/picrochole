@@ -28,6 +28,8 @@ jobs:
 
     - name: Build
       run: stack build
+      working-directory: engine
 
     - name: Test
       run: stack test
+      working-directory: engine

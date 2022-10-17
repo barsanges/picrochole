@@ -5,11 +5,6 @@ author:              barsanges
 maintainer:          https://github.com/barsanges
 copyright:           2022 barsanges
 
-extra-source-files:
-- README.md
-- LICENSE
-- rules.md
-
 synopsis:            Game inspired by Le Vol de l'Aigle
 description:         Please see the README
 
