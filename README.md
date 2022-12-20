@@ -4,11 +4,11 @@
 conflits pré-napoléoniens et napoléoniens. Deux documents décrivent la
 simulation :
 
-* Une (note d'intention)[docs/intent.md] décrit le projet
+* Une [note d'intention](docs/intent.md) décrit le projet
   général. Elle peut ne pas correspondre à l'état actuel de
   l'implémentation.
 
-* Les (règles)[docs/rules.md] spécifient l'algorithme implémenté par
+* Les [règles](docs/rules.md) spécifient l'algorithme implémenté par
   le moteur de jeu. Elles constituent la référence à laquelle le code
   doit se conformer.
 
