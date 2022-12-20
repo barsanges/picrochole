@@ -20,3 +20,6 @@ fichier [LICENSE](LICENSE)).
 - [ ] Utiliser Elm ou Haskell à la place de Python pour l'interface
 - [ ] Ajouter une condition de victoire (dans le code et dans les
       règles) et clarifier le document de règles en conséquence
+- [ ] Ajouter un mode multijoueur
+- [ ] Ajouter des logs
+- [ ] Étoffer le README
