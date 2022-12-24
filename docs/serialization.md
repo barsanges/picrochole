@@ -7,7 +7,7 @@ pour les altérer.
 
 Ce document décrit la structure de chacun de ces fichiers. Il
 constitue la référence à laquelle le code doit se conformer. En cas
-d'ambigüité, le [code Haskell](engine/src/Picrochole/JSON) fait
+d'ambigüité, le [code Haskell](./engine/src/Picrochole/JSON) fait
 référence (dans la mesure où il est compatible avec cette
 spécification).
 
