@@ -32,3 +32,9 @@ fichier [LICENSE](LICENSE)).
 - [ ] Ajouter un mode multijoueur
 - [ ] Ajouter des logs
 - [ ] Étoffer le README
+- [ ] Créer des scénarios
+- [ ] Ajouter une commande pour créer une nouvelle partie
+- [ ] Automatiser la création des rapports initiaux lors de la
+      création d'une nouvelle partie
+- [ ] Présenter les tours sous forme de date
+- [ ] Réfléchir à l'intérêt d'introduire une alternance jour / nuit
