@@ -38,3 +38,7 @@ fichier [LICENSE](LICENSE)).
       création d'une nouvelle partie
 - [ ] Présenter les tours sous forme de date
 - [ ] Réfléchir à l'intérêt d'introduire une alternance jour / nuit
+- [ ] Ajouter aux cartes des éléments de toponymie
+- [ ] Ajouter d'autres types de terrain
+- [ ] Introduire une notion de défenseur et / ou de couvert pour
+      certains terrains
