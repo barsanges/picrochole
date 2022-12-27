@@ -18,5 +18,6 @@
         "HQ Blue",
         "1st Cavalry Blue",
         "4th Infantry Blue"
-    ]
+    ],
+    "limit": 10
 }

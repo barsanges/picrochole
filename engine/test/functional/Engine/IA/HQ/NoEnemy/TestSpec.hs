@@ -38,7 +38,6 @@ spec = do
                     units
                     (getHQ config (iaFaction config))
                     (iaFaction config)
-                    (limit config)
                     plan
                     reports
                     orders

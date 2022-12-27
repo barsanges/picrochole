@@ -35,9 +35,7 @@ suivants :
 * `ia-faction` : l'identifiant de la faction jouée par l'IA (soit
   `red` soit `blue`) ;
 * `hq-blue` : l'identifiant de l'état-major de la faction bleue ;
-* `hq-red` : l'identifiant de l'état-major de la faction rouge ;
-* `limit` : durée maximale de validité (en nombre de tours) des
-  messages pris en compte par l'IA.
+* `hq-red` : l'identifiant de l'état-major de la faction rouge.
 
 ## Tour en cours
 
@@ -129,6 +127,8 @@ Un rapport est représenté par un dictionnaire qui doit contenir :
 ## Plan de l'IA
 
 Le plan de l'IA est un dictionnaire qui doit contenir :
+* un champ `limit`, qui est la durée maximale de validité (en nombre
+  de tours) des messages pris en compte par l'IA.
 * un champ `concentration`, dont la valeur est l'indice (entier) d'une
   case du plateau ;
 * un vecteur `reserve`, dont les éléments sont des identifiants

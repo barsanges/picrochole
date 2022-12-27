@@ -21,7 +21,6 @@ import qualified Picrochole.JSON.Config as J
 data Config = Config { iaFaction :: Faction
                      , hqBlue :: UnitKey
                      , hqRed :: UnitKey
-                     , limit :: Int
                      }
   deriving (Eq, Show)
 
@@ -40,6 +39,5 @@ readConfig fp = do
       Right f -> return (Right Config { iaFaction = f
                                       , hqBlue = UK (J.hqBlue cfg)
                                       , hqRed = UK (J.hqRed cfg)
-                                      , limit = J.limit cfg
                                       })
       Left m -> return (Left m)

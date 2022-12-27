@@ -4,5 +4,6 @@
     "reserve":
     [
         "1st Blue"
-    ]
+    ],
+    "limit": 10
 }

@@ -19,5 +19,6 @@
         "1st Cavalry Blue",
         "3d Infantry Blue",
         "4th Infantry Blue"
-    ]
+    ],
+    "limit": 10
 }

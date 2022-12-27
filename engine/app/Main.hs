@@ -57,13 +57,12 @@ main = do
 
       let ia = iaFaction config
       let iaHQ = getHQ config ia
-      let lim = limit config
 
       let routes = route atlas initiative tcount units orders (getHQ config)
       let units' = turn atlas initiative routes units
       let tcount' = tcount + 1
       let reports' = reporting atlas initiative tcount' (getHQ config) units' reports
-      let orders' = schedule atlas tcount' units' iaHQ ia lim iaPlan reports' orders
+      let orders' = schedule atlas tcount' units' iaHQ ia iaPlan reports' orders
 
       createDirectoryIfMissing False (dir </> "past")
 

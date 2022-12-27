@@ -39,21 +39,20 @@ schedule :: Atlas
          -> Units
          -> UnitKey
          -> Faction
-         -> Int
          -> Plan
          -> Register Report
          -> Register Order
          -> Register Order
-schedule atlas tcount units ukey f limit plan rreg oreg = oreg'
+schedule atlas tcount units ukey f plan rreg oreg = oreg'
   where
     gsize = gridSize atlas
-    info = mkInfo tcount ukey limit rreg
+    info = mkInfo tcount ukey (limit plan) rreg
     orders = assign gsize f plan info
     oreg' = command atlas tcount units ukey orders oreg
 
 -- | Construit une image du conflit avec les dernières informations disponibles.
 mkInfo :: TurnCount -> UnitKey -> Int -> Register Report -> Info
-mkInfo tcount ukey limit reg = foldr f M.empty reports
+mkInfo tcount ukey lim reg = foldr f M.empty reports
 
   where
 
@@ -65,7 +64,7 @@ mkInfo tcount ukey limit reg = foldr f M.empty reports
                  else a
 
     f :: Msg Report -> Info -> Info
-    f msg i0 = if (sent (header msg)) >= (tcount - limit)
+    f msg i0 = if (sent (header msg)) >= (tcount - lim)
                then M.foldrWithKey g i0 (content msg)
                else i0
       where

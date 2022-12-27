@@ -27,6 +27,7 @@ data Objective = Objective { target :: Int
 data Plan = Plan { objectives :: Vector Objective
                  , concentration :: Int
                  , reserve :: Vector Text
+                 , limit :: Int
                  }
   deriving Show
 
@@ -49,7 +50,9 @@ instance FromJSON Plan where
         o <- v .: "objectives"
         c <- v .: "concentration"
         r <- v .: "reserve"
+        lim <- v .: "limit"
         return Plan { objectives = o
                     , concentration = c
                     , reserve = r
+                    , limit = lim
                     }

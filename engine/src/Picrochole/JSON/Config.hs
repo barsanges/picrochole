@@ -18,7 +18,6 @@ import qualified Data.Text as T
 data Config = Config { iaFaction :: T.Text
                      , hqBlue :: T.Text
                      , hqRed :: T.Text
-                     , limit :: Int
                      }
   deriving Show
 
@@ -29,9 +28,7 @@ instance FromJSON Config where
         ia <- v .: "ia-faction"
         hqb <- v .: "hq-blue"
         hqr <- v .: "hq-red"
-        lim <- v .: "limit"
         return Config { iaFaction = ia
                       , hqBlue = hqb
                       , hqRed = hqr
-                      , limit = lim
                       }

@@ -9,10 +9,11 @@ Un plan de bataille pour l'IA.
 module Picrochole.Data.Plan
   ( ThreatLevel(..)
   , Objective(..)
-  , Plan(..)
+  , Plan
   , objectives
   , concentration
   , reserve
+  , limit
   , readPlan
   , allUnitKeys
   ) where
@@ -43,6 +44,7 @@ data Objective = Objective { target :: CellKey
 data Plan = Plan { objectives_ :: [Objective]
                  , concentration_ :: CellKey
                  , reserve_ :: Set UnitKey
+                 , limit_ :: Int
                  }
   deriving (Eq, Show)
 
@@ -57,6 +59,11 @@ concentration = concentration_
 -- | Renvoie les identifiants des unités qui constituent la réserve.
 reserve :: Plan -> Set UnitKey
 reserve = reserve_
+
+-- | Renvoie la durée maximale de validité (en nombre de tours) des messages
+-- pris en compte par l'IA.
+limit :: Plan -> Int
+limit = limit_
 
 -- | Lit un fichier contenant le plan de bataille de l'IA.
 readPlan :: FilePath -> IO (Either String Plan)
@@ -78,10 +85,12 @@ readPlan fp = do
       else return (Right (Plan { objectives_ = obj
                                , concentration_ = CK (J.concentration p)
                                , reserve_ = res
+                               , limit_ = lim
                                }))
       where
         obj = V.toList (fmap readObjective (J.objectives p))
         res = vectorToSet (fmap UK (J.reserve p))
+        lim = J.limit p
         multipleObj = multiple (fmap assigned obj)
         notInRes = S.difference (S.unions (fmap reinforcements obj)) res
         mixed = S.intersection (S.unions (fmap assigned obj)) res

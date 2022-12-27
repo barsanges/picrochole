@@ -8,5 +8,6 @@
         }
     ],
     "concentration": 30,
-    "reserve": ["HQ Red"]
+    "reserve": ["HQ Red"],
+    "limit": 10
 }
