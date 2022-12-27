@@ -128,7 +128,7 @@ Un rapport est représenté par un dictionnaire qui doit contenir :
 
 Le plan de l'IA est un dictionnaire qui doit contenir :
 * un champ `limit`, qui est la durée maximale de validité (en nombre
-  de tours) des messages pris en compte par l'IA.
+  de tours) des messages pris en compte par l'IA ;
 * un champ `concentration`, dont la valeur est l'indice (entier) d'une
   case du plateau ;
 * un vecteur `reserve`, dont les éléments sont des identifiants
