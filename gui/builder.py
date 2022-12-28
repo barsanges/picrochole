@@ -42,8 +42,9 @@ def load_game_dir(dirname: str) -> dict:
         res["current turn"] = json.load(fin)
     with open(osp.join(dirname, "reports.json"), 'r') as fin:
         res["reports"] = json.load(fin)
+    with open(osp.join(dirname, "orders.json"), 'r') as fin:
+        res["orders"] = json.load(fin)
     # TODO : charger atlas.json
-    # TODO : charger orders.json
     return res
 
 def select_latest_info(faction: str, player_hq: str, reports: dict) -> dict:
@@ -81,7 +82,31 @@ def select_latest_info(faction: str, player_hq: str, reports: dict) -> dict:
                         res[key] = tmp
     return res
 
-def mk_units_table(faction: str, player_hq: str, reports: dict) -> html.Table:
+def select_latest_orders(player_hq: str, orders: dict) -> dict:
+    """
+    Sélectionne, pour chaque unité sous son contrôle, les derniers ordres
+    envoyés par le QG `player_hq`.
+
+    Paramètres
+    ----------
+
+    player_hq: str
+        Identifiant du QG du joueur.
+
+    orders : dict
+        Ordres envoyés dans la partie en cours.
+    """
+    res = {}
+    hq_ok = lambda x: x["from"] == player_hq
+    for order in filter(hq_ok, orders):
+        key = order["to"]
+        if ((key in res and res[key]["sent"] < order["sent"])
+            or key not in res):
+            res[key] = {"sent": order["sent"], "content": order["content"]}
+    return res
+
+def mk_units_table(faction: str, player_hq: str, reports: dict,
+                   orders: dict) -> html.Table:
     """
     Crée un tableau affichant les dernières informations connues sur les
     unités du joueur.
@@ -97,18 +122,31 @@ def mk_units_table(faction: str, player_hq: str, reports: dict) -> html.Table:
 
     reports : dict
         Rapports envoyés dans la partie en cours.
+
+    orders : dict
+        Ordres envoyés dans la partie en cours.
     """
     header = [html.Th("Unité"), html.Th("Arme"), html.Th("Effectif"),
-              html.Th("Emplacement"), html.Th("Vue le")]
+              html.Th("Emplacement"), html.Th("Vue le"),
+              html.Th("Destination"), html.Th("Envoyée le")]
     body = []
-    data = select_latest_info(faction, player_hq, reports)
-    for key in sorted(data.keys()):
-        unit = data[key]
+    info = select_latest_info(faction, player_hq, reports)
+    orders = select_latest_orders(player_hq, orders)
+    for key in sorted(info.keys()):
+        unit = info[key]
+        if key in orders:
+            last_order = orders[key]["content"]
+            date_order = orders[key]["sent"]
+        else:
+            last_order = None
+            date_order = None
         row = html.Tr([html.Td(key),
                        html.Td(unit["kind"]),
                        html.Td(unit["strength"]),
                        html.Td(unit["location"]),
-                       html.Td(unit["received"])])
+                       html.Td(unit["received"]),
+                       html.Td(last_order),
+                       html.Td(date_order)])
         body.append(row)
     table = html.Table([html.Thead(html.Tr(header)),
                         html.Tbody(body)])
@@ -132,7 +170,8 @@ def build_app(dirname: str) -> dash.Dash:
     else:
         faction = "red"
         player_hq = data["config"]["hq-red"]
-    units_table = mk_units_table(faction, player_hq, data["reports"])
+    units_table = mk_units_table(faction, player_hq, data["reports"],
+                                 data["orders"])
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
