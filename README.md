@@ -15,17 +15,20 @@ simulation :
 **Licence :** ce code est distribué sous la licence GNU GPL (cf. le
 fichier [LICENSE](LICENSE)).
 
-**Pistes d'évolution :**
-- [ ] Ajouter un échelon de commandement (e.g. : corps d'armée)
+**Besoins d'évolution :**
+- [ ] Ajouter aux cartes des éléments de toponymie
 - [ ] Améliorer l'IA
+- [ ] Ajouter un échelon de commandement (e.g. : corps d'armée)
+- [ ] Ajouter une condition de victoire (dans le code et dans les
+      règles) et clarifier le document de règles en conséquence
+
+**Pistes d'évolution :**
 - [ ] Ajouter une notion de ravitaillement et la possibilité de vivre
       sur le pays
 - [ ] Ajouter la possibilité d'altérer l'environnement (tranchées,
       ponts, etc)
 - [ ] Ajouter une notion de moral
 - [ ] Utiliser Elm ou Haskell à la place de Python pour l'interface
-- [ ] Ajouter une condition de victoire (dans le code et dans les
-      règles) et clarifier le document de règles en conséquence
 - [ ] Ajouter un mode multijoueur
 - [ ] Ajouter des logs
 - [ ] Étoffer le README
@@ -35,7 +38,6 @@ fichier [LICENSE](LICENSE)).
       création d'une nouvelle partie
 - [ ] Présenter les tours sous forme de date
 - [ ] Réfléchir à l'intérêt d'introduire une alternance jour / nuit
-- [ ] Ajouter aux cartes des éléments de toponymie
 - [ ] Ajouter d'autres types de terrain
 - [ ] Introduire une notion de défenseur et / ou de couvert pour
       certains terrains
