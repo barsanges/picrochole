@@ -38,6 +38,8 @@ fichier [LICENSE](LICENSE)).
       création d'une nouvelle partie
 - [ ] Présenter les tours sous forme de date
 - [ ] Réfléchir à l'intérêt d'introduire une alternance jour / nuit
+- [ ] Réduire la portée de l'artillerie
+- [ ] Faire dépendre la capacité de la cellule du type de terrain
 - [ ] Ajouter d'autres types de terrain
 - [ ] Introduire une notion de défenseur et / ou de couvert pour
       certains terrains
