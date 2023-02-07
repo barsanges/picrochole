@@ -1,0 +1,18 @@
+{
+    "objectives":
+    [
+        {
+            "target": 5020,
+            "assigned": ["1er corps rouge - 1ère division", "1er corps rouge - 2e division", "1er corps rouge - Cavalerie", "1er corps rouge - Artillerie"],
+            "reinforcements": ["3e corps rouge - 1ère division", "3e corps rouge - 2e division", "3e corps rouge - Cavalerie", "3e corps rouge - Artillerie"]
+        },
+        {
+            "target": 5549,
+            "assigned": ["2e corps rouge - 1ère division", "2e corps rouge - 2e division", "2e corps rouge - Cavalerie", "2e corps rouge - Artillerie"],
+            "reinforcements": ["3e corps rouge - 1ère division", "3e corps rouge - 2e division", "3e corps rouge - Cavalerie", "3e corps rouge - Artillerie"]
+        }
+    ],
+    "concentration": 5434,
+    "reserve": ["GQG rouge", "Réserve de cavalerie rouge", "3e corps rouge - 1ère division", "3e corps rouge - 2e division", "3e corps rouge - Cavalerie", "3e corps rouge - Artillerie"],
+    "limit": 10
+}

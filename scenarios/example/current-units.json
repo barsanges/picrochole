@@ -1,0 +1,222 @@
+{
+    "1411":
+    [
+        {
+            "unit-key": "1er corps bleu - 1ère division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps bleu - 2e division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps bleu - Cavalerie",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps bleu - Artillerie",
+            "faction": "blue",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "1436":
+    [
+        {
+            "unit-key": "2e corps bleu - 1ère division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps bleu - 2e division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps bleu - Cavalerie",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps bleu - Artillerie",
+            "faction": "blue",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "1492":
+    [
+        {
+            "unit-key": "GQG bleu",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 2,
+            "progress": 0
+        },
+        {
+            "unit-key": "Réserve de cavalerie bleue",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 2,
+            "progress": 0
+        }
+    ],
+    "5770":
+    [
+        {
+            "unit-key": "3e corps bleu - 1ère division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps bleu - 2e division",
+            "faction": "blue",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps bleu - Cavalerie",
+            "faction": "blue",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps bleu - Artillerie",
+            "faction": "blue",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "5020":
+    [
+        {
+            "unit-key": "1er corps rouge - 1ère division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps rouge - 2e division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps rouge - Cavalerie",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "1er corps rouge - Artillerie",
+            "faction": "red",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "3430":
+    [
+        {
+            "unit-key": "2e corps rouge - 1ère division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps rouge - 2e division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps rouge - Cavalerie",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "2e corps rouge - Artillerie",
+            "faction": "red",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "5540":
+    [
+        {
+            "unit-key": "3e corps rouge - 1ère division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps rouge - 2e division",
+            "faction": "red",
+            "kind": "infantry",
+            "strength": 4,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps rouge - Cavalerie",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 3,
+            "progress": 0
+        },
+        {
+            "unit-key": "3e corps rouge - Artillerie",
+            "faction": "red",
+            "kind": "artillery",
+            "strength": 1,
+            "progress": 0
+        }
+    ],
+    "5434":
+    [
+        {
+            "unit-key": "GQG rouge",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 2,
+            "progress": 0
+        },
+        {
+            "unit-key": "Réserve de cavalerie rouge",
+            "faction": "red",
+            "kind": "cavalry",
+            "strength": 4,
+            "progress": 0
+        }
+    ]
+}
