@@ -47,7 +47,7 @@ def load_game_dir(dirname: str) -> dict:
     # TODO : charger atlas.json
     return res
 
-def select_latest_info(faction: str, player_hq: str, reports: dict) -> dict:
+def select_latest_info(faction: str, player_hq: str, reports: list) -> dict:
     """
     Sélectionne, pour chaque unité de la faction `faction`, les dernières
     informations connues du QG `player_hq`.
@@ -69,7 +69,7 @@ def select_latest_info(faction: str, player_hq: str, reports: dict) -> dict:
     faction_ok = lambda x: x["faction"] == faction
     for report in filter(hq_ok, reports):
         for location, values in report["content"].items():
-            if values != "red" or values != "blue":
+            if values != [] and values != "red" and values != "blue":
                 for unit in filter(faction_ok, values):
                     key = unit["unit-key"]
                     if ((key in res
@@ -82,7 +82,7 @@ def select_latest_info(faction: str, player_hq: str, reports: dict) -> dict:
                         res[key] = tmp
     return res
 
-def select_latest_orders(player_hq: str, orders: dict) -> dict:
+def select_latest_orders(player_hq: str, orders: list) -> dict:
     """
     Sélectionne, pour chaque unité sous son contrôle, les derniers ordres
     envoyés par le QG `player_hq`.
