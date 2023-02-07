@@ -47,7 +47,8 @@ def load_game_dir(dirname: str) -> dict:
     # TODO : charger atlas.json
     return res
 
-def select_latest_info(faction: str, player_hq: str, reports: list) -> dict:
+def select_latest_info(faction: str, player_hq: str, current_turn: int,
+                       reports: list) -> dict:
     """
     Sélectionne, pour chaque unité de la faction `faction`, les dernières
     informations connues du QG `player_hq`.
@@ -61,6 +62,9 @@ def select_latest_info(faction: str, player_hq: str, reports: list) -> dict:
     player_hq: str
         Identifiant du QG du joueur.
 
+    current_turn: int
+        Tour en cours.
+
     reports : dict
         Rapports envoyés dans la partie en cours.
     """
@@ -72,9 +76,10 @@ def select_latest_info(faction: str, player_hq: str, reports: list) -> dict:
             if values != [] and values != "red" and values != "blue":
                 for unit in filter(faction_ok, values):
                     key = unit["unit-key"]
-                    if ((key in res
-                         and res[key]["received"] < report["received"])
-                        or key not in res):
+                    if (report["received"] <= current_turn)\
+                       and ((key in res
+                            and res[key]["received"] < report["received"])
+                            or key not in res):
                         tmp = {"location": location,
                                "received": report["received"],
                                **unit}
@@ -105,8 +110,8 @@ def select_latest_orders(player_hq: str, orders: list) -> dict:
             res[key] = {"sent": order["sent"], "content": order["content"]}
     return res
 
-def mk_units_table(faction: str, player_hq: str, reports: dict,
-                   orders: dict) -> html.Table:
+def mk_units_table(faction: str, player_hq: str, current_turn: int,
+                   reports: dict, orders: dict) -> html.Table:
     """
     Crée un tableau affichant les dernières informations connues sur les
     unités du joueur.
@@ -120,6 +125,9 @@ def mk_units_table(faction: str, player_hq: str, reports: dict,
     player_hq: str
         Identifiant du QG du joueur.
 
+    current_turn: int
+        Tour en cours.
+
     reports : dict
         Rapports envoyés dans la partie en cours.
 
@@ -130,7 +138,7 @@ def mk_units_table(faction: str, player_hq: str, reports: dict,
               html.Th("Emplacement"), html.Th("Vue le"),
               html.Th("Destination"), html.Th("Envoyée le")]
     body = []
-    info = select_latest_info(faction, player_hq, reports)
+    info = select_latest_info(faction, player_hq, current_turn, reports)
     orders = select_latest_orders(player_hq, orders)
     for key in sorted(info.keys()):
         unit = info[key]
@@ -170,8 +178,8 @@ def build_app(dirname: str) -> dash.Dash:
     else:
         faction = "red"
         player_hq = data["config"]["hq-red"]
-    units_table = mk_units_table(faction, player_hq, data["reports"],
-                                 data["orders"])
+    units_table = mk_units_table(faction, player_hq, data["current turn"],
+                                 data["reports"], data["orders"])
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
