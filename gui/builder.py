@@ -1,7 +1,10 @@
 "Interface web pour Picrochole."
 
+import os
 import os.path as osp
+import base64
 import json
+import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -25,6 +28,16 @@ def kind_as_fr(kind: str) -> str:
     else:
         raise ValueError("unknown kind of unit: '%s'" % kind)
 
+def b64_image(fname):
+    """
+    Charge une image de manière à l'afficher dans Dash.
+
+    Voir https://dash.plotly.com/external-resources.
+    """
+    with open(fname, 'rb') as f:
+        image = f.read()
+    return 'data:image/png;base64,' + base64.b64encode(image).decode('utf-8')
+
 def load_game_dir(dirname: str) -> dict:
     """
     Lit les données de la partie en cours.
@@ -36,6 +49,13 @@ def load_game_dir(dirname: str) -> dict:
         Chemin vers le dossier contenant la partie en cours.
     """
     res = {}
+    with open(osp.join(dirname, "atlas.json"), 'r') as fin:
+        atlas = json.load(fin)
+        if atlas["nrows"] != 60 or atlas["ncols"] != 100:
+            msg = "the map should have exactly 60 rows and 100 columns, "\
+                  "got %d rows x %d columns instead"\
+                  % (atlas["nrows"], atlas["ncols"])
+            raise ValueError(msg)
     with open(osp.join(dirname, "config.json"), 'r') as fin:
         res["config"] = json.load(fin)
     with open(osp.join(dirname, "current-turn.json"), 'r') as fin:
@@ -44,7 +64,6 @@ def load_game_dir(dirname: str) -> dict:
         res["reports"] = json.load(fin)
     with open(osp.join(dirname, "orders.json"), 'r') as fin:
         res["orders"] = json.load(fin)
-    # TODO : charger atlas.json
     return res
 
 def select_latest_info(faction: str, player_hq: str, current_turn: int,
@@ -160,6 +179,52 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
                         html.Tbody(body)])
     return table
 
+def mk_map_graph(fname: str, img_width: int, img_height: int) -> go.Figure:
+    """
+    Crée un graphique contenant la carte.
+
+    Paramètres
+    ----------
+
+    fname: str
+        Chemin vers l'image à utiliser comme fond de carte.
+
+    img_width: int
+        Largeur de l'image, en pixels.
+
+    img_height: int
+        Hauteur de l'image, en pixels.
+    """
+    fig = go.Figure()
+    scale_factor = 1.0
+    fig.update_xaxes(range=[0, img_width * scale_factor],
+                     visible=False)
+    fig.update_yaxes(range=[0, img_height * scale_factor],
+                     # Ensures that the aspect ratio stays constant:
+                     scaleanchor="x",
+                     visible=False)
+    img = b64_image(fname)
+    fig.add_layout_image(source=img,
+                         x=0,
+                         sizex=img_width * scale_factor,
+                         y=img_height * scale_factor,
+                         sizey=img_height * scale_factor,
+                         xref="x",
+                         yref="y",
+                         opacity=1.0,
+                         layer="below",
+                         sizing="stretch")
+    # Configure other layout
+    fig.update_layout(width=img_width * scale_factor,
+                      height=img_height * scale_factor,
+                      margin={"l": 0, "r": 0, "t": 0, "b": 0},
+                      showlegend=False)
+    # Disable the autosize on double click because it adds unwanted margins
+    # around the image (https://plotly.com/python/configuration-options/).
+    graph = dcc.Graph(figure=fig, config={"doubleClick": "reset",
+                                          "displayModeBar": False})
+    return graph
+
 def build_app(dirname: str) -> dash.Dash:
     """
     Renvoie un objet `Dash` correspondant à l'interface de Picrochole.
@@ -180,10 +245,13 @@ def build_app(dirname: str) -> dash.Dash:
         player_hq = data["config"]["hq-red"]
     units_table = mk_units_table(faction, player_hq, data["current turn"],
                                  data["reports"], data["orders"])
+    img_width = 800
+    img_height = 455
+    graph = mk_map_graph(osp.join(dirname, "map.png"), img_width, img_height)
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
-        # TODO : carte
+        graph,
         # TODO : slider sous la carte
         units_table
     ])
