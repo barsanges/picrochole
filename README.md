@@ -44,3 +44,6 @@ fichier [LICENSE](LICENSE)).
 - [ ] Ajouter d'autres types de terrain
 - [ ] Introduire une notion de défenseur et / ou de couvert pour
       certains terrains
+- [ ] Intégrer aux rapports des unités ce qu'elles ont vu entre deux
+      rapports (et pas uniquement ce qu'elles voient au moment du
+      rapport)
