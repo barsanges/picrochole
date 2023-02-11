@@ -179,7 +179,7 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
                         html.Tbody(body)])
     return table
 
-def mk_map_graph(fname: str, img_width: int, img_height: int) -> go.Figure:
+def mk_map_graph(fname: str, img_width: int, img_height: int) -> dcc.Graph:
     """
     Crée un graphique contenant la carte.
 
