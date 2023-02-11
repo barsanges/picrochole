@@ -22,7 +22,7 @@ library:
   source-dirs: src
 
 executables:
-  pic:
+  picrochole:
     source-dirs:      app
     main:             Main.hs
     dependencies:
@@ -43,6 +43,6 @@ tests:
     dependencies:
     - hspec
     - picrochole
-    # L'exécutable pic est aussi une dépendance et doit être reconstruit avant de lancer le test
-    # Un moyen est d'inclure l'exécutable dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:pic
+    # L'exécutable picrochole est aussi une dépendance et doit être reconstruit avant de lancer le test
+    # Un moyen est d'inclure l'exécutable dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:picrochole
     - process

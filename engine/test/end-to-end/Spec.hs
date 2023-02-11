@@ -84,11 +84,11 @@ prepare fp = do
 run :: FilePath -> IO ()
 run fp = do
   (ex, stdOut, stdErr) <- readCreateProcessWithExitCode
-                          (shell ("stack exec -- pic " ++ (fp </> "result")))
+                          (shell ("stack exec -- picrochole " ++ (fp </> "result")))
                           ""
   case ex of
     ExitSuccess -> return ()
-    ExitFailure n -> expectationFailure ("failed to run `pic`, got:\n\
+    ExitFailure n -> expectationFailure ("failed to run `picrochole`, got:\n\
                                          \ * exit code: " ++ (show n) ++ "\n \
                                          \ * std out: " ++ stdOut ++ "\n \
                                          \ * std err: " ++ stdErr)
