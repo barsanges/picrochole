@@ -35,7 +35,7 @@ reporting atlas initiative tcount getHQ xs reports = foldl' (flip go) reports in
       Nothing -> r
       Just hq -> case mkReport atlas xs ukey of
         Nothing -> r
-        Just report -> if d' <= 3 * (tcount - prev) || prev == 0
+        Just report -> if d' <= 3 * (tcount - prev) || prev == 0 || ukey == hq
                        then send h report r
                        else r
             where
