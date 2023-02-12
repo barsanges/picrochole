@@ -66,11 +66,10 @@ def load_game_dir(dirname: str) -> dict:
         res["orders"] = json.load(fin)
     return res
 
-def select_latest_cells_info(player_hq: str, current_turn: int,
-                             reports: list) -> dict:
+def organize_reports(player_hq: str, current_turn: int, reports: list) -> dict:
     """
-    Sélectionne, pour chaque case de la carte, les dernières informations
-    connues du QG `player_hq`, toutes unités confondues.
+    Organise par date et par case de la carte le contenu des rapports reçus par
+    le QG `player_hq`.
 
     Paramètres
     ----------
