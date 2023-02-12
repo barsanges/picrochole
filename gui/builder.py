@@ -206,6 +206,47 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
                         html.Tbody(body)])
     return table
 
+def display_base_map(img, img_width: int, img_height: int) -> go.Figure:
+    """
+    Crée une figure Plotly contenant le fond de carte.
+
+    Paramètres
+    ----------
+
+    img:
+        Image à utiliser comme fond de carte.
+
+    img_width: int
+        Largeur de l'image, en pixels.
+
+    img_height: int
+        Hauteur de l'image, en pixels.
+    """
+    fig = go.Figure()
+    scale_factor = 1.0
+    fig.update_xaxes(range=[0, img_width * scale_factor],
+                     visible=False)
+    fig.update_yaxes(range=[0, img_height * scale_factor],
+                     # Ensures that the aspect ratio stays constant:
+                     scaleanchor="x",
+                     visible=False)
+    fig.add_layout_image(source=img,
+                         x=0,
+                         sizex=img_width * scale_factor,
+                         y=img_height * scale_factor,
+                         sizey=img_height * scale_factor,
+                         xref="x",
+                         yref="y",
+                         opacity=1.0,
+                         layer="below",
+                         sizing="stretch")
+    # Configure other layout
+    fig.update_layout(width=img_width * scale_factor,
+                      height=img_height * scale_factor,
+                      margin={"l": 0, "r": 0, "t": 0, "b": 0},
+                      showlegend=False)
+    return fig
+
 def mk_map_graph(fname: str, img_width: int, img_height: int) -> dcc.Graph:
     """
     Crée un graphique contenant la carte.
@@ -222,30 +263,8 @@ def mk_map_graph(fname: str, img_width: int, img_height: int) -> dcc.Graph:
     img_height: int
         Hauteur de l'image, en pixels.
     """
-    fig = go.Figure()
-    scale_factor = 1.0
-    fig.update_xaxes(range=[0, img_width * scale_factor],
-                     visible=False)
-    fig.update_yaxes(range=[0, img_height * scale_factor],
-                     # Ensures that the aspect ratio stays constant:
-                     scaleanchor="x",
-                     visible=False)
     img = b64_image(fname)
-    fig.add_layout_image(source=img,
-                         x=0,
-                         sizex=img_width * scale_factor,
-                         y=img_height * scale_factor,
-                         sizey=img_height * scale_factor,
-                         xref="x",
-                         yref="y",
-                         opacity=1.0,
-                         layer="below",
-                         sizing="stretch")
-    # Configure other layout
-    fig.update_layout(width=img_width * scale_factor,
-                      height=img_height * scale_factor,
-                      margin={"l": 0, "r": 0, "t": 0, "b": 0},
-                      showlegend=False)
+    fig = display_base_map(img, img_width, img_height)
     # Disable the autosize on double click because it adds unwanted margins
     # around the image (https://plotly.com/python/configuration-options/).
     graph = dcc.Graph(figure=fig, config={"doubleClick": "reset",
