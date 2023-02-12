@@ -66,8 +66,36 @@ def load_game_dir(dirname: str) -> dict:
         res["orders"] = json.load(fin)
     return res
 
-def select_latest_info(faction: str, player_hq: str, current_turn: int,
-                       reports: list) -> dict:
+def select_latest_cells_info(player_hq: str, current_turn: int,
+                             reports: list) -> dict:
+    """
+    Sélectionne, pour chaque case de la carte, les dernières informations
+    connues du QG `player_hq`, toutes unités confondues.
+
+    Paramètres
+    ----------
+
+    player_hq: str
+        Identifiant du QG du joueur.
+
+    current_turn: int
+        Tour en cours.
+
+    reports : dict
+        Rapports envoyés dans la partie en cours.
+    """
+    res = {}
+    _ok = lambda x: (x["to"] == player_hq) and (x["sent"] <= current_turn)
+    for report in filter(_ok, reports):
+        date = report["sent"]
+        if date not in res:
+            res[date] = {}
+        for ckey, content in report["content"]:
+            res[date][ckey] = content
+    return res
+
+def select_latest_units_info(faction: str, player_hq: str, current_turn: int,
+                             reports: list) -> dict:
     """
     Sélectionne, pour chaque unité de la faction `faction`, les dernières
     informations connues du QG `player_hq`.
@@ -157,7 +185,7 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
               html.Th("Emplacement"), html.Th("Vue le"),
               html.Th("Destination"), html.Th("Envoyée le")]
     body = []
-    info = select_latest_info(faction, player_hq, current_turn, reports)
+    info = select_latest_units_info(faction, player_hq, current_turn, reports)
     orders = select_latest_orders(player_hq, orders)
     for key in sorted(info.keys()):
         unit = info[key]
