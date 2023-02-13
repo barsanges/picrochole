@@ -89,7 +89,7 @@ def organize_reports(player_hq: str, current_turn: int, reports: list) -> dict:
         date = report["sent"]
         if date not in res:
             res[date] = {}
-        for ckey, content in report["content"]:
+        for ckey, content in report["content"].items():
             res[date][ckey] = content
     return res
 
