@@ -9,6 +9,15 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
+CELL_HEIGHT = 8
+NROWS = 60
+HEIGHT = CELL_HEIGHT * NROWS
+
+HALF_CELL_WIDTH = 4
+CELL_WIDTH = 2 * HALF_CELL_WIDTH
+NCOLS = 100
+WIDTH = NCOLS * CELL_WIDTH + HALF_CELL_WIDTH
+
 def kind_as_fr(kind: str) -> str:
     """
     'Traduit' en français un type d'unité (une arme).
@@ -51,10 +60,10 @@ def load_game_dir(dirname: str) -> dict:
     res = {}
     with open(osp.join(dirname, "atlas.json"), 'r') as fin:
         atlas = json.load(fin)
-        if atlas["nrows"] != 60 or atlas["ncols"] != 100:
-            msg = "the map should have exactly 60 rows and 100 columns, "\
+        if atlas["nrows"] != NROWS or atlas["ncols"] != NCOLS:
+            msg = "the map should have exactly %d rows and %d columns, "\
                   "got %d rows x %d columns instead"\
-                  % (atlas["nrows"], atlas["ncols"])
+                  % (NROWS, NCOLS, atlas["nrows"], atlas["ncols"])
             raise ValueError(msg)
     with open(osp.join(dirname, "config.json"), 'r') as fin:
         res["config"] = json.load(fin)
@@ -206,65 +215,53 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
                         html.Tbody(body)])
     return table
 
-def display_base_map(img, img_width: int, img_height: int) -> go.Figure:
+def display_base_map(img) -> go.Figure:
     """
     Crée une figure Plotly contenant le fond de carte.
 
-    Paramètres
-    ----------
+    Paramètre
+    ---------
 
     img:
         Image à utiliser comme fond de carte.
-
-    img_width: int
-        Largeur de l'image, en pixels.
-
-    img_height: int
-        Hauteur de l'image, en pixels.
     """
     fig = go.Figure()
     scale_factor = 1.0
-    fig.update_xaxes(range=[0, img_width * scale_factor],
+    fig.update_xaxes(range=[0, WIDTH * scale_factor],
                      visible=False)
-    fig.update_yaxes(range=[0, img_height * scale_factor],
+    fig.update_yaxes(range=[0, HEIGHT * scale_factor],
                      # Ensures that the aspect ratio stays constant:
                      scaleanchor="x",
                      visible=False)
     fig.add_layout_image(source=img,
                          x=0,
-                         sizex=img_width * scale_factor,
-                         y=img_height * scale_factor,
-                         sizey=img_height * scale_factor,
+                         sizex=WIDTH * scale_factor,
+                         y=HEIGHT * scale_factor,
+                         sizey=HEIGHT * scale_factor,
                          xref="x",
                          yref="y",
                          opacity=1.0,
                          layer="below",
                          sizing="stretch")
     # Configure other layout
-    fig.update_layout(width=img_width * scale_factor,
-                      height=img_height * scale_factor,
+    fig.update_layout(width=WIDTH * scale_factor,
+                      height=HEIGHT * scale_factor,
                       margin={"l": 0, "r": 0, "t": 0, "b": 0},
                       showlegend=False)
     return fig
 
-def mk_map_graph(fname: str, img_width: int, img_height: int) -> dcc.Graph:
+def mk_map_graph(fname: str) -> dcc.Graph:
     """
     Crée un graphique contenant la carte.
 
-    Paramètres
-    ----------
+    Paramètre
+    ---------
 
     fname: str
         Chemin vers l'image à utiliser comme fond de carte.
-
-    img_width: int
-        Largeur de l'image, en pixels.
-
-    img_height: int
-        Hauteur de l'image, en pixels.
     """
     img = b64_image(fname)
-    fig = display_base_map(img, img_width, img_height)
+    fig = display_base_map(img)
     # Disable the autosize on double click because it adds unwanted margins
     # around the image (https://plotly.com/python/configuration-options/).
     graph = dcc.Graph(figure=fig, config={"doubleClick": "reset",
@@ -291,9 +288,7 @@ def build_app(dirname: str) -> dash.Dash:
         player_hq = data["config"]["hq-red"]
     units_table = mk_units_table(faction, player_hq, data["current turn"],
                                  data["reports"], data["orders"])
-    img_width = 800
-    img_height = 455
-    graph = mk_map_graph(osp.join(dirname, "map.png"), img_width, img_height)
+    graph = mk_map_graph(osp.join(dirname, "map.png"))
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
