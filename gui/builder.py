@@ -19,15 +19,7 @@ NCOLS = 100
 WIDTH = NCOLS * CELL_WIDTH + HALF_CELL_WIDTH
 
 def kind_as_fr(kind: str) -> str:
-    """
-    'Traduit' en français un type d'unité (une arme).
-
-    Paramètres
-    ----------
-
-    kind : str
-        Chaîne de caractères décrivant un type d'unité.
-    """
+    "'Traduit' en français un type d'unité (une arme)."
     if kind == "infantry":
         return "Infanterie"
     elif kind == "cavalry":
@@ -60,15 +52,7 @@ def b64_image(fname):
     return 'data:image/png;base64,' + base64.b64encode(image).decode('utf-8')
 
 def load_game_dir(dirname: str) -> dict:
-    """
-    Lit les données de la partie en cours.
-
-    Paramètres
-    ----------
-
-    dirname : str
-        Chemin vers le dossier contenant la partie en cours.
-    """
+    "Lit les données de la partie en cours."
     res = {}
     with open(osp.join(dirname, "atlas.json"), 'r') as fin:
         atlas = json.load(fin)
@@ -91,18 +75,6 @@ def organize_reports(player_hq: str, current_turn: int, reports: list) -> dict:
     """
     Organise par date et par case de la carte le contenu des rapports reçus par
     le QG `player_hq`.
-
-    Paramètres
-    ----------
-
-    player_hq: str
-        Identifiant du QG du joueur.
-
-    current_turn: int
-        Tour en cours.
-
-    reports : dict
-        Rapports envoyés dans la partie en cours.
     """
     res = {}
     _ok = lambda x: (x["to"] == player_hq) and (x["sent"] <= current_turn)
@@ -119,21 +91,6 @@ def select_latest_units_info(faction: str, player_hq: str, current_turn: int,
     """
     Sélectionne, pour chaque unité de la faction `faction`, les dernières
     informations connues du QG `player_hq`.
-
-    Paramètres
-    ----------
-
-    faction: str
-        Identifiant de la faction du joueur.
-
-    player_hq: str
-        Identifiant du QG du joueur.
-
-    current_turn: int
-        Tour en cours.
-
-    reports : dict
-        Rapports envoyés dans la partie en cours.
     """
     res = {}
     hq_ok = lambda x: x["to"] == player_hq
@@ -158,15 +115,6 @@ def select_latest_orders(player_hq: str, orders: list) -> dict:
     """
     Sélectionne, pour chaque unité sous son contrôle, les derniers ordres
     envoyés par le QG `player_hq`.
-
-    Paramètres
-    ----------
-
-    player_hq: str
-        Identifiant du QG du joueur.
-
-    orders : dict
-        Ordres envoyés dans la partie en cours.
     """
     res = {}
     hq_ok = lambda x: x["from"] == player_hq
@@ -182,24 +130,6 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
     """
     Crée un tableau affichant les dernières informations connues sur les
     unités du joueur.
-
-    Paramètres
-    ----------
-
-    faction: str
-        Identifiant de la faction du joueur.
-
-    player_hq: str
-        Identifiant du QG du joueur.
-
-    current_turn: int
-        Tour en cours.
-
-    reports : dict
-        Rapports envoyés dans la partie en cours.
-
-    orders : dict
-        Ordres envoyés dans la partie en cours.
     """
     header = [html.Th("Unité"), html.Th("Arme"), html.Th("Effectif"),
               html.Th("Emplacement"), html.Th("Vue le"),
@@ -228,15 +158,7 @@ def mk_units_table(faction: str, player_hq: str, current_turn: int,
     return table
 
 def display_base_map(img) -> go.Figure:
-    """
-    Crée une figure Plotly contenant le fond de carte.
-
-    Paramètre
-    ---------
-
-    img:
-        Image à utiliser comme fond de carte.
-    """
+    "Crée une figure Plotly contenant le fond de carte `img`."
     fig = go.Figure()
     scale_factor = 1.0
     fig.update_xaxes(range=[0, WIDTH * scale_factor],
@@ -291,22 +213,7 @@ def report_to_txt(content: list) -> (str, str):
     return (status, txt)
 
 def display_infos(fig: go.Figure, infos: dict, current_turn: int) -> None:
-    """
-    Affiche sur la carte les informations reçues par le QG du joueur.
-
-    Paramètres
-    ----------
-
-    fig: go.Figure
-        Représentation de la carte sur laquelle afficher les informations.
-
-    infos: dict
-        Rapports reçus par le joueur, organisés par date et par case de la
-        carte.
-
-    current_turn: int
-        Tour en cours.
-    """
+    "Affiche sur la carte les informations reçues par le QG du joueur."
     if current_turn not in infos:
         return None
     data = infos[current_turn]
@@ -345,22 +252,7 @@ def display_infos(fig: go.Figure, infos: dict, current_turn: int) -> None:
                                  hovertemplate="%{text}"))
 
 def mk_map_graph(fname: str, infos: dict, current_turn: int) -> dcc.Graph:
-    """
-    Crée un graphique contenant la carte.
-
-    Paramètres
-    ----------
-
-    fname: str
-        Chemin vers l'image à utiliser comme fond de carte.
-
-    infos: dict
-        Rapports reçus par le joueur, organisés par date et par case de la
-        carte.
-
-    current_turn: int
-        Tour en cours.
-    """
+    "Crée un graphique contenant la carte."
     img = b64_image(fname)
     fig = display_base_map(img)
     display_infos(fig, infos, current_turn)
@@ -371,15 +263,7 @@ def mk_map_graph(fname: str, infos: dict, current_turn: int) -> dcc.Graph:
     return graph
 
 def build_app(dirname: str) -> dash.Dash:
-    """
-    Renvoie un objet `Dash` correspondant à l'interface de Picrochole.
-
-    Paramètres
-    ----------
-
-    dirname : str
-        Chemin vers le dossier contenant la partie en cours.
-    """
+    "Renvoie un objet `Dash` correspondant à l'interface de Picrochole."
     app = dash.Dash(title="Picrochole")
     data = load_game_dir(dirname)
     if data["config"]["ia-faction"] == "red":
