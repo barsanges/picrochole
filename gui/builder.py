@@ -37,6 +37,18 @@ def kind_as_fr(kind: str) -> str:
     else:
         raise ValueError("unknown kind of unit: '%s'" % kind)
 
+def to_coords(ckey: str) -> (float, float):
+    "Convertit un indice de case en une paire de coordonnées."
+    _ckey = int(ckey)
+    idx = _ckey % NCOLS
+    jdx = _ckey // NCOLS
+    if jdx % 2 == 0:
+        x = (idx + 0.5) * CELL_WIDTH
+    else:
+        x = (idx + 1.0) * CELL_WIDTH
+    y = HEIGHT - (jdx + 0.5) * CELL_HEIGHT
+    return (x, y)
+
 def b64_image(fname):
     """
     Charge une image de manière à l'afficher dans Dash.
@@ -250,18 +262,108 @@ def display_base_map(img) -> go.Figure:
                       showlegend=False)
     return fig
 
-def mk_map_graph(fname: str) -> dcc.Graph:
+def report_to_txt(content: list) -> (str, str):
+    "Convertit un rapport sur une case en une chaîne de caractères descriptive."
+    blue = []
+    red = []
+    _content = sorted(content, key=lambda x: x["strength"])
+    for x in _content:
+        tag = "%s, %s: %d" % (x["unit-key"], kind_as_fr(x["kind"]),
+                              x["strength"])
+        if x["faction"] == "blue":
+            blue.append(tag)
+        else:
+            red.append(tag)
+    blue_txt = '<b>Bleu :</b><br>%s' % '<br>'.join(blue)
+    red_txt = '<b>Rouge :</b><br>%s' % '<br>'.join(red)
+    if blue != [] and red == []:
+        status = "blue"
+        txt = blue_txt
+    elif blue == [] and red != []:
+        status = "red"
+        txt = red_txt
+    elif blue != [] and red != []:
+        status = "battle"
+        txt = blue_txt + "\n" + red_txt
+    else:
+        status = "empty"
+        txt = ""
+    return (status, txt)
+
+def display_infos(fig: go.Figure, infos: dict, current_turn: int) -> None:
+    """
+    Affiche sur la carte les informations reçues par le QG du joueur.
+
+    Paramètres
+    ----------
+
+    fig: go.Figure
+        Représentation de la carte sur laquelle afficher les informations.
+
+    infos: dict
+        Rapports reçus par le joueur, organisés par date et par case de la
+        carte.
+
+    current_turn: int
+        Tour en cours.
+    """
+    if current_turn not in infos:
+        return None
+    data = infos[current_turn]
+    xs = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
+          "battle": []}
+    ys = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
+          "battle": []}
+    txts = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
+            "battle": []}
+    cfg = {"blue": {"size": 20, "color": "blue"},
+           "red": {"size": 20, "color": "red"},
+           "marker-blue": {"size": 10, "color": "blue"},
+           "marker-red": {"size": 10, "color": "red"},
+           "battle": {"size": 20, "color": "purple"}}
+    for ckey, content in data.items():
+        x, y = to_coords(ckey)
+        if content == "blue":
+            xs["marker-blue"].append(x)
+            ys["marker-blue"].append(y)
+            txts["marker-blue"].append("Ligne de communication bleue")
+        elif content == "red":
+            xs["marker-red"].append(x)
+            ys["marker-red"].append(y)
+            txts["marker-red"].append("Ligne de communication rouge")
+        elif content != []:
+            status, txt = report_to_txt(content)
+            xs[status].append(x)
+            ys[status].append(y)
+            txts[status].append(txt)
+    for key in xs.keys():
+        fig.add_trace(go.Scatter(x=xs[key],
+                                 y=ys[key],
+                                 mode="markers",
+                                 marker=cfg[key],
+                                 text=txts[key],
+                                 hovertemplate="%{text}"))
+
+def mk_map_graph(fname: str, infos: dict, current_turn: int) -> dcc.Graph:
     """
     Crée un graphique contenant la carte.
 
-    Paramètre
-    ---------
+    Paramètres
+    ----------
 
     fname: str
         Chemin vers l'image à utiliser comme fond de carte.
+
+    infos: dict
+        Rapports reçus par le joueur, organisés par date et par case de la
+        carte.
+
+    current_turn: int
+        Tour en cours.
     """
     img = b64_image(fname)
     fig = display_base_map(img)
+    display_infos(fig, infos, current_turn)
     # Disable the autosize on double click because it adds unwanted margins
     # around the image (https://plotly.com/python/configuration-options/).
     graph = dcc.Graph(figure=fig, config={"doubleClick": "reset",
@@ -288,7 +390,9 @@ def build_app(dirname: str) -> dash.Dash:
         player_hq = data["config"]["hq-red"]
     units_table = mk_units_table(faction, player_hq, data["current turn"],
                                  data["reports"], data["orders"])
-    graph = mk_map_graph(osp.join(dirname, "map.png"))
+    infos = organize_reports(player_hq, data["current turn"], data["reports"])
+    graph = mk_map_graph(osp.join(dirname, "map.png"), infos,
+                         data["current turn"])
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
