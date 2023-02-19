@@ -78,7 +78,7 @@ def organize_reports(player_hq: str, current_turn: int, reports: list) -> dict:
     le QG `player_hq`.
     """
     res = {}
-    _ok = lambda x: (x["to"] == player_hq) and (x["sent"] <= current_turn)
+    _ok = lambda x: (x["to"] == player_hq) and (x["received"] <= current_turn)
     for report in filter(_ok, reports):
         date = report["sent"]
         if date not in res:
