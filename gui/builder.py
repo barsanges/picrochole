@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
 
 CELL_HEIGHT = 8
 NROWS = 60
@@ -251,17 +252,6 @@ def display_infos(fig: go.Figure, infos: dict, current_turn: int) -> None:
                                  text=txts[key],
                                  hovertemplate="%{text}"))
 
-def mk_map_graph(fname: str, infos: dict, current_turn: int) -> dcc.Graph:
-    "Crée un graphique contenant la carte."
-    img = b64_image(fname)
-    fig = display_base_map(img)
-    display_infos(fig, infos, current_turn)
-    # Disable the autosize on double click because it adds unwanted margins
-    # around the image (https://plotly.com/python/configuration-options/).
-    graph = dcc.Graph(figure=fig, config={"doubleClick": "reset",
-                                          "displayModeBar": False})
-    return graph
-
 def build_app(dirname: str) -> dash.Dash:
     "Renvoie un objet `Dash` correspondant à l'interface de Picrochole."
     app = dash.Dash(title="Picrochole")
@@ -274,15 +264,25 @@ def build_app(dirname: str) -> dash.Dash:
         player_hq = data["config"]["hq-red"]
     units_table = mk_units_table(faction, player_hq, data["current turn"],
                                  data["reports"], data["orders"])
+    img = b64_image(osp.join(dirname, "map.png"))
     infos = organize_reports(player_hq, data["current turn"], data["reports"])
-    graph = mk_map_graph(osp.join(dirname, "map.png"), infos,
-                         data["current turn"])
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
-        graph,
-        # TODO : slider sous la carte
+        # Disable the autosize on double click because it adds unwanted margins
+        # around the image (https://plotly.com/python/configuration-options/).
+        dcc.Graph(id="map", config={"doubleClick": "reset",
+                                    "displayModeBar": False}),
+        dcc.Slider(min=0, max=data["current turn"], step=1,
+                   value=data["current turn"], id="slider-turn",
+                   tooltip={"placement": "bottom", "always_visible": True}),
         units_table
     ])
     # TODO : à ce stade, il n'y a a priori pas de callback hormis le slider
+    @app.callback(Output("map", "figure"),
+                  Input("slider-turn", "value"))
+    def _display_map(turn):
+        fig = display_base_map(img)
+        display_infos(fig, infos, turn)
+        return fig
     return app
