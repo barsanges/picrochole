@@ -27,7 +27,7 @@ import Picrochole.Engine.Turn ( turn )
 
 import Picrochole.JSON.Pieces
 
--- | Command line parser for 'turing'.
+-- | Ligne de commande pour Picrochole.
 args :: ParserInfo FilePath
 args = O.info ( arg <**> O.helper ) desc
   where
