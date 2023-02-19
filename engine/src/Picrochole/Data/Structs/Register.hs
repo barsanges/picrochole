@@ -62,15 +62,15 @@ instance Functor Msg where
 
 -- | Construit un registre à partir d'un vecteur de messages.
 fromVector :: Vector (Msg a) -> Register a
-fromVector xs = foldr go zero xs
+fromVector xs = V.foldl' go zero xs
   where
     zero = Register { senders = M.empty
                     , receivers = M.empty
                     , messages = IM.empty
                     , last_ = 0
                     }
-    go :: (Msg a) -> Register a -> Register a
-    go msg register = send (header msg) (content msg) register
+    go :: Register a -> (Msg a) -> Register a
+    go register msg = send (header msg) (content msg) register
 
 -- | Convertit un registre en un vecteur de messages.
 toVector :: Register a -> Vector (Msg a)

@@ -36,6 +36,7 @@ tests:
     dependencies:
     - hspec
     - picrochole
+    - QuickCheck
 
   end-to-end:
     main:                Spec.hs
