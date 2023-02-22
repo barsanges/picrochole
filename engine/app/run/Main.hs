@@ -3,8 +3,7 @@
    Copyright   : Copyright (C) 2022 barsanges
    License     : GNU GPL, version 3
 
-Prend en charge les différentes commandes utilisées pour une partie de
-Picrochole.
+Résout le tour en cours pour une partie de Picrochole.
 -}
 
 module Main where
