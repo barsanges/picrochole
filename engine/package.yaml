@@ -29,6 +29,13 @@ executables:
     - optparse-applicative
     - picrochole
 
+  picrochole-order:
+    source-dirs:      app/order
+    main:             Main.hs
+    dependencies:
+    - optparse-applicative
+    - picrochole
+
 tests:
   functional:
     main:                Spec.hs
