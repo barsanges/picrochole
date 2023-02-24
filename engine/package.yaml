@@ -51,6 +51,6 @@ tests:
     dependencies:
     - hspec
     - picrochole
-    # L'exécutable picrochole-run est aussi une dépendance et doit être reconstruit avant de lancer le test
-    # Un moyen est d'inclure l'exécutable dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:picrochole-run
+    # Les exécutables sont aussi une dépendance et doivent être reconstruits avant de lancer le test
+    # Un moyen est de les inclure dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:picrochole-run ...
     - process

@@ -83,8 +83,9 @@ prepare fp = do
 -- | Lance l'exécutable sur les fichiers de configuration du répertoire.
 run :: FilePath -> IO ()
 run fp = do
+  cmd <- readFile (fp </> "cmd.sh")
   (ex, stdOut, stdErr) <- readCreateProcessWithExitCode
-                          (shell ("stack exec -- picrochole " ++ (fp </> "result")))
+                          (shell cmd)
                           ""
   case ex of
     ExitSuccess -> return ()
