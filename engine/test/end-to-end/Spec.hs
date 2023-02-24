@@ -114,12 +114,14 @@ comp fp = do
       (R.toList (ereports expd)) `shouldMatchList` (R.toList (ereports res))
       (U.toList (eunits expd)) `shouldMatchList` (U.toList (eunits res))
   -- Comparaison du dossier "past" :
-  fPastExpd <- listFiles (fp </> "expected" </> "past")
-  fPastRes <- listFiles (fp </> "result" </> "past")
-  fPastExpd `shouldBe` fPastRes
-  mPastExp <- forM fPastExpd (\ x -> U.readUnits (fp </> "expected" </> "past" </> x))
-  mPastRes <- forM fPastRes (\ x -> U.readUnits (fp </> "result" </> "past" </> x))
-  mapM_ go (zip mPastExp mPastRes)
+  hasPastDir <- doesDirectoryExist (fp </> "init" </> "past")
+  when hasPastDir (do
+                      fPastExpd <- listFiles (fp </> "expected" </> "past")
+                      fPastRes <- listFiles (fp </> "result" </> "past")
+                      fPastExpd `shouldBe` fPastRes
+                      mPastExp <- forM fPastExpd (\ x -> U.readUnits (fp </> "expected" </> "past" </> x))
+                      mPastRes <- forM fPastRes (\ x -> U.readUnits (fp </> "result" </> "past" </> x))
+                      mapM_ go (zip mPastExp mPastRes))
   where
     go (Left m, _) = expectationFailure ("unable to parse the expected file, got: " ++ m)
     go (_, Left m) = expectationFailure ("unable to parse the result file, got: " ++ m)
