@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from collections import namedtuple
 from dash.dependencies import Input, Output
 
 CELL_HEIGHT = 8
@@ -19,6 +20,34 @@ HALF_CELL_WIDTH = 4
 CELL_WIDTH = 2 * HALF_CELL_WIDTH
 NCOLS = 100
 WIDTH = NCOLS * CELL_WIDTH + HALF_CELL_WIDTH
+
+CellInfo = namedtuple("CellInfo", ("sent", "ckey", "marker", "blue", "red"))
+
+class Infos:
+    "Ensemble organisé des rapports reçus par un QG."
+
+    def __init__(self, current_turn: int):
+        "Initialise une nouvelle instance de la classe reports."
+        self._current_turn = current_turn
+        self._data = [{0: CellInfo(-1, x, None, [], [])}
+                      for x in range(NCOLS * NROWS)]
+
+    def add_cell_info(self, sent: int, ckey: int, cell_info: list) -> None:
+        "Ajoute un rapport sur la case `ckey`, envoyé au tour `turn`."
+        if cell_info == "blue" or cell_info == "red":
+            value = CellInfo(sent, ckey, cell_info, [], [])
+        else:
+            units = sorted(cell_info, key=lambda x: x["strength"])
+            blue = list(filter(lambda x: x["faction"] == "blue", units))
+            red = list(filter(lambda x: x["faction"] == "red", units))
+            value = CellInfo(sent, ckey, None, blue, red)
+        self._data[ckey][sent] = value
+
+    def get_cell_info(self, turn: int, ckey: int) -> CellInfo:
+        "Renvoie les informations 'live' sur la case `ckey` à la date `turn`."
+        reports = self._data[ckey]
+        date = max((x for x in reports.keys() if x <= turn))
+        return reports[date]
 
 def kind_as_fr(kind: str) -> str:
     "'Traduit' en français un type d'unité (une arme)."
@@ -73,20 +102,18 @@ def load_game_dir(dirname: str) -> dict:
         res["orders"] = json.load(fin)
     return res
 
-def organize_reports(player_hq: str, current_turn: int, reports: list) -> dict:
+def mk_infos(player_hq: str, current_turn: int, reports: list) -> Infos:
     """
-    Organise par date et par case de la carte le contenu des rapports reçus par
-    le QG `player_hq`.
+    Organise dans une instance de `Infos` les rapports `reports` reçus jusqu'au
+    tour `current_turn` par le QG `player_hq`.
     """
-    res = {}
+    infos = Infos(current_turn)
     _ok = lambda x: (x["to"] == player_hq) and (x["received"] <= current_turn)
     for report in filter(_ok, reports):
-        date = report["sent"]
-        if date not in res:
-            res[date] = {}
+        sent = report["sent"]
         for ckey, content in report["content"].items():
-            res[date][ckey] = content
-    return res
+            infos.add_cell_info(sent, int(ckey), content)
+    return infos
 
 def select_latest_units_info(faction: str, player_hq: str, current_turn: int,
                              reports: list) -> dict:
@@ -186,66 +213,74 @@ def display_base_map(img) -> go.Figure:
                       showlegend=False)
     return fig
 
-def report_to_txt(content: list) -> (str, str):
-    "Convertit un rapport sur une case en une chaîne de caractères descriptive."
-    blue = []
-    red = []
-    _content = sorted(content, key=lambda x: x["strength"])
-    for x in _content:
-        tag = "%s, %s: %d" % (x["unit-key"], kind_as_fr(x["kind"]),
-                              x["strength"])
-        if x["faction"] == "blue":
-            blue.append(tag)
-        else:
-            red.append(tag)
-    blue_txt = '<b>Bleu :</b><br>%s' % '<br>'.join(blue)
-    red_txt = '<b>Rouge :</b><br>%s' % '<br>'.join(red)
-    if blue != [] and red == []:
-        status = "blue"
-        txt = blue_txt
-    elif blue == [] and red != []:
-        status = "red"
-        txt = red_txt
-    elif blue != [] and red != []:
-        status = "battle"
-        txt = blue_txt + "\n" + red_txt
+def cell_info_status(current_turn: int, cell_info: CellInfo) -> str:
+    "Indique la nature des informations sur une case."
+    if cell_info.marker is not None:
+        base = "marker-" + cell_info.marker
+    elif len(cell_info.blue) > 0 and len(cell_info.red) == 0:
+        base = "blue"
+    elif len(cell_info.blue) == 0 and len(cell_info.red) > 0:
+        base = "red"
+    elif len(cell_info.blue) > 0 and len(cell_info.red) > 0:
+        base = "battle"
     else:
-        status = "empty"
-        txt = ""
-    return (status, txt)
+        base = "empty"
+    if cell_info.sent == current_turn:
+        return (base + "-now")
+    else:
+        return (base + "-past")
 
-def display_infos(fig: go.Figure, infos: dict, current_turn: int) -> None:
+def cell_info_to_txt(cell_info: CellInfo) -> str:
+    """
+    Convertit les informations sur une case en une chaîne de caractères
+    descriptive.
+    """
+    txt = f"Case n°{cell_info.ckey}<br>Date : {cell_info.sent}<br>"
+    if cell_info.marker is not None:
+        if cell_info.marker == "blue":
+            color = "bleue"
+        else:
+            color = "rouge"
+        txt += "Ligne de communication " + color
+        return txt
+    if len(cell_info.blue) > 0:
+        tags = ["%s, %s: %d" % (x["unit-key"], kind_as_fr(x["kind"]),
+                                x["strength"]) for x in cell_info.blue]
+        txt += '<b>Bleu :</b><br>%s' % '<br>'.join(tags)
+    if len(cell_info.red) > 0:
+        tags = ["%s, %s: %d" % (x["unit-key"], kind_as_fr(x["kind"]),
+                                x["strength"]) for x in cell_info.red]
+        txt += '<b>Rouge :</b><br>%s' % '<br>'.join(tags)
+    return txt
+
+def display_infos(fig: go.Figure, infos: Infos, current_turn: int) -> None:
     "Affiche sur la carte les informations reçues par le QG du joueur."
-    if current_turn not in infos:
-        return None
-    data = infos[current_turn]
-    xs = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
-          "battle": []}
-    ys = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
-          "battle": []}
-    txts = {"blue": [], "red": [], "marker-blue": [], "marker-red": [],
-            "battle": []}
-    cfg = {"blue": {"size": 20, "color": "blue"},
-           "red": {"size": 20, "color": "red"},
-           "marker-blue": {"size": 10, "color": "blue"},
-           "marker-red": {"size": 10, "color": "red"},
-           "battle": {"size": 20, "color": "purple"}}
-    for ckey, content in data.items():
+    small = 3
+    big = 10
+    cfg = {"blue-now": {"size": big, "color": "blue", "opacity": 1.0},
+           "red-now": {"size": big, "color": "red", "opacity": 1.0},
+           "marker-blue-now": {"size": small, "color": "blue", "opacity": 1.0},
+           "marker-red-now": {"size": small, "color": "red", "opacity": 1.0},
+           "empty-now": {"size": small, "color": "LightGray", "opacity": 1.0},
+           "battle-now": {"size": big, "color": "purple", "opacity": 1.0},
+           "blue-past": {"size": big, "color": "blue", "opacity": 0.5},
+           "red-past": {"size": big, "color": "red", "opacity": 0.5},
+           "marker-blue-past": {"size": small, "color": "blue", "opacity": 0.5},
+           "marker-red-past": {"size": small, "color": "red", "opacity": 0.5},
+           "empty-past": {"size": small, "color": "LightGray", "opacity": 0.5},
+           "battle-past": {"size": big, "color": "purple", "opacity": 0.5}}
+    xs = {key: [] for key in cfg.keys()}
+    ys = {key: [] for key in cfg.keys()}
+    txts = {key: [] for key in cfg.keys()}
+    for ckey in range(NROWS * NCOLS):
+        cell_info = infos.get_cell_info(current_turn, ckey)
+        status = cell_info_status(current_turn, cell_info)
+        txt = cell_info_to_txt(cell_info)
         x, y = to_coords(ckey)
-        if content == "blue":
-            xs["marker-blue"].append(x)
-            ys["marker-blue"].append(y)
-            txts["marker-blue"].append("Ligne de communication bleue")
-        elif content == "red":
-            xs["marker-red"].append(x)
-            ys["marker-red"].append(y)
-            txts["marker-red"].append("Ligne de communication rouge")
-        elif content != []:
-            status, txt = report_to_txt(content)
-            xs[status].append(x)
-            ys[status].append(y)
-            txts[status].append(txt)
-    for key in xs.keys():
+        txts[status].append(txt)
+        xs[status].append(x)
+        ys[status].append(y)
+    for key in cfg.keys():
         fig.add_trace(go.Scatter(x=xs[key],
                                  y=ys[key],
                                  mode="markers",
@@ -266,7 +301,7 @@ def build_app(dirname: str) -> dash.Dash:
     units_table = mk_units_table(faction, player_hq, data["current turn"],
                                  data["reports"], data["orders"])
     img = b64_image(osp.join(dirname, "map.png"))
-    infos = organize_reports(player_hq, data["current turn"], data["reports"])
+    infos = mk_infos(player_hq, data["current turn"], data["reports"])
     app.layout = html.Div([
         dcc.Markdown(children="**Partie :** %s" % dirname),
         dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
