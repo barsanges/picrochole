@@ -21,7 +21,7 @@ CELL_WIDTH = 2 * HALF_CELL_WIDTH
 NCOLS = 100
 WIDTH = NCOLS * CELL_WIDTH + HALF_CELL_WIDTH
 
-CellInfo = namedtuple("CellInfo", ("sent", "ckey", "marker", "blue", "red"))
+CellInfo = namedtuple("CellInfo", ("sent", "marker", "blue", "red"))
 
 class Infos:
     "Ensemble organisé des rapports reçus par un QG."
@@ -29,25 +29,27 @@ class Infos:
     def __init__(self, current_turn: int):
         "Initialise une nouvelle instance de la classe reports."
         self._current_turn = current_turn
-        self._data = [{0: CellInfo(-1, x, None, [], [])}
-                      for x in range(NCOLS * NROWS)]
+        self._data = [{} for _ in range(NCOLS * NROWS)]
 
     def add_cell_info(self, sent: int, ckey: int, cell_info: list) -> None:
         "Ajoute un rapport sur la case `ckey`, envoyé au tour `turn`."
         if cell_info == "blue" or cell_info == "red":
-            value = CellInfo(sent, ckey, cell_info, [], [])
+            value = CellInfo(sent, cell_info, [], [])
         else:
             units = sorted(cell_info, key=lambda x: x["strength"])
             blue = list(filter(lambda x: x["faction"] == "blue", units))
             red = list(filter(lambda x: x["faction"] == "red", units))
-            value = CellInfo(sent, ckey, None, blue, red)
+            value = CellInfo(sent, None, blue, red)
         self._data[ckey][sent] = value
 
     def get_cell_info(self, turn: int, ckey: int) -> CellInfo:
         "Renvoie les informations 'live' sur la case `ckey` à la date `turn`."
         reports = self._data[ckey]
-        date = max((x for x in reports.keys() if x <= turn))
-        return reports[date]
+        if len(reports) > 0:
+            date = max((x for x in reports.keys() if x <= turn))
+            return reports[date]
+        else:
+            return None
 
 def kind_as_fr(kind: str) -> str:
     "'Traduit' en français un type d'unité (une arme)."
@@ -215,7 +217,9 @@ def display_base_map(img) -> go.Figure:
 
 def cell_info_status(current_turn: int, cell_info: CellInfo) -> str:
     "Indique la nature des informations sur une case."
-    if cell_info.marker is not None:
+    if cell_info is None:
+        return "unknown"
+    elif cell_info.marker is not None:
         base = "marker-" + cell_info.marker
     elif len(cell_info.blue) > 0 and len(cell_info.red) == 0:
         base = "blue"
@@ -230,12 +234,14 @@ def cell_info_status(current_turn: int, cell_info: CellInfo) -> str:
     else:
         return (base + "-past")
 
-def cell_info_to_txt(cell_info: CellInfo) -> str:
+def cell_info_to_txt(ckey: int, cell_info: CellInfo) -> str:
     """
     Convertit les informations sur une case en une chaîne de caractères
     descriptive.
     """
-    txt = f"Case n°{cell_info.ckey}<br>Date : {cell_info.sent}<br>"
+    if cell_info is None:
+        return f"Case n°{ckey}"
+    txt = f"Case n°{ckey}<br>Date : {cell_info.sent}<br>"
     if cell_info.marker is not None:
         if cell_info.marker == "blue":
             color = "bleue"
@@ -268,14 +274,15 @@ def display_infos(fig: go.Figure, infos: Infos, current_turn: int) -> None:
            "marker-blue-past": {"size": small, "color": "blue", "opacity": 0.5},
            "marker-red-past": {"size": small, "color": "red", "opacity": 0.5},
            "empty-past": {"size": small, "color": "LightGray", "opacity": 0.5},
-           "battle-past": {"size": big, "color": "purple", "opacity": 0.5}}
+           "battle-past": {"size": big, "color": "purple", "opacity": 0.5},
+           "unknown": {"size": small, "color": "LightGray", "opacity": 0.5}}
     xs = {key: [] for key in cfg.keys()}
     ys = {key: [] for key in cfg.keys()}
     txts = {key: [] for key in cfg.keys()}
     for ckey in range(NROWS * NCOLS):
         cell_info = infos.get_cell_info(current_turn, ckey)
         status = cell_info_status(current_turn, cell_info)
-        txt = cell_info_to_txt(cell_info)
+        txt = cell_info_to_txt(ckey, cell_info)
         x, y = to_coords(ckey)
         txts[status].append(txt)
         xs[status].append(x)
