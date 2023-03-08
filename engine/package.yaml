@@ -21,21 +21,6 @@ dependencies:
 library:
   source-dirs: src
 
-executables:
-  picrochole-run:
-    source-dirs:      app/run
-    main:             Main.hs
-    dependencies:
-    - optparse-applicative
-    - picrochole
-
-  picrochole-order:
-    source-dirs:      app/order
-    main:             Main.hs
-    dependencies:
-    - optparse-applicative
-    - picrochole
-
 tests:
   functional:
     main:                Spec.hs
@@ -44,13 +29,3 @@ tests:
     - hspec
     - picrochole
     - QuickCheck
-
-  end-to-end:
-    main:                Spec.hs
-    source-dirs:         test/end-to-end
-    dependencies:
-    - hspec
-    - picrochole
-    # Les exécutables sont aussi une dépendance et doivent être reconstruits avant de lancer le test
-    # Un moyen est de les inclure dans les cibles du test : stack test picrochole:test:end-to-end picrochole:exe:picrochole-run ...
-    - process
