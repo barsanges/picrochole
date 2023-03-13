@@ -45,8 +45,9 @@ class Infos:
     def get_cell_info(self, turn: int, ckey: int) -> CellInfo:
         "Renvoie les informations 'live' sur la case `ckey` à la date `turn`."
         reports = self._data[ckey]
-        if len(reports) > 0:
-            date = max((x for x in reports.keys() if x <= turn))
+        all_dates = [x for x in reports.keys() if x <= turn]
+        if len(all_dates) > 0:
+            date = max(all_dates)
             return reports[date]
         else:
             return None
