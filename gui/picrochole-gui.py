@@ -23,6 +23,29 @@ WIDTH = NCOLS * CELL_WIDTH + HALF_CELL_WIDTH
 
 CellInfo = namedtuple("CellInfo", ("sent", "marker", "blue", "red"))
 
+class Data:
+    "Ensemble des données d'une partie de Picrochole."
+
+    def __init__(self, game_dir: str):
+        "Initialise une nouvelle instance de la classe `Data`."
+        self._dir = game_dir
+        self.img = b64_image(osp.join(game_dir, "map.png"))
+        self.data = load_game_dir(game_dir)
+        if self.data["config"]["ia-faction"] == "red":
+            self.faction = "blue"
+            self.player_hq = self.data["config"]["hq-blue"]
+        else:
+            self.faction = "red"
+            self.player_hq = self.data["config"]["hq-red"]
+        self.infos = mk_infos(self.player_hq, self.data["current turn"],
+                              self.data["reports"])
+
+    def display_map(self, turn: int):
+        "Affiche la carte vue du tour `turn`."
+        fig = display_base_map(self.img)
+        display_infos(fig, self.infos, turn)
+        return fig
+
 class Infos:
     "Ensemble organisé des rapports reçus par un QG."
 
@@ -298,37 +321,6 @@ def display_infos(fig: go.Figure, infos: Infos, current_turn: int) -> None:
 
 def build_app(dirname: str) -> dash.Dash:
     "Renvoie un objet `Dash` correspondant à l'interface de Picrochole."
-    app = dash.Dash(title="Picrochole")
-    data = load_game_dir(dirname)
-    if data["config"]["ia-faction"] == "red":
-        faction = "blue"
-        player_hq = data["config"]["hq-blue"]
-    else:
-        faction = "red"
-        player_hq = data["config"]["hq-red"]
-    units_table = mk_units_table(faction, player_hq, data["current turn"],
-                                 data["reports"], data["orders"])
-    img = b64_image(osp.join(dirname, "map.png"))
-    infos = mk_infos(player_hq, data["current turn"], data["reports"])
-    app.layout = html.Div([
-        dcc.Markdown(children="**Partie :** %s" % dirname),
-        dcc.Markdown(children="**Tour :** %d" % data["current turn"]),
-        # Disable the autosize on double click because it adds unwanted margins
-        # around the image (https://plotly.com/python/configuration-options/).
-        dcc.Graph(id="map", config={"doubleClick": "reset",
-                                    "displayModeBar": False}),
-        dcc.Slider(min=0, max=data["current turn"], step=1,
-                   value=data["current turn"], id="slider-turn",
-                   tooltip={"placement": "bottom", "always_visible": True}),
-        units_table
-    ])
-    # TODO : à ce stade, il n'y a a priori pas de callback hormis le slider
-    @app.callback(Output("map", "figure"),
-                  Input("slider-turn", "value"))
-    def _display_map(turn):
-        fig = display_base_map(img)
-        display_infos(fig, infos, turn)
-        return fig
     return app
 
 if __name__ == "__main__":
@@ -338,5 +330,25 @@ if __name__ == "__main__":
     PARSER.add_argument('game_dir', help="Directory containing the current "\
                                          "game")
     ARGS = PARSER.parse_args()
-    APP = build_app(ARGS.game_dir)
+    DATA = Data(ARGS.game_dir)
+    units_table = mk_units_table(DATA.faction,
+                                 DATA.player_hq,
+                                 DATA.data["current turn"],
+                                 DATA.data["reports"],
+                                 DATA.data["orders"])
+    APP = dash.Dash(title="Picrochole")
+    APP.layout = html.Div([
+        dcc.Markdown(children="**Partie :** %s" % ARGS.game_dir),
+        dcc.Markdown(children="**Tour :** %d" % DATA.data["current turn"]),
+        # Disable the autosize on double click because it adds unwanted margins
+        # around the image (https://plotly.com/python/configuration-options/).
+        dcc.Graph(id="map", config={"doubleClick": "reset",
+                                    "displayModeBar": False}),
+        dcc.Slider(min=0, max=DATA.data["current turn"], step=1,
+                   value=DATA.data["current turn"], id="slider-turn",
+                   tooltip={"placement": "bottom", "always_visible": True}),
+        units_table
+    ])
+    APP.callback(Output("map", "figure"),
+                 Input("slider-turn", "value"))(DATA.display_map)
     APP.run_server(debug=True)
